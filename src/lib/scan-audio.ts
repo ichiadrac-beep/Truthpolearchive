@@ -1,5 +1,4 @@
 let ctx: AudioContext | null = null;
-let voicesLoaded = false;
 
 function getCtx() {
   if (typeof window === "undefined") return null;
@@ -13,89 +12,133 @@ function getCtx() {
 export function unlockAudio() {
   const c = getCtx();
   if (c?.state === "suspended") void c.resume();
-  if (typeof speechSynthesis !== "undefined") {
-    speechSynthesis.getVoices();
-    if (!voicesLoaded) {
-      speechSynthesis.addEventListener("voiceschanged", () => {
-        voicesLoaded = true;
-      });
-    }
-  }
   return c;
 }
 
-function noiseBuffer(c: AudioContext, seconds: number) {
+function noiseBuffer(c: AudioContext, seconds: number, color: "white" | "pink" = "pink") {
   const buffer = c.createBuffer(1, Math.ceil(c.sampleRate * seconds), c.sampleRate);
   const data = buffer.getChannelData(0);
-  let last = 0;
+  let b0 = 0,
+    b1 = 0,
+    b2 = 0;
   for (let i = 0; i < data.length; i++) {
     const white = Math.random() * 2 - 1;
-    last = last * 0.93 + white * 0.07;
-    data[i] = last;
+    if (color === "white") {
+      data[i] = white;
+    } else {
+      b0 = 0.997 * b0 + 0.029 * white;
+      b1 = 0.985 * b1 + 0.032 * white;
+      b2 = 0.95 * b2 + 0.05 * white;
+      data[i] = (b0 + b1 + b2) * 0.55;
+    }
   }
   return buffer;
 }
 
+function envGain(c: AudioContext, t0: number, attack: number, hold: number, release: number, peak: number) {
+  const g = c.createGain();
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(Math.max(0.0002, peak), t0 + attack);
+  g.gain.setValueAtTime(Math.max(0.0002, peak), t0 + attack + hold);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + attack + hold + release);
+  return g;
+}
+
+/** Premium biometric scan — analog-style soundboard, no samples, no TTS. */
 export function playScanSound(durationSec: number): () => void {
   const c = unlockAudio();
   if (!c) return () => {};
   const now = c.currentTime;
+  const dur = Math.max(0.6, durationSec);
   const master = c.createGain();
-  master.gain.value = 0.28;
+  master.gain.value = 0.32;
   master.connect(c.destination);
 
-  const noise = c.createBufferSource();
-  noise.buffer = noiseBuffer(c, durationSec + 0.1);
+  const whoosh = c.createBufferSource();
+  whoosh.buffer = noiseBuffer(c, dur + 0.15);
+  const hp = c.createBiquadFilter();
+  hp.type = "highpass";
+  hp.frequency.value = 180;
   const bp = c.createBiquadFilter();
   bp.type = "bandpass";
-  bp.Q.value = 6;
-  bp.frequency.setValueAtTime(620, now);
-  bp.frequency.exponentialRampToValueAtTime(2400, now + durationSec * 0.7);
-  bp.frequency.exponentialRampToValueAtTime(1100, now + durationSec);
-  const ng = c.createGain();
-  ng.gain.setValueAtTime(0.0001, now);
-  ng.gain.exponentialRampToValueAtTime(0.55, now + 0.06);
-  ng.gain.setValueAtTime(0.42, now + durationSec - 0.18);
-  ng.gain.exponentialRampToValueAtTime(0.0001, now + durationSec);
-  noise.connect(bp);
-  bp.connect(ng);
-  ng.connect(master);
-  noise.start(now);
-  noise.stop(now + durationSec);
+  bp.Q.value = 3.4;
+  bp.frequency.setValueAtTime(420, now);
+  bp.frequency.exponentialRampToValueAtTime(2800, now + dur * 0.72);
+  bp.frequency.exponentialRampToValueAtTime(900, now + dur);
+  const wg = envGain(c, now, 0.05, dur - 0.28, 0.22, 0.38);
+  whoosh.connect(hp);
+  hp.connect(bp);
+  bp.connect(wg);
+  wg.connect(master);
+  whoosh.start(now);
+  whoosh.stop(now + dur + 0.02);
 
   const drone = c.createOscillator();
   drone.type = "sine";
-  drone.frequency.setValueAtTime(48, now);
-  drone.frequency.linearRampToValueAtTime(86, now + durationSec);
-  const dg = c.createGain();
-  dg.gain.setValueAtTime(0.0001, now);
-  dg.gain.exponentialRampToValueAtTime(0.22, now + 0.12);
-  dg.gain.exponentialRampToValueAtTime(0.0001, now + durationSec);
+  drone.frequency.setValueAtTime(46, now);
+  drone.frequency.linearRampToValueAtTime(78, now + dur);
+  const dg = envGain(c, now, 0.1, dur - 0.32, 0.2, 0.2);
   drone.connect(dg);
   dg.connect(master);
   drone.start(now);
-  drone.stop(now + durationSec);
+  drone.stop(now + dur);
 
-  const ticks = 32;
-  for (let i = 0; i < ticks; i++) {
-    const t = now + (i / ticks) * (durationSec - 0.08);
+  const fifth = c.createOscillator();
+  fifth.type = "triangle";
+  fifth.frequency.setValueAtTime(92, now);
+  fifth.frequency.linearRampToValueAtTime(156, now + dur);
+  const fg = envGain(c, now, 0.14, dur - 0.4, 0.22, 0.07);
+  fifth.connect(fg);
+  fg.connect(master);
+  fifth.start(now);
+  fifth.stop(now + dur);
+
+  const pings = 22;
+  for (let i = 0; i < pings; i++) {
+    const t = now + 0.05 + (i / pings) * (dur - 0.18);
     const osc = c.createOscillator();
-    osc.type = "square";
-    osc.frequency.value = 1560 + i * 38;
-    const g = c.createGain();
-    const peak = 0.045 + (i / ticks) * 0.05;
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(peak, t + 0.004);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
-    osc.connect(g);
+    osc.type = "sine";
+    const base = 1240 + (i % 5) * 185 + i * 18;
+    osc.frequency.setValueAtTime(base, t);
+    osc.frequency.exponentialRampToValueAtTime(base * 1.65, t + 0.07);
+    const g = envGain(c, t, 0.004, 0.012, 0.07, 0.042 + (i / pings) * 0.05);
+    const lp = c.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.value = 4200;
+    osc.connect(lp);
+    lp.connect(g);
     g.connect(master);
     osc.start(t);
-    osc.stop(t + 0.05);
+    osc.stop(t + 0.1);
+  }
+
+  for (let i = 0; i < 6; i++) {
+    const t = now + dur * (0.12 + i * 0.14);
+    const click = c.createOscillator();
+    click.type = "square";
+    click.frequency.value = 2100 - i * 90;
+    const cg = envGain(c, t, 0.002, 0.006, 0.03, 0.028);
+    click.connect(cg);
+    cg.connect(master);
+    click.start(t);
+    click.stop(t + 0.04);
+  }
+
+  const lockT = now + dur - 0.16;
+  for (const freq of [523.25, 659.25, 783.99]) {
+    const osc = c.createOscillator();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    const g = envGain(c, lockT, 0.01, 0.05, 0.12, 0.09);
+    osc.connect(g);
+    g.connect(master);
+    osc.start(lockT);
+    osc.stop(lockT + 0.2);
   }
 
   return () => {
     try {
-      master.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.04);
+      master.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.05);
     } catch {
       /* already closed */
     }
@@ -106,73 +149,143 @@ export function playLockClick() {
   const c = unlockAudio();
   if (!c) return;
   const now = c.currentTime;
-  const osc = c.createOscillator();
-  osc.type = "triangle";
-  osc.frequency.setValueAtTime(520, now);
-  osc.frequency.exponentialRampToValueAtTime(140, now + 0.2);
-  const g = c.createGain();
-  g.gain.setValueAtTime(0.24, now);
-  g.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
-  osc.connect(g);
-  g.connect(c.destination);
-  osc.start(now);
-  osc.stop(now + 0.24);
+  const master = c.createGain();
+  master.gain.value = 0.28;
+  master.connect(c.destination);
+  for (const [freq, peak, len] of [
+    [180, 0.22, 0.18],
+    [920, 0.16, 0.09],
+    [1840, 0.08, 0.05],
+  ] as const) {
+    const osc = c.createOscillator();
+    osc.type = freq < 400 ? "sine" : "triangle";
+    osc.frequency.setValueAtTime(freq, now);
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.55, now + len);
+    const g = envGain(c, now, 0.004, 0.02, len, peak);
+    osc.connect(g);
+    g.connect(master);
+    osc.start(now);
+    osc.stop(now + len + 0.02);
+  }
 }
 
-function pickMaleVoice() {
-  const voices = speechSynthesis.getVoices();
-  const scored = voices
-    .filter((v) => /^en/i.test(v.lang))
-    .map((v) => {
-      const n = v.name.toLowerCase();
-      let score = 0;
-      if (/male|daniel|david|alex|fred|gordon|arthur|george|james|thomas|rishi|mark|roy|steve|microsoft david|google uk english male/.test(n)) score += 4;
-      if (/google/.test(n)) score += 2;
-      if (/en-gb|en_gb|en-us|en_us/.test(v.lang)) score += 1;
-      if (/female|samantha|karen|moira|tessa|zira|susan|siri|fiona|karen|victoria/.test(n)) score -= 5;
-      return { v, score };
-    })
-    .sort((a, b) => b.score - a.score);
-  return scored[0]?.v ?? voices.find((v) => /^en/i.test(v.lang)) ?? voices[0];
+const WELCOME_KEY = "tp-welcome-once";
+
+function alreadyWelcomed() {
+  try {
+    return sessionStorage.getItem(WELCOME_KEY) === "1";
+  } catch {
+    return false;
+  }
 }
 
-export function playAccessGrantedVoice(): Promise<void> {
-  if (typeof speechSynthesis === "undefined") return Promise.resolve();
-  speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance("Access granted.");
-  utter.rate = 0.72;
-  utter.pitch = 0.48;
-  utter.volume = 1;
-  utter.lang = "en-US";
-  const voice = pickMaleVoice();
-  if (voice) utter.voice = voice;
+function markWelcomed() {
+  try {
+    sessionStorage.setItem(WELCOME_KEY, "1");
+  } catch {
+    /* private mode */
+  }
+}
+
+/**
+ * One-shot alien “Welcome” — low Jarvis cadence, metallic formants, no TTS / no AI voice.
+ * Plays at most once per browser session.
+ */
+export function playWelcomeOnce(): Promise<void> {
+  if (alreadyWelcomed()) return Promise.resolve();
+  markWelcomed();
+  const c = unlockAudio();
+  if (!c) return Promise.resolve();
+  const now = c.currentTime;
+  const master = c.createGain();
+  master.gain.value = 0.42;
+  master.connect(c.destination);
+
+  // Glottal source ~ Jarvis baritone, slight downward cadence
+  const source = c.createOscillator();
+  source.type = "sawtooth";
+  source.frequency.setValueAtTime(98, now);
+  source.frequency.linearRampToValueAtTime(86, now + 1.15);
+  source.frequency.linearRampToValueAtTime(78, now + 1.55);
+
+  const buzz = c.createBiquadFilter();
+  buzz.type = "lowpass";
+  buzz.Q.value = 0.7;
+  buzz.frequency.setValueAtTime(720, now);
+  buzz.frequency.linearRampToValueAtTime(980, now + 0.35);
+  buzz.frequency.linearRampToValueAtTime(640, now + 1.55);
+
+  // Two formants walking through WEL-COME
+  const f1 = c.createBiquadFilter();
+  f1.type = "bandpass";
+  f1.Q.value = 9;
+  f1.frequency.setValueAtTime(320, now); // W/U
+  f1.frequency.linearRampToValueAtTime(530, now + 0.28); // EH
+  f1.frequency.linearRampToValueAtTime(400, now + 0.55); // L
+  f1.frequency.linearRampToValueAtTime(700, now + 0.78); // K burst
+  f1.frequency.linearRampToValueAtTime(380, now + 1.05); // UH
+  f1.frequency.linearRampToValueAtTime(280, now + 1.5); // M
+
+  const f2 = c.createBiquadFilter();
+  f2.type = "bandpass";
+  f2.Q.value = 8;
+  f2.frequency.setValueAtTime(780, now);
+  f2.frequency.linearRampToValueAtTime(1840, now + 0.28);
+  f2.frequency.linearRampToValueAtTime(1200, now + 0.55);
+  f2.frequency.linearRampToValueAtTime(2100, now + 0.78);
+  f2.frequency.linearRampToValueAtTime(860, now + 1.05);
+  f2.frequency.linearRampToValueAtTime(1100, now + 1.5);
+
+  const alien = c.createOscillator();
+  alien.type = "sine";
+  alien.frequency.value = 38;
+  const ring = c.createGain();
+  ring.gain.value = 0.18;
+
+  const dry = c.createGain();
+  dry.gain.setValueAtTime(0.0001, now);
+  dry.gain.exponentialRampToValueAtTime(0.9, now + 0.08);
+  dry.gain.setValueAtTime(0.85, now + 1.15);
+  dry.gain.exponentialRampToValueAtTime(0.0001, now + 1.65);
+
+  source.connect(buzz);
+  buzz.connect(f1);
+  buzz.connect(f2);
+  f1.connect(dry);
+  f2.connect(dry);
+  alien.connect(ring);
+  ring.connect(dry.gain);
+  dry.connect(master);
+
+  // Air / room tail
+  const air = c.createBufferSource();
+  air.buffer = noiseBuffer(c, 1.8);
+  const airF = c.createBiquadFilter();
+  airF.type = "bandpass";
+  airF.frequency.value = 1400;
+  airF.Q.value = 0.8;
+  const ag = envGain(c, now, 0.05, 1.2, 0.4, 0.06);
+  air.connect(airF);
+  airF.connect(ag);
+  ag.connect(master);
+
+  source.start(now);
+  alien.start(now);
+  air.start(now);
+  source.stop(now + 1.7);
+  alien.stop(now + 1.7);
+  air.stop(now + 1.8);
+
   return new Promise((resolve) => {
-    const done = () => resolve();
-    utter.onend = done;
-    utter.onerror = done;
-    speechSynthesis.speak(utter);
-    window.setTimeout(done, 2600);
+    window.setTimeout(resolve, 1750);
   });
 }
 
+/** @deprecated kept so older scan hooks compile; routes to the one-shot welcome. */
+export function playAccessGrantedVoice(): Promise<void> {
+  return playWelcomeOnce();
+}
 
 export function preloadScanAudio() {
-  if (typeof window === "undefined") return;
-  try {
-    const a = new Audio("/audio/scan.mp3");
-    a.preload = "auto";
-    a.load();
-  } catch {
-    /* ignore */
-  }
-  try {
-    const b = new Audio("/audio/access-granted.mp3");
-    b.preload = "auto";
-    b.load();
-  } catch {
-    /* ignore */
-  }
-  if (typeof speechSynthesis !== "undefined") {
-    speechSynthesis.getVoices();
-  }
+  unlockAudio();
 }

@@ -5,9 +5,9 @@ import { GlassButton } from "@/components/glass-button";
 import { GROK_PROVIDERS, signIn } from "@/lib/auth/client";
 import { DEFAULT_DESK_HREF, useDesk } from "@/lib/store";
 import {
-  playAccessGrantedVoice,
   playLockClick,
   playScanSound,
+  playWelcomeOnce,
   preloadScanAudio,
   unlockAudio,
 } from "@/lib/scan-audio";
@@ -110,7 +110,7 @@ export function HandScan() {
     playLockClick();
     if (!voiced.current) {
       voiced.current = true;
-      void playAccessGrantedVoice();
+      void playWelcomeOnce();
     }
     window.setTimeout(() => setPhase("auth"), 700);
   };

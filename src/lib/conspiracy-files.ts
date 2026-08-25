@@ -2,6 +2,26 @@ import type { DeskFile } from "@/lib/desk-file";
 
 export const CONSPIRACY_FILES: DeskFile[] = [
   {
+    id: "pursue-war-gov",
+    title: "WAR.GOV / PURSUE",
+    kicker: "2026",
+    subtitle: "U.S. Department of War · official UAP file releases",
+    lede: "The live official dump: rolling tranches of declassified UAP records on war.gov/ufo, run with ODNI and AARO.",
+    summary:
+      "In 2026 the Department of War began posting declassified Unidentified Anomalous Phenomena files under PURSUE — the Presidential Unsealing and Reporting System for UAP Encounters. The first tranche went up on 8 May 2026; a fifth followed on 7 August 2026. The collection sits on WAR.GOV/UFO. Partner agencies named in the releases include ODNI, DOE, AARO, NASA, the FBI and other intelligence components. The public set includes historical sighting reports, FBI renderings from witness accounts, and contemporary sensor cases. AARO.mil remains the analytic office; war.gov/ufo is the reading room.",
+    body: "PURSUE is a rolling declassification, not a single dump. DoD/DoW statements say tens of millions of pages across agencies are in scope, many still paper-only. What is already public: mid-century special-weapons-program sighting compilations, Navy and combatant-command videos AARO had already posted, and newer unresolved reports (including Europe and the Middle East in later tranches). The site does not, in the open material, confirm a crash-retrieval program. It does put original government PDFs and imagery in one place without a clearance. Treat each document as a primary, not as a conclusion.",
+    evidence:
+      "Confirmed: DoW press releases for tranches 1–5 (May–August 2026), the live index at war.gov/ufo, and AARO’s official imagery page. Not shown in the open set: an authenticated recovered craft or a named unacknowledged SAP. Further tranches are promised on a weeks-long cadence.",
+    sources: [
+      "Department of War PURSUE collection https://www.war.gov/ufo/",
+      "DoW press release, 8 May 2026 — first PURSUE tranche https://www.war.gov/News/Releases/Release/Article/4480582/department-of-war-releases-unidentified-anomalous-phenomena-files-in-historic-t/",
+      "DoW press release, 7 Aug 2026 — fifth release https://www.war.gov/News/Releases/Release/Article/4565994/department-of-war-publishes-fifth-release-of-unidentified-anomalous-phenomena-f/",
+      "AARO official UAP imagery https://www.aaro.mil/uap-cases/official-uap-imagery/",
+      "AARO home https://www.aaro.mil/",
+      "NARA UAP Records Collection (RG 615) https://www.archives.gov/research/topics/uaps",
+    ],
+  },
+  {
     id: "majestic-12",
     title: "Majestic 12",
     kicker: "1947–1984",
@@ -67,6 +87,8 @@ export const CONSPIRACY_FILES: DeskFile[] = [
       "Pentagon statements on AATIP, 2017–2020",
       "DIA list of Defense Intelligence Reference Documents (DIRDs)",
       "Senate Armed Services and Intelligence committee UAP language, FY2021–24 NDAA",
+      "WAR.GOV / UFO (PURSUE releases) https://www.war.gov/ufo/",
+      "AARO https://www.aaro.mil/",
     ],
   },
   {

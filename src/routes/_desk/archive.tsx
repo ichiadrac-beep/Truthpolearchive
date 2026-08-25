@@ -31,6 +31,6 @@ function archiveToDesk(file: ArchiveCase): DeskFile {
     summary: file.summary,
     body: "",
     evidence: "",
-    sources: [],
+    sources: file.sources ?? [],
   };
 }
