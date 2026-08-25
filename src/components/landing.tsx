@@ -1,9 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { AlienLogo } from "@/components/alien-logo";
 import { GlassButton } from "@/components/glass-button";
 import { LANDING_TAB_ROWS } from "@/lib/tabs";
 import { useDesk } from "@/lib/store";
+import { APP_VERSION_LABEL } from "@/lib/version";
 
 
 function LandingCosmos() {
@@ -37,9 +38,6 @@ function LandingCosmos() {
           <circle key={i} cx={x} cy={y} r={i===2?2:1.4} fill="currentColor" />
         ))}
       </svg>
-      <span className="shoot-star absolute left-0 top-[16%] h-px w-48" style={{ animationDelay: "0s", animationDuration: "6s" }} />
-      <span className="shoot-star absolute left-[6%] top-[38%] h-px w-36" style={{ animationDelay: "2.2s", animationDuration: "7.5s" }} />
-      <span className="shoot-star absolute left-[-6%] top-[60%] h-px w-44" style={{ animationDelay: "4.5s", animationDuration: "6.8s" }} />
       <svg viewBox="0 0 16 16" width="22" height="22" className="glyph-float absolute text-fg" style={{ top: "22%", left: "82%", ["--glyph-rot" as string]: "12deg", opacity: 0.5 }}>
         <path d="M8 0 L10 6 L16 8 L10 10 L8 16 L6 10 L0 8 L6 6 Z" fill="none" stroke="currentColor" strokeWidth="1.2" />
       </svg>
@@ -57,10 +55,15 @@ export function Landing() {
   const exitHome = useDesk((s) => s.exitHome);
   const clearExitHome = useDesk((s) => s.clearExitHome);
   const armArchiveSweep = useDesk((s) => s.armArchiveSweep);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     if (exitHome) clearExitHome();
   }, [exitHome, clearExitHome]);
+
+  useEffect(() => {
+    setReady(true);
+  }, []);
 
   return (
     <main className="landing relative z-10 flex min-h-dvh flex-col bg-transparent">
@@ -85,20 +88,24 @@ export function Landing() {
             A black record of what the sky keeps returning.
           </p>
 
-          <div className="relative z-20 mt-9 flex w-full max-w-sm flex-col gap-3">
-            <GlassButton asChild variant="primary" className="landing-sheen h-12 rounded-full">
+          <div className="landing-cta relative z-20 mt-9 w-full max-w-sm">
+            <GlassButton asChild variant="primary" className="h-12 w-full rounded-full">
               <Link to="/archive" onClick={() => armArchiveSweep()}>
                 Enter the archive
               </Link>
             </GlassButton>
-            <GlassButton asChild variant="ghost" className="landing-sheen h-[3.35rem] flex-col rounded-full">
-              <Link to="/archive" aria-label="Tonight’s file: Cussac">
-                <span className="font-display text-[10px] font-medium tracking-[0.38em] text-fg/55">
-                  TONIGHT’S FILE
-                </span>
-                <span className="font-serif text-[15px] font-normal text-fg">Cussac</span>
-              </Link>
-            </GlassButton>
+            {ready ? (
+              <GlassButton asChild variant="ghost" className="h-[3.35rem] w-full flex-col rounded-full">
+                <Link to="/archive" aria-label="Tonight’s file: Cussac">
+                  <span className="whitespace-nowrap font-display text-[10px] font-medium tracking-[0.28em] text-fg/55">
+                    TONIGHT’S FILE
+                  </span>
+                  <span className="font-serif text-[15px] font-normal text-fg">Cussac</span>
+                </Link>
+              </GlassButton>
+            ) : (
+              <div className="h-[3.35rem] w-full" aria-hidden="true" />
+            )}
           </div>
 
           <div className="relative z-20 mt-8 flex w-full flex-col items-center gap-2.5">
@@ -115,7 +122,7 @@ export function Landing() {
         </div>
 
         <p className="pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 text-center font-display text-[11px] tracking-[0.28em] text-fg/40">
-          1900 — now
+          1900 — now · {APP_VERSION_LABEL}
         </p>
       </div>
     </main>

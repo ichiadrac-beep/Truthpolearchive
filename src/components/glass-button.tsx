@@ -11,9 +11,9 @@ type GlassButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variants: Record<Variant, string> = {
   primary:
-    "glass-strong h-12 w-full rounded-2xl px-5 font-display text-sm font-semibold tracking-wide text-fg",
+    "glass-strong h-12 w-full rounded-full px-5 font-display text-sm font-semibold tracking-wide text-fg",
   ghost:
-    "glass h-12 w-full rounded-2xl px-5 font-display text-sm font-semibold tracking-wide text-fg",
+    "glass h-12 w-full rounded-full px-5 font-display text-sm font-semibold tracking-wide text-fg",
   chip: "glass-chip h-11 shrink-0 rounded-full px-4 font-display text-xs font-semibold tracking-wide text-fg",
   icon: "glass grid size-11 place-items-center rounded-full text-fg",
 };

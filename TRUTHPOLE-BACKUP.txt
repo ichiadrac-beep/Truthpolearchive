@@ -1,10 +1,10 @@
-TRUTHPOLE restore snapshot — 2026-08-25
-Repo: https://github.com/ichiadrac-beep/Truthpolearchive
-Tag: restore-2026-08-25-pole-x-live
-Branch: backup/2026-08-25-pole-x-live
+TRUTHPOLE — The Archive
+Automated backup created 20260825-110428 UTC
+
+Contents: src, public, server, scripts, migrations, package.json, configs
+Excludes: node_modules, dist, .output, .nitro, .vercel, logs
 
 Restore:
-  git clone https://github.com/ichiadrac-beep/Truthpolearchive.git
-  cd Truthpolearchive
-  git checkout restore-2026-08-25-pole-x-live
-  npm install && npm run dev
+  unzip -o TRUTHPOLE-backup-20260825-110428.zip -d /path/to/project
+  npm install
+  npm run dev   # or: sh startup.sh

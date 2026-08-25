@@ -47,7 +47,7 @@ export const MORE_LINKS = [
   {
     href: "/articles",
     label: "Articles",
-    blurb: "Long-form desk notes",
+    blurb: "Ufology wire · 5 min",
     icon: "file" as const,
   },
 ] as const;

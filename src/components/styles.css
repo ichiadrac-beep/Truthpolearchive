@@ -317,10 +317,10 @@
 }
 
 .shoot-star {
-  background: linear-gradient(90deg, transparent, rgba(243, 243, 241, 0.98), transparent);
-  box-shadow: 0 0 12px rgba(180, 210, 255, 0.7);
-  animation: shoot-star 6s linear infinite;
-  opacity: 1;
+  background: linear-gradient(90deg, transparent, rgba(243, 243, 241, 0.55), transparent);
+  box-shadow: 0 0 8px rgba(180, 210, 255, 0.25);
+  animation: shoot-star 6s linear infinite both;
+  opacity: 0;
 }
 
 .cosmos-wash {

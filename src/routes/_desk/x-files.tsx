@@ -75,7 +75,7 @@ function XFilesPage() {
         Live X feed
       </h1>
       <p className="max-w-prose text-sm leading-normal text-muted">
-        Live posts from UAP accounts on X. Tap Submit an encounter to file a
+        Live posts from UAP accounts on X, including @Truthpole. Tap Submit an encounter to file a
         report. Fetch latest reloads the feed.
       </p>
 

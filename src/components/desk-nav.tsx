@@ -42,7 +42,7 @@ export function DeskNav({ activeHref, moreOpen, onSelect, onMore }: DeskNavProps
             <span
               className={cn(
                 "grid size-9 place-items-center rounded-full",
-                active && "bg-fg/12 shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-fg)_18%,transparent)]",
+                active && "glass",
               )}
             >
               <Icon className={cn("size-[18px]", active ? "text-fg" : "text-fg/45")} strokeWidth={1.6} />
@@ -63,7 +63,7 @@ export function DeskNav({ activeHref, moreOpen, onSelect, onMore }: DeskNavProps
         <span
           className={cn(
             "grid size-9 place-items-center rounded-full",
-            moreActive && "bg-fg/12 shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-fg)_18%,transparent)]",
+            moreActive && "glass",
           )}
         >
           <MoreHorizontal

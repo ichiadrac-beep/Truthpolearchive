@@ -155,10 +155,10 @@ export function PoleDesk() {
             <article
               key={msg.id}
               dir="ltr"
-              className={`max-w-[82%] px-3.5 py-2.5 ${
+              className={`pole-bubble max-w-[82%] px-3.5 py-2.5 ${
                 msg.mine
-                  ? "ml-auto rounded-[1.15rem] rounded-br-md bg-fg/12"
-                  : "mr-auto rounded-[1.15rem] rounded-bl-md bg-fg/[0.06]"
+                  ? "glass-strong ml-auto rounded-[1.35rem] rounded-br-md"
+                  : "glass mr-auto rounded-[1.35rem] rounded-bl-md"
               }`}
             >
               <p className="font-display text-[10px] tracking-[0.16em] text-fg/40">
@@ -221,7 +221,7 @@ export function PoleDesk() {
           <GlassButton
             type="submit"
             variant="icon"
-            className="size-11 shrink-0"
+            className="glass-strong size-12 shrink-0"
             disabled={busy || !draft.trim()}
             aria-label="Send"
           >

@@ -24,6 +24,7 @@ export type CredibilityBreakdown = {
 
 /** Prominent UAP / disclosure accounts */
 export const X_FEED_ACCOUNTS = [
+  "Truthpole",
   "rosscoulthart",
   "JeremyCorbell",
   "g_knapp",
@@ -60,6 +61,7 @@ export const X_FEED_REFRESH_MS = 5 * 60 * 1000;
 
 /** Source trust for evidence leg of the credibility meter */
 const SOURCE_TRUST: Record<string, number> = {
+  Truthpole: 80,
   RepLuna: 88,
   EricBurlison: 86,
   RepTimBurchett: 84,
@@ -130,6 +132,45 @@ export function credibilityOf(post: XFeedPost): CredibilityBreakdown {
 /** Seed snapshot — live posts as of 2026-08-25. */
 export const X_FEED_SEED: XFeedPost[] = [
   {
+    id: "2091853781235384643",
+    handle: "Truthpole",
+    name: "T R U T H P O L E",
+    text: "BREAKING — Jack Osbourne claims a close friend who speaks with President Trump weekly relayed that Trump told his inner circle extraterrestrials are living in Earth’s oceans. According to Osbourne, Trump said: “We have no idea what they are, but they’re in the ocean.” Not confirmed by the White House. Surfaces amid Pentagon UAP file releases.",
+    when: "24 Aug 2026",
+    url: "https://x.com/Truthpole/status/2091853781235384643",
+    likes: 1745,
+    reposts: 176,
+    replies: 124,
+    views: 163512,
+    hasMedia: true,
+  },
+  {
+    id: "2091851852560154625",
+    handle: "Truthpole",
+    name: "T R U T H P O L E",
+    text: "So they — people in government — are telling you there are alien and human hybridization programs on Earth, so nonchalantly, and all you’ve got is a poker face?",
+    when: "24 Aug 2026",
+    url: "https://x.com/Truthpole/status/2091851852560154625",
+    likes: 49,
+    reposts: 4,
+    replies: 10,
+    views: 5002,
+    hasMedia: true,
+  },
+  {
+    id: "2091756450817155082",
+    handle: "Truthpole",
+    name: "T R U T H P O L E",
+    text: "It’s 2026 and there are no Aliens?",
+    when: "24 Aug 2026",
+    url: "https://x.com/Truthpole/status/2091756450817155082",
+    likes: 112,
+    reposts: 10,
+    replies: 9,
+    views: 5221,
+    hasMedia: true,
+  },
+  {
     id: "2091913422288060615",
     handle: "ProfAviLoeb",
     name: "Professor Avi Loeb",
@@ -166,6 +207,19 @@ export const X_FEED_SEED: XFeedPost[] = [
     reposts: 20,
     replies: 6,
     views: 15248,
+  },
+  {
+    id: "2091107842161823828",
+    handle: "Truthpole",
+    name: "T R U T H P O L E",
+    text: "On 28 December 1988, witnesses near Sierra Bermeja, Puerto Rico, reported a massive triangular craft. Multiple accounts describe military jets approaching; two of the aircraft were allegedly never seen again. The large craft later reportedly split and departed at high speed. No independent confirmation of missing U.S. aircraft has been released.",
+    when: "22 Aug 2026",
+    url: "https://x.com/Truthpole/status/2091107842161823828",
+    likes: 51,
+    reposts: 7,
+    replies: 1,
+    views: 5924,
+    hasMedia: true,
   },
   {
     id: "2091020123805037003",
@@ -279,9 +333,22 @@ export const X_FEED_SEED: XFeedPost[] = [
     views: 25367,
     hasMedia: true,
   },
+  {
+    id: "2088846958672630047",
+    handle: "Truthpole",
+    name: "T R U T H P O L E",
+    text: "Matthew Brown, author of the original Immaculate Constellation report, is asking President Trump for formal immunity so he can reveal more. The program is described as an unacknowledged special access effort that uses AI to extract UAP imagery from classified systems. Fox is now amplifying the request for a presidential waiver.",
+    when: "16 Aug 2026",
+    url: "https://x.com/Truthpole/status/2088846958672630047",
+    likes: 211,
+    reposts: 33,
+    replies: 5,
+    views: 8837,
+    hasMedia: true,
+  },
 ];
 
-const CACHE_KEY = "truthpole-x-feed-v2";
+const CACHE_KEY = "truthpole-x-feed-v3";
 
 export function loadCachedFeed(): XFeedPost[] {
   if (typeof window === "undefined") return X_FEED_SEED;

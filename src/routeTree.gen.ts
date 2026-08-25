@@ -20,6 +20,8 @@ import { Route as DeskConspiracyRouteImport } from './routes/_desk/conspiracy'
 import { Route as DeskSupportRouteImport } from './routes/_desk/support'
 import { Route as DeskThePoleRouteImport } from './routes/_desk/the-pole'
 import { Route as DeskXFilesRouteImport } from './routes/_desk/x-files'
+import { Route as ApiArticlesRouteImport } from './routes/api/articles'
+import { Route as ApiXFeedRouteImport } from './routes/api/x-feed'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -76,6 +78,16 @@ const DeskXFilesRoute = DeskXFilesRouteImport.update({
   path: '/x-files',
   getParentRoute: () => DeskRoute,
 } as any)
+const ApiArticlesRoute = ApiArticlesRouteImport.update({
+  id: '/api/articles',
+  path: '/api/articles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiXFeedRoute = ApiXFeedRouteImport.update({
+  id: '/api/x-feed',
+  path: '/api/x-feed',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -93,6 +105,8 @@ export interface FileRoutesByFullPath {
   '/support': typeof DeskSupportRoute
   '/the-pole': typeof DeskThePoleRoute
   '/x-files': typeof DeskXFilesRoute
+  '/api/articles': typeof ApiArticlesRoute
+  '/api/x-feed': typeof ApiXFeedRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
@@ -106,6 +120,8 @@ export interface FileRoutesByTo {
   '/support': typeof DeskSupportRoute
   '/the-pole': typeof DeskThePoleRoute
   '/x-files': typeof DeskXFilesRoute
+  '/api/articles': typeof ApiArticlesRoute
+  '/api/x-feed': typeof ApiXFeedRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
@@ -121,6 +137,8 @@ export interface FileRoutesById {
   '/_desk/support': typeof DeskSupportRoute
   '/_desk/the-pole': typeof DeskThePoleRoute
   '/_desk/x-files': typeof DeskXFilesRoute
+  '/api/articles': typeof ApiArticlesRoute
+  '/api/x-feed': typeof ApiXFeedRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
@@ -136,6 +154,8 @@ export interface FileRouteTypes {
     | '/support'
     | '/the-pole'
     | '/x-files'
+    | '/api/articles'
+    | '/api/x-feed'
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -149,6 +169,8 @@ export interface FileRouteTypes {
     | '/support'
     | '/the-pole'
     | '/x-files'
+    | '/api/articles'
+    | '/api/x-feed'
     | '/api/auth/$'
   id:
     | '__root__'
@@ -163,6 +185,8 @@ export interface FileRouteTypes {
     | '/_desk/support'
     | '/_desk/the-pole'
     | '/_desk/x-files'
+    | '/api/articles'
+    | '/api/x-feed'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
@@ -171,6 +195,8 @@ export interface RootRouteChildren {
   DeskRoute: typeof DeskRouteWithChildren
   LoginRoute: typeof LoginRoute
   ScanRoute: typeof ScanRoute
+  ApiArticlesRoute: typeof ApiArticlesRoute
+  ApiXFeedRoute: typeof ApiXFeedRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -253,6 +279,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DeskXFilesRouteImport
       parentRoute: typeof DeskRoute
     }
+    '/api/articles': {
+      id: '/api/articles'
+      path: '/api/articles'
+      fullPath: '/api/articles'
+      preLoaderRoute: typeof ApiArticlesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/x-feed': {
+      id: '/api/x-feed'
+      path: '/api/x-feed'
+      fullPath: '/api/x-feed'
+      preLoaderRoute: typeof ApiXFeedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -290,6 +330,8 @@ const rootRouteChildren: RootRouteChildren = {
   DeskRoute: DeskRouteWithChildren,
   LoginRoute: LoginRoute,
   ScanRoute: ScanRoute,
+  ApiArticlesRoute: ApiArticlesRoute,
+  ApiXFeedRoute: ApiXFeedRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

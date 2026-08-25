@@ -40,7 +40,7 @@ export const Route = createRootRoute({
     styles: [
       {
         children:
-          "html,body{background:#050506;color:#f3f3f1;min-height:100dvh;margin:0;}",
+          "html,body{background:#050506;color:#f3f3f1;min-height:100dvh;margin:0;}.shoot-star{opacity:0;}.landing-cta{display:flex;flex-direction:column;width:100%;gap:0.75rem}.landing-cta a{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;max-width:100%;box-sizing:border-box}",
       },
     ],
   }),
