@@ -1,0 +1,240 @@
+import type { DeskFile } from "@/lib/desk-file";
+
+export const CONSPIRACY_FILES: DeskFile[] = [
+  {
+    id: "majestic-12",
+    title: "Majestic 12",
+    kicker: "1947–1984",
+    subtitle: "United States · alleged crash-retrieval committee",
+    lede: "A supposed presidential group tasked with recovered craft after Roswell. The paper trail is real; its authenticity is not settled.",
+    summary:
+      "Majestic 12, or MJ-12, is the name on a set of documents that surfaced in 1984, describing a secret twelve-man committee created by President Truman in 1947 to manage recovered extraterrestrial craft and bodies. Named members include Vannevar Bush, James Forrestal, and Roscoe Hillenkoetter. The FBI examined copies in 1988 and marked them bogus. UFO researchers remain split between a sophisticated hoax and a leak of genuine, or partly genuine, special-access material.",
+    body: "The first packet arrived as undeveloped 35 mm film in a manila envelope posted to Jaime Shandera. A later ‘Cutler–Twining’ memo was found in the National Archives, which the Archives has said does not match its filing practices. No original signed Truman MJ-12 order has been produced from a government vault. The hypothesis that the papers were counter-intelligence bait, aimed at people already hunting crash secrets, is taken seriously even by some who think a real retrieval program existed under other cover names.",
+    evidence:
+      "Physical items: photocopied briefing documents, the Cutler–Twining memo, and FBI correspondence calling the set fraudulent. There is no authenticated original, no matching 1947 White House file, and no living principal who confirmed the group under that name. Circumstantial support is limited to the plausibility of a crash-study committee in 1947 and later testimony about unacknowledged special-access programs.",
+    sources: [
+      "FBI Vault, Majestic 12 file (1988 assessment)",
+      "U.S. National Archives statement on the Cutler–Twining memo",
+      "Stanton T. Friedman, Top Secret/Majic (1996)",
+    ],
+  },
+  {
+    id: "area-51",
+    title: "Area 51",
+    kicker: "1955–",
+    subtitle: "Groom Lake, Nevada · U.S. Air Force / CIA",
+    lede: "A real classified flight-test site. The saucer stories grew around aircraft that were, for years, not allowed to exist.",
+    summary:
+      "Area 51 is a military installation at Groom Lake, established in 1955 for the CIA’s U-2 program and later used for the A-12, D-21, Have Blue, and F-117. The U.S. government did not officially acknowledge the base until a 2013 CIA history. Civilian reports of lights and triangular craft along the ‘Extraterrestrial Highway’ overlap with known test schedules, which is why the site became the American saucer capital whether or not any recovered vehicle was ever stored there.",
+    body: "Declassified CIA and Air Force histories describe a secure dry-lake runway, radar tracking, and a culture of extreme compartmentation. Bob Lazar’s 1989 S-4 claim placed nine flying discs in a hillside facility south of the main Groom complex; the Air Force has never confirmed S-4. What is documented is that classified aircraft, flown at night, produced many of the lights that fed the 1950s–90s UFO wave in Lincoln County. The remaining question is whether the same security system also hid non-terrestrial hardware.",
+    evidence:
+      "Confirmed: CIA U-2 history (2013), USGS maps, satellite imagery, and worker accounts of the U-2/A-12/F-117 lineage. Unconfirmed: hangars of recovered craft, Element 115 reactors, and an S-4 annex. Freedom of Information releases discuss security and environmental hazards, not aliens.",
+    sources: [
+      "CIA, The Central Intelligence Agency and Overhead Reconnaissance (U-2 / Area 51 history, released 2013)",
+      "Annie Jacobsen, Area 51 (2011) — contested on biological-warfare claims",
+      "USGS and Federation of American Scientists site records",
+    ],
+  },
+  {
+    id: "s4-lazar",
+    title: "S-4 / Bob Lazar",
+    kicker: "1989",
+    subtitle: "Papoose Lake, Nevada · claimed disc workshop",
+    lede: "Lazar said he reverse-engineered a reactor on a sport-model saucer. His paper trail is thin; the story has not gone away.",
+    summary:
+      "In 1989 Bob Lazar told investigative reporter George Knapp that he had worked at a site he called S-4, south of Area 51, on a disc powered by element 115. He described a gravity amplifier, briefings that placed humans as a genetic experiment, and nine craft of different designs. Los Alamos and the Navy have not produced employment records that match his account. Element 115 (moscovium) was synthesized in 2003; it is a fleeting laboratory isotope, not a stable fuel.",
+    body: "Supporters point to Knapp’s interviews, a 1980s security-badge photograph, and later comments by people who say they saw unusual craft in the Groom/Papoose area. Skeptics note missing degrees from MIT and Caltech, a shifting job history, and the physics problem of a stable 115 isotope. The file matters because it is the template for every later ‘sports model’ and unacknowledged-program story that reached Congress in the 2020s.",
+    evidence:
+      "On record: televised interviews (KLAS, 1989), Knapp’s notes, and Lazar’s later legal cases unrelated to S-4. Not on record: an S-4 payroll, a reactor, or a craft. Moscovium’s existence does not confirm Lazar’s fuel cycle.",
+    sources: [
+      "KLAS-TV interviews, George Knapp, 1989",
+      "IUPAC: discovery of element 115 (moscovium), 2003–2015",
+      "Los Alamos statements on Lazar employment claims",
+    ],
+  },
+  {
+    id: "aatip",
+    title: "AATIP",
+    kicker: "2007–2012",
+    subtitle: "Pentagon · Advanced Aerospace Threat Identification Program",
+    lede: "A small, classified study of unidentified aerial threats, later the official hook for the 2017 videos.",
+    summary:
+      "AATIP was a Pentagon effort, publicly described in 2017, that reviewed military UAP encounters and contracted for advanced-aerospace studies. Luis Elizondo has said he ran the program from the Office of the Under Secretary of Defense for Intelligence. The Pentagon has confirmed a program existed and later released the FLIR1, Gimbal, and GoFast videos, while disputing parts of Elizondo’s job description. Funding is widely linked to then-Senate Majority Leader Harry Reid and to Robert Bigelow’s BAASS.",
+    body: "AATIP sits next to AAWSAP, a Defense Intelligence Agency contract that also covered Skinwalker Ranch and a 38-paper ‘DIRD’ theoretical series (warp drives, extra dimensions, metamaterials). Officials have used the names loosely. What is not in dispute is that after 2017 the Navy issued new UAP reporting guidance, the UAP Task Force was stood up, and Congress wrote UAP language into the annual defense bills. AATIP is the bureaucratic bridge between the Cold War study programs and the current hearings.",
+    evidence:
+      "Confirmed: Pentagon acknowledgment of AATIP, the three Navy videos, DIA DIRD list, and subsequent UAP Task Force / AARO reporting. Disputed: Elizondo’s exact authorities, the size of the budget, and whether any report concluded ‘non-human’ technology.",
+    sources: [
+      "Pentagon statements on AATIP, 2017–2020",
+      "DIA list of Defense Intelligence Reference Documents (DIRDs)",
+      "Senate Armed Services and Intelligence committee UAP language, FY2021–24 NDAA",
+    ],
+  },
+  {
+    id: "aawsap",
+    title: "AAWSAP / Skinwalker",
+    kicker: "2008–2010",
+    subtitle: "DIA contract · Bigelow Aerospace / Utah ranch",
+    lede: "A $22 million DIA study that mixed nuts-and-bolts UAP with a ranch famous for poltergeist-grade reports.",
+    summary:
+      "The Advanced Aerospace Weapon System Applications Program was a Defense Intelligence Agency contract awarded to Bigelow Aerospace Advanced Space Studies. It collected military and civilian UAP reports, ran field investigations, and produced the DIRD papers. A large share of the public story is the Skinwalker Ranch in Utah, which Bigelow owned, where investigators logged lights, cattle mutilation claims, and ‘hitchhiker’ after-effects. The Pentagon has been clearer about the contract than about the ranch phenomena.",
+    body: "Program managers including James Lacatski and George Knapp later described AAWSAP as broader than AATIP: not only unidentified aircraft but also biological and psychic-edge reports that standard intelligence channels would not file. Critics treat the ranch material as folklore attached to a real aerospace-threat study. The file is the reason later whistleblowers can say the U.S. already paid for a UAP program that looked at more than radar tracks.",
+    evidence:
+      "Contract and budget figures have been reported from DIA and congressional briefings. The DIRD list is public. Ranch logs remain largely in private and BAASS hands. No DIA paper released so far states that a craft was recovered at the ranch.",
+    sources: [
+      "DIA AAWSAP contract reporting; Harry Reid statements",
+      "Lacatski, Kelleher & Knapp, Skinwalkers at the Pentagon (2021)",
+      "DIRD bibliography released via FOIA",
+    ],
+  },
+  {
+    id: "grusch",
+    title: "David Grusch",
+    kicker: "2023",
+    subtitle: "UAP disclosure · crash-retrieval testimony",
+    lede: "A former intelligence officer told Congress the U.S. is hiding non-human craft. He said he had not seen them himself.",
+    summary:
+      "David Grusch, a former NGA and NRO officer who sat on the UAP Task Force, filed a whistleblower complaint and testified to the House Oversight Committee on 26 July 2023. He alleged a multi-decade crash-retrieval and reverse-engineering program, including non-human biologics, hidden from congressional oversight. He stated his knowledge was from interviews with officials who claimed first-hand access, not from personally inspecting a craft. The All-domain Anomaly Resolution Office has said it found no verifiable evidence of such a program.",
+    body: "Grusch’s lawyers described reprisals and a classified annex. Several current and former officials have privately corroborated that people inside the system believe a retrieval program exists; fewer have put their names on a craft. The hearing also heard first-hand Navy pilots Ryan Graves and David Fravor, whose accounts concern objects in the air, not wreckage. The file is now a live oversight fight: subpoena power versus classification.",
+    evidence:
+      "On the record: sworn hearing testimony, ICIG whistleblower process, and AARO’s public denials. Not produced in public: a craft, a biologics lab, or an unredacted program name that a committee has confirmed. Classified sessions have been held; their minutes are not public.",
+    sources: [
+      "U.S. House Oversight Committee hearing, 26 July 2023",
+      "AARO public statements, 2023–2024",
+      "News reporting on Grusch’s ICIG complaint (Debrief, 5 June 2023)",
+    ],
+  },
+  {
+    id: "blue-book",
+    title: "Project Blue Book",
+    kicker: "1952–1969",
+    subtitle: "U.S. Air Force · official UFO study",
+    lede: "The Air Force closed 12,618 cases and left 701 unexplained. The public report said there was no threat and no aliens.",
+    summary:
+      "Project Blue Book was the Air Force’s third and longest UFO investigation, after Sign and Grudge. It collected reports, sent some for analysis at Wright-Patterson, and fed press statements. The 1969 Condon Report from the University of Colorado gave the Air Force cover to shut the project down. Of 12,618 cases, 701 were carried as unidentified. Blue Book’s public conclusion was that UFOs were not a national-security threat and not evidence of extraterrestrial vehicles.",
+    body: "Internal memos, later released, show more anxiety than the press releases: the 1952 Washington flap, the 1964 Socorro landing, and Hynek’s shift from skeptic to critic of the project’s methods. When Blue Book ended, official channels for a military witness essentially closed until the post-2017 UAP process. Many researchers treat the 701 unknowns, not the headline conclusion, as the live file.",
+    evidence:
+      "The case files, status cards, and the Condon Report are in the National Archives. Hynek’s published criticism and the original 1952 CIA/Air Force traffic are also public. There is no Blue Book document that states a recovered craft was in Air Force custody.",
+    sources: [
+      "U.S. National Archives, Project Blue Book records",
+      "University of Colorado, Scientific Study of Unidentified Flying Objects (Condon Report, 1969)",
+      "J. Allen Hynek, The UFO Experience (1972)",
+    ],
+  },
+  {
+    id: "robertson-panel",
+    title: "Robertson Panel",
+    kicker: "1953",
+    subtitle: "CIA-sponsored · public-relations doctrine",
+    lede: "A short CIA panel told the government to debunk UFOs and watch civilian clubs. It set the tone for decades.",
+    summary:
+      "After the 1952 Washington radar-visual wave, the CIA convened a scientific panel chaired by H. P. Robertson of Caltech. In four days it reviewed selected cases and recommended that the national-security agencies strip UFOs of their ‘aura of mystery,’ use mass media to reduce public interest, and monitor civilian saucer groups. The report was classified; a sanitized version leaked years later. Critics read it as a decision to manage belief rather than to investigate tracks.",
+    body: "The panel did not claim every case was solved. It argued that genuine or not, the reports clogged military channels and could be used by an enemy to clog them further. That logic—treat the subject as a psychological and communications problem—governed Air Force press handling through Blue Book. It is the documentary origin of the charge that ‘debunking’ was policy.",
+    evidence:
+      "The Robertson Panel report is declassified and published. Membership, dates, and recommendations are not in dispute. What remains argued is whether the panel also buried stronger cases than those it reviewed in four days.",
+    sources: [
+      "CIA, Report of the Scientific Advisory Panel on Unidentified Flying Objects (Robertson Panel, 1953)",
+      "Gerald K. Haines, CIA’s Role in the Study of UFOs, 1947–90 (Studies in Intelligence)",
+    ],
+  },
+  {
+    id: "wilson-davis",
+    title: "Wilson–Davis notes",
+    kicker: "2002 / 2019",
+    subtitle: "Alleged crash-retrieval briefing · Admiral Wilson",
+    lede: "A leaked memo claims the Joint Staff’s intelligence director was denied access to a private UFO program.",
+    summary:
+      "Notes attributed to physicist Eric W. Davis describe a 2002 meeting with Vice Adm. Thomas Wilson. Wilson, then recently retired as Director of the Joint Staff (J-2/J-8 in various tellings), is said to have been blocked from a special-access program run through a defense contractor that held recovered extraterrestrial technology. The notes leaked in 2019. Wilson has denied the conversation as described. Davis has not published a signed original.",
+    body: "The document became central to the 2020s crash-retrieval narrative because it names a mechanism: a contractor-held SAP that even a three-star could not penetrate, with a gatekeeping committee of program managers. That is the same architecture later sketched by Grusch. Without Wilson’s confirmation or a contractor admission, the notes remain an unverified primary-source claim with unusually specific bureaucratic color.",
+    evidence:
+      "Circulating scans of the ‘Wilson leak’ notes; denials from Wilson in later interviews; second-hand confirmation from people who say Davis described the meeting. No official investigation has authenticated the pages.",
+    sources: [
+      "Wilson–Davis notes as circulated, 2019",
+      "Adm. Thomas Wilson public denials (media interviews, 2020–21)",
+      "Subsequent citations in congressional UAP briefings (unverified)",
+    ],
+  },
+  {
+    id: "bennewitz",
+    title: "Paul Bennewitz",
+    kicker: "1979–1988",
+    subtitle: "Albuquerque · AFOSI and the disinformation file",
+    lede: "A physicist filmed lights over Kirtland AFB. Counter-intelligence fed him Dulce stories until he broke.",
+    summary:
+      "Paul Bennewitz, an Albuquerque businessman and physicist, recorded unexplained lights and electromagnetic anomalies near Kirtland Air Force Base and the Manzano nuclear storage area. Air Force Office of Special Investigations officer Richard Doty, and others, supplied him with fabricated or heavily distorted material about alien bases, cattle mutilations, and a treaty with non-human beings. Bennewitz’s health collapsed. The case is the clearest documented example of UFO disinformation run against a U.S. civilian.",
+    body: "Bill Moore later admitted a role in passing AFOSI-directed material. The lights Bennewitz filmed have never been fully identified in public; they may have been classified helicopters, flares, or something else over a nuclear site. The file is used in two opposite ways: as proof that ‘aliens at Dulce’ was a government fiction, and as proof that the government will burn a witness to protect a real program on the same range.",
+    evidence:
+      "Moore’s 1989 MUFON confession, Doty’s later interviews, Bennewitz’s tapes and letters, and AFOSI’s interest in Kirtland overflight reports. Dulce Base remains without a public primary document.",
+    sources: [
+      "Greg Bishop, Project Beta (2005)",
+      "Bill Moore, MUFON Symposium statement, 1989",
+      "AFOSI / Kirtland FOIA fragments on Bennewitz reports",
+    ],
+  },
+  {
+    id: "immaculate-constellation",
+    title: "Immaculate Constellation",
+    kicker: "2024",
+    subtitle: "Claimed unacknowledged UAP imagery program",
+    lede: "A 2024 whistleblower report named a special-access effort that supposedly warehouses high-quality UAP imagery.",
+    summary:
+      "In late 2024, reporting on a whistleblower document submitted to Congress used the name ‘Immaculate Constellation’ for an alleged unacknowledged special-access program that collected and hid high-quality UAP imagery and measurement data across the military. The document described a parent–child architecture of compartments. The Pentagon and AARO have not confirmed that a program exists under that name.",
+    body: "The claim fits a pattern: named SAPs, denied by public affairs, said to sit above AARO’s reach. Without an official index entry or a declassified tasking order, the title is a lead, not a proven inventory. It is logged here because Congress was notified and because it is now part of the public special-access vocabulary.",
+    evidence:
+      "Media accounts of a written whistleblower notice to congressional committees; no released original with authentication; no Pentagon confirmation. Treat as an open lead.",
+    sources: [
+      "Congressional notification reporting, 2024",
+      "Pentagon / AARO public comments declining to confirm the name",
+    ],
+  },
+  {
+    id: "nyt-2017",
+    title: "The 2017 break",
+    kicker: "2017",
+    subtitle: "New York Times · Elizondo, Mellon, the three videos",
+    lede: "A front-page story moved UAP from the tabloid rack to the defense committees.",
+    summary:
+      "On 16 December 2017 the New York Times published ‘Glowing Auras and “Black Money”: The Pentagon’s Mysterious U.F.O. Program,’ by Helene Cooper, Leslie Kean, and Ralph Blumenthal. It described AATIP, Harry Reid’s funding, Bigelow’s involvement, and three Navy videos. Luis Elizondo had just resigned. Christopher Mellon helped get the videos out. Within three years the Navy had new reporting rules and Congress had written UAP into statute.",
+    body: "The article did not claim a recovered saucer. It claimed the Pentagon had spent money on the problem and that trained pilots were seeing objects they could not identify. That narrower claim was enough to reopen official files that Blue Book had closed. Later fights about Elizondo’s title do not erase the videos or the statutory aftermath.",
+    evidence:
+      "The Times article, the three videos later confirmed by the Pentagon, Elizondo’s resignation letter as reported, and the FY2021+ NDAA UAP provisions. Primary proof of a crash program was not in the 2017 story.",
+    sources: [
+      "New York Times, 16 December 2017",
+      "Pentagon confirmation of FLIR1, Gimbal, and GoFast",
+      "National Defense Authorization Act UAP sections, FY2021–",
+    ],
+  },
+  {
+    id: "dulce",
+    title: "Dulce Base",
+    kicker: "1979–",
+    subtitle: "Archuleta Mesa, New Mexico · claimed joint facility",
+    lede: "A town, a mesa, and a story of a war underground. Hard evidence has not followed the lore.",
+    summary:
+      "Dulce, New Mexico, is a real Jicarilla Apache town. The story of a vast multi-level underground base—human and non-human, genetic labs, a 1979 firefight—comes mainly from Paul Bennewitz, phil Schneider’s later lectures, and a chain of secondary writers. The mesa is geologically real; nuclear and gas activity exists in the wider Four Corners. No declassified construction file, contractor invoice, or satellite signature has established a city under Archuleta Mesa.",
+    body: "The file is kept because it is the longest-running American underground-base narrative and because it was demonstrably seeded, in part, by AFOSI traffic aimed at Bennewitz. That does not prove there is nothing under the mesa. It does mean every specific claim (level 7, gray beings, a treaty) currently rests on testimony that has not been corroborated by a public primary document.",
+    evidence:
+      "Town and mesa: real. Bennewitz/AFOSI disinformation: documented. Schneider’s alleged 1979 shootout: unsupported by contemporaneous records. No FOIA release describes a joint human/alien facility at Dulce.",
+    sources: [
+      "Greg Bishop, Project Beta",
+      "FOIA holdings on Kirtland/Manzano security (no Dulce city)",
+      "Jicarilla Apache Nation geographic record of the town of Dulce",
+    ],
+  },
+  {
+    id: "philadelphia",
+    title: "Philadelphia Experiment",
+    kicker: "1943",
+    subtitle: "USS Eldridge · claimed invisibility test",
+    lede: "A destroyer escort was said to have vanished from the yard. The Navy’s logs put the ship elsewhere.",
+    summary:
+      "The Philadelphia Experiment is the claim that in October 1943 the Navy destroyer escort USS Eldridge was rendered invisible, or teleported to Norfolk, as part of a unified-field or radar-invisibility test, with crew fused to bulkheads. The story entered print through Carlos Allende’s letters to astronomer Morris K. Jessup in the 1950s and later through the book The Philadelphia Experiment. Navy deck logs place Eldridge in New York and the Bahamas, not at the Philadelphia Navy Yard, on the key dates.",
+    body: "Degaussing—wrapping a hull to reduce magnetic signature against mines—was real wartime technology and is the ordinary kernel. The extreme claims (invisibility, teleportation, time slip) have no supporting deck log, medical record, or named surviving officer who was there. The file survives as the ancestor of later ‘secret Navy physics’ stories, including Montauk.",
+    evidence:
+      "Against: Eldridge logs, Navy Office of Naval Research statements, and the absence of 1943 medical reports of fused sailors. For: Allende letters, Jessup’s annotated paperback, and later popularizations. No technical paper from 1943 describes a successful optical-invisibility test on a DE-class ship.",
+    sources: [
+      "U.S. Navy, USS Eldridge deck logs (1943)",
+      "Office of Naval Research statements on the Philadelphia Experiment",
+      "Jessup / Allende correspondence as later published",
+    ],
+  },
+];

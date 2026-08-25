@@ -1,0 +1,335 @@
+/** Live X Files feed — curated handles, keyword filter, credibility scoring. */
+
+export type XFeedPost = {
+  id: string;
+  handle: string;
+  name: string;
+  text: string;
+  when: string;
+  url: string;
+  likes?: number;
+  reposts?: number;
+  replies?: number;
+  views?: number;
+  hasMedia?: boolean;
+};
+
+export type CredibilityBreakdown = {
+  overall: number;
+  virality: number;
+  comments: number;
+  evidence: number;
+  label: string;
+};
+
+/** Prominent UAP / disclosure accounts */
+export const X_FEED_ACCOUNTS = [
+  "rosscoulthart",
+  "JeremyCorbell",
+  "g_knapp",
+  "lesliekean",
+  "LueElizondo",
+  "ChrisMellon5",
+  "ProfAviLoeb",
+  "GarryPNolan",
+  "RepTimBurchett",
+  "EricBurlison",
+  "RepLuna",
+  "theblackvault",
+  "UAPJames",
+  "NewsNation",
+] as const;
+
+export const X_FEED_KEYWORDS = [
+  "UAP",
+  "UFO",
+  "NHI",
+  "non-human",
+  "biologics",
+  "disclosure",
+  "AARO",
+  "PURSUE",
+  "extraterrestrial",
+  "alien",
+  "crash retrieval",
+  "whistleblower",
+] as const;
+
+/** Auto-refresh interval (ms). Default 5 minutes. */
+export const X_FEED_REFRESH_MS = 5 * 60 * 1000;
+
+/** Source trust for evidence leg of the credibility meter */
+const SOURCE_TRUST: Record<string, number> = {
+  RepLuna: 88,
+  EricBurlison: 86,
+  RepTimBurchett: 84,
+  NewsNation: 82,
+  theblackvault: 90,
+  lesliekean: 88,
+  roscoulthart: 86,
+  ProfAviLoeb: 85,
+  GarryPNolan: 84,
+  ChrisMellon5: 78,
+  LueElizondo: 72,
+  g_knapp: 80,
+  JeremyCorbell: 70,
+  UAPJames: 68,
+};
+
+function clamp(n: number, lo = 0, hi = 100) {
+  return Math.max(lo, Math.min(hi, Math.round(n)));
+}
+
+function logScale(n: number, mid: number, high: number) {
+  if (n <= 0) return 0;
+  if (n >= high) return 100;
+  if (n >= mid) return 55 + (45 * Math.log10(1 + (n - mid) / (high - mid + 1))) / Math.log10(2);
+  return (55 * Math.log10(1 + n)) / Math.log10(1 + mid);
+}
+
+/**
+ * Credibility from virality, comment volume, and evidence signals.
+ * Comment *text* analysis requires X API; reply count is the public proxy.
+ */
+export function credibilityOf(post: XFeedPost): CredibilityBreakdown {
+  const likes = post.likes ?? 0;
+  const reposts = post.reposts ?? 0;
+  const views = post.views ?? 0;
+  const replies = post.replies ?? 0;
+
+  const virality = clamp(
+    0.45 * logScale(likes, 200, 5000) +
+      0.35 * logScale(reposts, 40, 800) +
+      0.2 * logScale(views, 10_000, 200_000),
+  );
+
+  const comments = clamp(logScale(replies, 15, 200));
+
+  const trust = SOURCE_TRUST[post.handle] ?? 50;
+  let evidence = trust * 0.7;
+  if (post.hasMedia) evidence += 12;
+  const primary =
+    /\b(AARO|PURSUE|Pentagon|Congress|FOIA|hearing|whistleblower|crash|biologic|NHI|Navy|radar)\b/i.test(
+      post.text,
+    );
+  if (primary) evidence += 10;
+  if (/\b(alleged|claims|rumor|says)\b/i.test(post.text) && !primary) evidence -= 6;
+  evidence = clamp(evidence);
+
+  const overall = clamp(0.4 * evidence + 0.35 * virality + 0.25 * comments);
+
+  let label = "Unverified";
+  if (overall >= 80) label = "High";
+  else if (overall >= 60) label = "Moderate";
+  else if (overall >= 40) label = "Low–moderate";
+  else label = "Thin";
+
+  return { overall, virality, comments, evidence, label };
+}
+
+/** Seed snapshot — live posts as of 2026-08-25. */
+export const X_FEED_SEED: XFeedPost[] = [
+  {
+    id: "2091913422288060615",
+    handle: "ProfAviLoeb",
+    name: "Professor Avi Loeb",
+    text: "Some reported UAP Orbs could be slow warp bubbles. The anomalous orbs reported by the Pentagon indeed move at slow speeds and could be explained by tiny spacetime bubbles on the scale of several micrometers. Puzzling orbs were mentioned in a June 5, 2026 AARO report (Dr. John Kozlowski): orange mother orb launching smaller red orbs; ~40% of that event remains unresolved.",
+    when: "24 Aug 2026",
+    url: "https://x.com/ProfAviLoeb/status/2091913422288060615",
+    likes: 541,
+    reposts: 85,
+    replies: 97,
+    views: 45084,
+    hasMedia: true,
+  },
+  {
+    id: "2091517030104957356",
+    handle: "UAPJames",
+    name: "UAP James",
+    text: "White Sands UAP luring and shoot-down operation has recovered multiple craft, people involved have ethical concerns — Coulthart. Citing Rep. Burlison: agencies recreated conditions that drew these objects; ODNI, CIA, FBI and military intelligence were on site. Something showed up.",
+    when: "23 Aug 2026",
+    url: "https://x.com/UAPJames/status/2091517030104957356",
+    likes: 523,
+    reposts: 107,
+    replies: 39,
+    views: 73172,
+    hasMedia: true,
+  },
+  {
+    id: "2091494410789740887",
+    handle: "NewsNation",
+    name: "NewsNation",
+    text: "This week's Q&A with @rosscoulthart: alleged decades-long U.S. Air Force disinformation campaign, White Sands operation, and China's UFO crash-retrieval program.",
+    when: "23 Aug 2026",
+    url: "https://x.com/NewsNation/status/2091494410789740887",
+    likes: 60,
+    reposts: 20,
+    replies: 6,
+    views: 15248,
+  },
+  {
+    id: "2091020123805037003",
+    handle: "NewsNation",
+    name: "NewsNation",
+    text: "The Trump administration is developing a waiver program for UFO whistleblowers. Ross Coulthart tells Katie Pavlich Tonight that the President should grant broad immunity so insiders can disclose what they know to the public.",
+    when: "22 Aug 2026",
+    url: "https://x.com/NewsNation/status/2091020123805037003",
+    likes: 414,
+    reposts: 94,
+    replies: 16,
+    views: 17567,
+    hasMedia: true,
+  },
+  {
+    id: "2090968471370637580",
+    handle: "UAPJames",
+    name: "UAP James",
+    text: "Avi Loeb says UAP whistleblowers should be granted full immunity; UFO material should be tested by the UAP Science Advisory Council. “Hopefully they’ll have the legal assurances they need to perhaps give us a guided tour to places where materials or even spacecraft are being housed.”",
+    when: "22 Aug 2026",
+    url: "https://x.com/UAPJames/status/2090968471370637580",
+    likes: 556,
+    reposts: 100,
+    replies: 16,
+    views: 14383,
+    hasMedia: true,
+  },
+  {
+    id: "2090960096603853066",
+    handle: "GarryPNolan",
+    name: "Garry P. Nolan",
+    text: "No one is ignoring UAP material requests — the hard part is finding it. If someone is determined to keep secrets after a public release order, the goods will be moved or reframed as prosaic advanced tech.",
+    when: "22 Aug 2026",
+    url: "https://x.com/GarryPNolan/status/2090960096603853066",
+    likes: 4,
+    reposts: 0,
+    replies: 0,
+    views: 139,
+  },
+  {
+    id: "2090886180208279904",
+    handle: "UAPJames",
+    name: "UAP James",
+    text: "Tom DeLonge says he’s currently consulting with the U.S. Govt on the UFO files releases. “There’s a lot more coming. This is just the beginning.”",
+    when: "21 Aug 2026",
+    url: "https://x.com/UAPJames/status/2090886180208279904",
+    likes: 987,
+    reposts: 167,
+    replies: 66,
+    views: 73306,
+    hasMedia: true,
+  },
+  {
+    id: "2090512492891869319",
+    handle: "ProfAviLoeb",
+    name: "Professor Avi Loeb",
+    text: "Joined UAP Science Advisory Council members Garry Nolan, Peter Skafish, and Anita Goel to discuss the Council’s work and the scientific path forward on UAP.",
+    when: "20 Aug 2026",
+    url: "https://x.com/ProfAviLoeb/status/2090512492891869319",
+    likes: 329,
+    reposts: 54,
+    replies: 21,
+    views: 42305,
+  },
+  {
+    id: "2090079467222008030",
+    handle: "theblackvault",
+    name: "John Greenewald, Jr.",
+    text: "Hearing what you want to hear does not automatically make something true. Those pushing hardest for UFO “transparency” offer some of the very least of it themselves. Be careful who you trust. This story is far from fully revealed.",
+    when: "19 Aug 2026",
+    url: "https://x.com/theblackvault/status/2090079467222008030",
+    likes: 122,
+    reposts: 9,
+    replies: 24,
+    views: 7061,
+  },
+  {
+    id: "2089882664409104685",
+    handle: "rosscoulthart",
+    name: "Ross Coulthart",
+    text: "Full investigative cover story into the OBJECT M mystery in Merivalja, Tallinn, Estonia: secret Soviet UFOs — KGB swarms a suburban house in a UFO hunt (Reality Check).",
+    when: "19 Aug 2026",
+    url: "https://x.com/rosscoulthart/status/2089882664409104685",
+    likes: 248,
+    reposts: 47,
+    replies: 30,
+    views: 26148,
+  },
+  {
+    id: "2087662275587133639",
+    handle: "JeremyCorbell",
+    name: "Jeremy Corbell",
+    text: "Excellent move to make this direct appeal. There is an army of whistleblowers (some first-hand) waiting to have a direct dialogue with the American public about the UAP reality, to include NHI biologics.",
+    when: "12 Aug 2026",
+    url: "https://x.com/JeremyCorbell/status/2087662275587133639",
+    likes: 1008,
+    reposts: 155,
+    replies: 76,
+    views: 56769,
+  },
+  {
+    id: "2089551721722757250",
+    handle: "NewsNation",
+    name: "NewsNation",
+    text: "Dr. Eric Davis says he has “seen the records” of recovered non-human bodies. He joins Katie Pavlich to discuss the four alleged alien species and the claims surrounding them.",
+    when: "18 Aug 2026",
+    url: "https://x.com/NewsNation/status/2089551721722757250",
+    likes: 477,
+    reposts: 131,
+    replies: 22,
+    views: 25367,
+    hasMedia: true,
+  },
+];
+
+const CACHE_KEY = "truthpole-x-feed-v2";
+
+export function loadCachedFeed(): XFeedPost[] {
+  if (typeof window === "undefined") return X_FEED_SEED;
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (!raw) return X_FEED_SEED;
+    const parsed = JSON.parse(raw) as XFeedPost[];
+    if (!Array.isArray(parsed) || parsed.length === 0) return X_FEED_SEED;
+    return parsed;
+  } catch {
+    return X_FEED_SEED;
+  }
+}
+
+export function saveCachedFeed(posts: XFeedPost[]) {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify(posts.slice(0, 40)));
+  } catch {
+    /* quota */
+  }
+}
+
+export async function fetchXFeed(): Promise<{ posts: XFeedPost[]; source: "api" | "seed" }> {
+  try {
+    const res = await fetch("/api/x-feed", {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const data = (await res.json()) as { posts?: XFeedPost[] };
+      if (Array.isArray(data.posts) && data.posts.length > 0) {
+        saveCachedFeed(data.posts);
+        return { posts: data.posts, source: "api" };
+      }
+    }
+  } catch {
+    /* no API */
+  }
+  const posts = loadCachedFeed();
+  saveCachedFeed(posts);
+  return { posts, source: "seed" };
+}
+
+export function formatCount(n?: number): string {
+  if (n == null) return "—";
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
+}
