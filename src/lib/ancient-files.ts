@@ -1,4 +1,5 @@
 import type { DeskFile } from "@/lib/desk-file";
+import { ANCIENT_FILES_EXTRA } from "@/lib/ancient-files-extra";
 
 export const ANCIENT_FILES: DeskFile[] = [
   {
@@ -22,6 +23,11 @@ export const ANCIENT_FILES: DeskFile[] = [
       alt: "The Great Pyramid of Khufu on the Giza plateau",
       credit: "Wikimedia Commons",
     },
+    lat: 29.979,
+    lng: 31.134,
+    place: "Giza plateau",
+    country: "Egypt",
+    year: -2560,
   },
   {
     id: "nazca",
@@ -44,6 +50,11 @@ export const ANCIENT_FILES: DeskFile[] = [
       alt: "The Nazca hummingbird geoglyph seen from the air",
       credit: "Wikimedia Commons",
     },
+    lat: -14.739,
+    lng: -75.13,
+    place: "Nazca Desert",
+    country: "Peru",
+    year: 400,
   },
   {
     id: "gobekli",
@@ -66,6 +77,11 @@ export const ANCIENT_FILES: DeskFile[] = [
       alt: "T-shaped limestone pillars at Göbekli Tepe",
       credit: "Wikimedia Commons",
     },
+    lat: 37.223,
+    lng: 38.922,
+    place: "Şanlıurfa Province",
+    country: "Turkey",
+    year: -9500,
   },
   {
     id: "puma-punku",
@@ -88,6 +104,11 @@ export const ANCIENT_FILES: DeskFile[] = [
       alt: "Interlocking sandstone blocks at Puma Punku, Tiwanaku",
       credit: "Wikimedia Commons",
     },
+    lat: -16.561,
+    lng: -68.679,
+    place: "Tiwanaku",
+    country: "Bolivia",
+    year: 600,
   },
   {
     id: "pakal",
@@ -110,6 +131,11 @@ export const ANCIENT_FILES: DeskFile[] = [
       alt: "Temple of the Inscriptions at Palenque, burial pyramid of Pakal",
       credit: "Wikimedia Commons",
     },
+    lat: 17.484,
+    lng: -92.046,
+    place: "Palenque",
+    country: "Mexico",
+    year: 683,
   },
   {
     id: "antikythera",
@@ -132,6 +158,11 @@ export const ANCIENT_FILES: DeskFile[] = [
       alt: "Surviving bronze fragments of the Antikythera mechanism",
       credit: "Wikimedia Commons",
     },
+    lat: 35.889,
+    lng: 23.307,
+    place: "Antikythera",
+    country: "Greece",
+    year: -100,
   },
   {
     id: "baghdad-battery",
@@ -154,6 +185,11 @@ export const ANCIENT_FILES: DeskFile[] = [
       alt: "Diagram of the so-called Baghdad Battery jar and electrodes",
       credit: "Wikimedia Commons",
     },
+    lat: 33.348,
+    lng: 44.464,
+    place: "Khujut Rabu",
+    country: "Iraq",
+    year: 150,
   },
   {
     id: "sakwala",
@@ -176,6 +212,11 @@ export const ANCIENT_FILES: DeskFile[] = [
       alt: "Sakwala Chakraya circular carving at Ranmasu Uyana, Anuradhapura",
       credit: "Wikimedia Commons",
     },
+    lat: 8.335,
+    lng: 80.388,
+    place: "Anuradhapura",
+    country: "Sri Lanka",
+    year: 300,
   },
   {
     id: "vimana",
@@ -198,6 +239,11 @@ export const ANCIENT_FILES: DeskFile[] = [
       alt: "Brihadisvara Temple vimana (tower) at Thanjavur",
       credit: "Wikimedia Commons",
     },
+    lat: 10.783,
+    lng: 79.132,
+    place: "Thanjavur",
+    country: "India",
+    year: -400,
   },
   {
     id: "moai",
@@ -220,6 +266,11 @@ export const ANCIENT_FILES: DeskFile[] = [
       alt: "Moai standing on the outer slopes of Rano Raraku quarry",
       credit: "Wikimedia Commons",
     },
+    lat: -27.126,
+    lng: -109.276,
+    place: "Rapa Nui",
+    country: "Chile",
+    year: 1400,
   },
   {
     id: "diquis",
@@ -242,6 +293,11 @@ export const ANCIENT_FILES: DeskFile[] = [
       alt: "Diquís stone spheres in situ at Finca 6, Costa Rica",
       credit: "Wikimedia Commons",
     },
+    lat: 8.911,
+    lng: -83.477,
+    place: "Diquís Delta",
+    country: "Costa Rica",
+    year: 800,
   },
   {
     id: "sacsayhuaman",
@@ -264,6 +320,11 @@ export const ANCIENT_FILES: DeskFile[] = [
       alt: "Polygonal limestone walls of Sacsayhuamán above Cusco",
       credit: "Wikimedia Commons",
     },
+    lat: -13.509,
+    lng: -71.982,
+    place: "Cusco",
+    country: "Peru",
+    year: 1450,
   },
   {
     id: "quimbaya",
@@ -286,5 +347,11 @@ export const ANCIENT_FILES: DeskFile[] = [
       alt: "Pre-Columbian Quimbaya gold bird figures",
       credit: "Wikimedia Commons",
     },
+    lat: 4.533,
+    lng: -75.681,
+    place: "Cauca Valley",
+    country: "Colombia",
+    year: 500,
   },
+  ...ANCIENT_FILES_EXTRA,
 ];

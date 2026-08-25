@@ -11,7 +11,7 @@ function AncientPage() {
     <FileDesk
       section="ANCIENT"
       title="Pre-modern contact"
-      intro="Sites and objects that contact literature claims as visits. Each file carries one image and the archaeological record beside the claim."
+      intro="Sites and objects from the deep past — megaliths, lost cities, and the contact claims attached to them. Archaeology first; the sky-god reading is in the file, not the headline."
       tag="ANCIENT FILE"
       files={ANCIENT_FILES}
     />

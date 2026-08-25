@@ -8,16 +8,26 @@ import {
   ARCHIVE_CASES,
   YEAR_MAX,
   YEAR_MIN,
+  formatYearLabel,
   type ArchiveCase,
 } from "@/lib/archive-cases";
 
 type PeekState = { file: ArchiveCase; x: number; y: number };
 type PinView = { file: ArchiveCase; x: number; y: number; r: number };
 
-type ArchiveMapProps = {
+export type ArchiveMapProps = {
   year: number;
   onYear: (year: number) => void;
   onOpen: (file: ArchiveCase) => void;
+  cases?: ArchiveCase[];
+  yearMin?: number;
+  yearMax?: number;
+  showTimeline?: boolean;
+  step?: number;
+  playMs?: number;
+  mapLabel?: string;
+  countLabel?: string;
+  endLabel?: string;
 };
 
 const DEFAULT_ROTATE: [number, number] = [-10, 0];
@@ -38,7 +48,20 @@ function pinRadius(zoom: number) {
   return Math.max(2.15, 8.6 / Math.pow(zoom, 0.92));
 }
 
-export function ArchiveMap({ year, onYear, onOpen }: ArchiveMapProps) {
+export function ArchiveMap({
+  year,
+  onYear,
+  onOpen,
+  cases = ARCHIVE_CASES,
+  yearMin = YEAR_MIN,
+  yearMax = YEAR_MAX,
+  showTimeline = true,
+  step = 1,
+  playMs = 72,
+  mapLabel = "World archive globe",
+  countLabel = "cases in view",
+  endLabel = "Now",
+}: ArchiveMapProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const geoRef = useRef<GeoJSON.FeatureCollection | null>(null);
@@ -53,6 +76,10 @@ export function ArchiveMap({ year, onYear, onOpen }: ArchiveMapProps) {
   });
   const yearRef = useRef(year);
   const onOpenRef = useRef(onOpen);
+  const casesRef = useRef(cases);
+  const yearMinRef = useRef(yearMin);
+  const yearMaxRef = useRef(yearMax);
+  const stepRef = useRef(step);
   const dragRef = useRef<{
     x: number;
     y: number;
@@ -75,15 +102,19 @@ export function ArchiveMap({ year, onYear, onOpen }: ArchiveMapProps) {
   const [peek, setPeek] = useState<PeekState | null>(null);
   const [playing, setPlaying] = useState(true);
   const [count, setCount] = useState(
-    () => ARCHIVE_CASES.filter((c) => c.year <= year).length,
+    () => cases.filter((c) => c.year <= year).length,
   );
 
   yearRef.current = year;
   onOpenRef.current = onOpen;
+  casesRef.current = cases;
+  yearMinRef.current = yearMin;
+  yearMaxRef.current = yearMax;
+  stepRef.current = step;
 
   useEffect(() => {
-    setCount(ARCHIVE_CASES.filter((c) => c.year <= year).length);
-  }, [year]);
+    setCount(cases.filter((c) => c.year <= year).length);
+  }, [year, cases]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -172,7 +203,7 @@ export function ArchiveMap({ year, onYear, onOpen }: ArchiveMapProps) {
 
       const r = pinRadius(v.zoom);
       const next: PinView[] = [];
-      for (const file of ARCHIVE_CASES) {
+      for (const file of casesRef.current) {
         if (file.year > yearRef.current) continue;
         const p = projection([file.lng, file.lat]);
         if (!p) continue;
@@ -336,20 +367,17 @@ export function ArchiveMap({ year, onYear, onOpen }: ArchiveMapProps) {
         /* already released */
       }
     };
-
     const onWheel = (ev: WheelEvent) => {
       ev.preventDefault();
       const v = viewRef.current;
-      const step = ev.deltaY > 0 ? -0.22 : 0.22;
-      zoomAt(ev.clientX, ev.clientY, v.targetZoom + step * v.targetZoom * 0.35);
+      const wheelStep = ev.deltaY > 0 ? -0.22 : 0.22;
+      zoomAt(ev.clientX, ev.clientY, v.targetZoom + wheelStep * v.targetZoom * 0.35);
     };
-
     const touchDist = (a: Touch, b: Touch) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
     const touchMid = (a: Touch, b: Touch) => ({
       x: (a.clientX + b.clientX) / 2,
       y: (a.clientY + b.clientY) / 2,
     });
-
     const onTouchStart = (ev: TouchEvent) => {
       if (ev.touches.length === 2) {
         ev.preventDefault();
@@ -373,6 +401,7 @@ export function ArchiveMap({ year, onYear, onOpen }: ArchiveMapProps) {
     const onTouchEnd = (ev: TouchEvent) => {
       if (ev.touches.length < 2) pinchRef.current = null;
     };
+    const onGesture = (ev: Event) => ev.preventDefault();
 
     canvas.addEventListener("pointerdown", onDown);
     canvas.addEventListener("pointermove", onMove);
@@ -382,7 +411,6 @@ export function ArchiveMap({ year, onYear, onOpen }: ArchiveMapProps) {
     host.addEventListener("touchstart", onTouchStart, { passive: false });
     host.addEventListener("touchmove", onTouchMove, { passive: false });
     host.addEventListener("touchend", onTouchEnd);
-    const onGesture = (e: Event) => e.preventDefault();
     host.addEventListener("gesturestart", onGesture);
 
     (host as HTMLDivElement & { __redraw?: () => void; __zoomBy?: (d: number) => void; __reset?: () => void }).__redraw =
@@ -420,19 +448,19 @@ export function ArchiveMap({ year, onYear, onOpen }: ArchiveMapProps) {
   useEffect(() => {
     const host = hostRef.current as (HTMLDivElement & { __redraw?: () => void }) | null;
     host?.__redraw?.();
-  }, [year]);
+  }, [year, cases]);
 
   useEffect(() => {
-    if (!playing) return;
+    if (!playing || !showTimeline) return;
     const id = window.setInterval(() => {
-      if (yearRef.current >= YEAR_MAX) {
+      if (yearRef.current >= yearMaxRef.current) {
         setPlaying(false);
         return;
       }
-      onYear(yearRef.current + 1);
-    }, 72);
+      onYear(Math.min(yearMaxRef.current, yearRef.current + stepRef.current));
+    }, playMs);
     return () => window.clearInterval(id);
-  }, [playing, onYear]);
+  }, [playing, onYear, playMs, showTimeline]);
 
   const zoomBy = (delta: number) => {
     const host = hostRef.current as (HTMLDivElement & { __zoomBy?: (d: number) => void }) | null;
@@ -450,7 +478,7 @@ export function ArchiveMap({ year, onYear, onOpen }: ArchiveMapProps) {
         <div
           ref={hostRef}
           className="archive-map absolute inset-0 touch-none bg-black"
-          aria-label="World archive globe"
+          aria-label={mapLabel}
         >
           <canvas
             ref={canvasRef}
@@ -461,7 +489,7 @@ export function ArchiveMap({ year, onYear, onOpen }: ArchiveMapProps) {
               key={pin.file.id}
               type="button"
               data-pin={pin.file.id}
-              aria-label={`${pin.file.title}, ${pin.file.year}`}
+              aria-label={`${pin.file.title}, ${formatYearLabel(pin.file.year)}`}
               className="absolute z-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-transparent"
               style={{
                 left: pin.x,
@@ -514,15 +542,21 @@ export function ArchiveMap({ year, onYear, onOpen }: ArchiveMapProps) {
           </p>
         ) : null}
 
-        {peek ? <PeekCard peek={peek} onOpen={() => {
-          const file = peek.file;
-          peekingRef.current = false;
-          setPeek(null);
-          onOpen(file);
-        }} onClose={() => {
-          peekingRef.current = false;
-          setPeek(null);
-        }} /> : null}
+        {peek ? (
+          <PeekCard
+            peek={peek}
+            onOpen={() => {
+              const file = peek.file;
+              peekingRef.current = false;
+              setPeek(null);
+              onOpen(file);
+            }}
+            onClose={() => {
+              peekingRef.current = false;
+              setPeek(null);
+            }}
+          />
+        ) : null}
 
         <div className="pointer-events-none absolute top-3 right-3 z-30 flex flex-col gap-2">
           <GlassButton
@@ -555,58 +589,62 @@ export function ArchiveMap({ year, onYear, onOpen }: ArchiveMapProps) {
         </p>
       </div>
 
-      <div className="z-20 shrink-0 px-4 pb-3 pt-1">
-        <p className="font-display text-[11px] tracking-[0.38em] text-fg/45">TIMELINE</p>
-        <div className="mt-1 flex items-end justify-between gap-3">
-          <p className="font-serif text-[2rem] leading-none text-fg">{year}</p>
-          <p className="pb-1 text-sm text-fg/45">{count} cases in view</p>
-        </div>
-        <div className="mt-3 flex items-center gap-3">
-          <GlassButton
-            variant="icon"
-            className="size-11 shrink-0"
-            aria-label={playing ? "Pause timeline" : "Play timeline"}
-            onClick={() => {
-              if (playing) {
+      {showTimeline ? (
+        <div className="z-20 shrink-0 px-4 pb-3 pt-1">
+          <p className="font-display text-[11px] tracking-[0.38em] text-fg/45">TIMELINE</p>
+          <div className="mt-1 flex items-end justify-between gap-3">
+            <p className="font-serif text-[2rem] leading-none text-fg">{formatYearLabel(year)}</p>
+            <p className="pb-1 text-sm text-fg/45">
+              {count} {countLabel}
+            </p>
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <GlassButton
+              variant="icon"
+              className="size-11 shrink-0"
+              aria-label={playing ? "Pause timeline" : "Play timeline"}
+              onClick={() => {
+                if (playing) {
+                  setPlaying(false);
+                  return;
+                }
+                if (yearRef.current >= yearMax) onYear(yearMin);
+                setPlaying(true);
+              }}
+            >
+              {playing ? (
+                <Pause className="size-4" strokeWidth={1.7} />
+              ) : (
+                <Play className="size-4" strokeWidth={1.7} />
+              )}
+            </GlassButton>
+            <Slider.Root
+              min={yearMin}
+              max={yearMax}
+              step={step}
+              value={[year]}
+              onValueChange={(v) => {
                 setPlaying(false);
-                return;
-              }
-              if (yearRef.current >= YEAR_MAX) onYear(YEAR_MIN);
-              setPlaying(true);
-            }}
-          >
-            {playing ? (
-              <Pause className="size-4" strokeWidth={1.7} />
-            ) : (
-              <Play className="size-4" strokeWidth={1.7} />
-            )}
-          </GlassButton>
-          <Slider.Root
-            min={YEAR_MIN}
-            max={YEAR_MAX}
-            step={1}
-            value={[year]}
-            onValueChange={(v) => {
-              setPlaying(false);
-              onYear(v[0] ?? YEAR_MAX);
-            }}
-            className="relative flex h-7 w-full touch-none items-center"
-            aria-label="Archive year"
-          >
-            <Slider.Track className="relative h-px grow rounded-full bg-fg/20">
-              <Slider.Range className="absolute h-full rounded-full bg-fg/70" />
-            </Slider.Track>
-            <Slider.Thumb
-              className="block size-5 rounded-full bg-fg shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg"
+                onYear(v[0] ?? yearMax);
+              }}
+              className="relative flex h-7 w-full touch-none items-center"
               aria-label="Archive year"
-            />
-          </Slider.Root>
+            >
+              <Slider.Track className="relative h-px grow rounded-full bg-fg/20">
+                <Slider.Range className="absolute h-full rounded-full bg-fg/70" />
+              </Slider.Track>
+              <Slider.Thumb
+                className="block size-5 rounded-full bg-fg shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fg"
+                aria-label="Archive year"
+              />
+            </Slider.Root>
+          </div>
+          <div className="mt-1 flex justify-between font-display text-xs text-fg/35">
+            <span>{formatYearLabel(yearMin)}</span>
+            <span>{endLabel}</span>
+          </div>
         </div>
-        <div className="mt-1 flex justify-between font-display text-xs text-fg/35">
-          <span>{YEAR_MIN}</span>
-          <span>Now</span>
-        </div>
-      </div>
+      ) : null}
     </div>
   );
 }
@@ -641,15 +679,12 @@ function PeekCard({
       </div>
       <h2 className="mt-1 font-serif text-[1.65rem] leading-none text-fg">{peek.file.title}</h2>
       <p className="mt-2 text-sm leading-snug text-fg/55">
-        {peek.file.place} · {peek.file.year}
+        {peek.file.place} · {formatYearLabel(peek.file.year)}
       </p>
       <div className="mt-3 flex items-center gap-3">
         <GlassButton variant="chip" className="h-10 min-w-0 flex-1 rounded-full" onClick={onOpen}>
           Open file
         </GlassButton>
-        <button type="button" className="h-10 shrink-0 px-2 font-display text-sm text-fg/70" onClick={onClose}>
-          Close
-        </button>
       </div>
     </div>
   );

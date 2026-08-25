@@ -11,7 +11,7 @@ function ConspiracyPage() {
     <FileDesk
       section="CONSPIRACY"
       title="Case files"
-      intro="Secrecy programs, named committees, and the paper that survived them. Nothing on this desk is pre-selected."
+      intro="Secrecy programs, named committees, and the paper that survived them. Open a file for the record, the gaps, and the sources."
       tag="CASE FILE"
       files={CONSPIRACY_FILES}
     />

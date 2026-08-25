@@ -1,17 +1,16 @@
 TRUTHPOLE — The Archive
-Full workspace restore backup
-Created 20260825-030725 UTC
+Snapshot 20260825-095106 UTC
 
-This zip is the project tree: source, public assets (including the
-transparent alien trademark PNG), configs, scripts, and startup.
+This commit is the live desk: Archive globe (145 cases), Conspiracy
+file list (112), Ancient file list (119). Globe is Archive-only.
 
 Restore:
-  1. Unzip into an empty project folder
-  2. npm install
-  3. npm run dev
+  git clone https://github.com/ichiadrac-beep/Truthpolearchive.git
+  npm install
+  npm run dev
      (or: sh startup.sh)
 
 Includes: src, public, server, scripts, migrations, package.json,
-package-lock.json, vite/tsconfig, startup.sh, trademark logo.
+package-lock.json, vite/tsconfig, startup.sh.
 
-Excludes: node_modules, build output, caches, screenshots, nested zips.
+Excludes: node_modules, build output, caches, screenshots.

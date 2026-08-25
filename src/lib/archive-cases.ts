@@ -1,3 +1,5 @@
+import { ARCHIVE_CASES_EXTRA } from "@/lib/archive-cases-extra";
+
 export type ArchiveCase = {
   id: string;
   title: string;
@@ -10,7 +12,12 @@ export type ArchiveCase = {
   sources: string[];
 };
 
-export const YEAR_MIN = 1900;
+export function formatYearLabel(year: number) {
+  if (year < 0) return `${Math.abs(year)} BCE`;
+  return String(year);
+}
+
+export const YEAR_MIN = 1896;
 export const YEAR_MAX = 2026;
 
 export const ARCHIVE_CASES: ArchiveCase[] = [
@@ -694,4 +701,5 @@ export const ARCHIVE_CASES: ArchiveCase[] = [
       "For context on Brazil’s official sphere cases: FAB archive, Trindade 1958 and 1986 CINDACTA night",
     ],
   },
+  ...ARCHIVE_CASES_EXTRA,
 ];

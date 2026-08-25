@@ -1,0 +1,31 @@
+import { chromium } from "playwright";
+import { mkdirSync } from "node:fs";
+mkdirSync("/workspace/screenshots", { recursive: true });
+const browser = await chromium.launch({ args: ["--no-sandbox"] });
+const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+page.on("pageerror", (e) => console.log("PAGEERROR", e.message));
+page.on("console", (m) => { if (m.type() === "error") console.log("CONSOLE", m.text()); });
+await page.goto("http://127.0.0.1:8080/", { waitUntil: "networkidle" });
+await page.evaluate(() => sessionStorage.setItem("truthpole-access", "1"));
+for (const path of ["/archive", "/conspiracy", "/ancient"]) {
+  await page.goto("http://127.0.0.1:8080" + path, { waitUntil: "networkidle" });
+  await page.waitForTimeout(1800);
+  const text = await page.locator("body").innerText();
+  console.log(path, "len", text.length, "prefix", JSON.stringify(text.slice(0, 280)));
+  const name = path.slice(1);
+  await page.screenshot({ path: `/workspace/screenshots/${name}-desk.png`, fullPage: false });
+}
+const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
+mobile.on("pageerror", (e) => console.log("MOBILE PAGEERROR", e.message));
+await mobile.goto("http://127.0.0.1:8080/", { waitUntil: "networkidle" });
+await mobile.evaluate(() => sessionStorage.setItem("truthpole-access", "1"));
+await mobile.goto("http://127.0.0.1:8080/conspiracy", { waitUntil: "networkidle" });
+await mobile.waitForTimeout(1800);
+await mobile.screenshot({ path: "/workspace/screenshots/conspiracy-desk-mobile.png" });
+await mobile.goto("http://127.0.0.1:8080/ancient", { waitUntil: "networkidle" });
+await mobile.waitForTimeout(1800);
+await mobile.screenshot({ path: "/workspace/screenshots/ancient-desk-mobile.png" });
+await mobile.goto("http://127.0.0.1:8080/archive", { waitUntil: "networkidle" });
+await mobile.waitForTimeout(1800);
+await mobile.screenshot({ path: "/workspace/screenshots/archive-desk-mobile.png" });
+await browser.close();

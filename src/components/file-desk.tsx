@@ -20,7 +20,11 @@ export function FileDesk({ section, title, intro, tag, files }: FileDeskProps) {
     const q = query.trim().toLowerCase();
     if (!q) return files;
     return files.filter((file) =>
-      [file.title, file.subtitle, file.lede, file.kicker].join(" ").toLowerCase().includes(q),
+      [file.title, file.subtitle, file.lede, file.kicker, file.place, file.country]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .includes(q),
     );
   }, [files, query]);
 
