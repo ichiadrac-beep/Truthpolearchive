@@ -7,6 +7,9 @@ dist/
 screenshots/
 artifacts/
 attachments/
+backups/
+tmp/
+.cache/
 .grok/*
 !.grok/app-env.json
 *.log

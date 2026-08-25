@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { useRouter } from "@tanstack/react-router";
 import { GlassButton } from "@/components/glass-button";
-import { GROK_PROVIDERS, signIn } from "@/lib/auth/client";
+import { GROK_PROVIDERS } from "@/lib/auth/client";
 import { DEFAULT_DESK_HREF, useDesk } from "@/lib/store";
+import { openOAuthTab, startOAuth } from "@/lib/start-oauth";
 import {
   playLockClick,
   playScanSound,
@@ -173,17 +174,14 @@ export function HandScan() {
 
   const onProvider = (providerId: string) => {
     const href = deskHref();
+    const tab = openOAuthTab();
     setBusyId(providerId);
     setAuthError(null);
-    void signIn(providerId, { callbackURL: href, errorCallbackURL: "/scan" })
-      .then(() => {
-        completeScan();
-        router.history.replace(href);
-      })
-      .catch((err: unknown) => {
-        setBusyId(null);
-        setAuthError(err instanceof Error ? err.message : "Sign-in was cancelled");
-      });
+    completeScan();
+    void startOAuth(providerId, href, "/scan", tab).catch((err: unknown) => {
+      setBusyId(null);
+      setAuthError(err instanceof Error ? err.message : "Sign-in was cancelled");
+    });
   };
 
   if (!handReady) {
@@ -192,7 +190,7 @@ export function HandScan() {
 
   if (phase === "auth") {
     return (
-      <main className="relative z-10 flex min-h-dvh flex-col bg-black" aria-label="Choose sign-in method">
+      <main className="scan-lock relative z-10 flex min-h-dvh flex-col bg-black" aria-label="Choose sign-in method">
         <div className="flex items-center justify-end px-4 pt-[max(0.6rem,env(safe-area-inset-top))]">
           <GlassButton variant="icon" aria-label="Dismiss" onClick={onDismiss}>
             <X className="size-5" strokeWidth={1.6} />
@@ -204,6 +202,9 @@ export function HandScan() {
             <h1 className="mt-4 text-center font-display text-2xl font-semibold tracking-[0.18em] text-fg">ACCESS GRANTED</h1>
             <p className="mt-3 text-center text-sm leading-relaxed text-fg/60">
               Choose how to enter the desk. Guest needs no account.
+            </p>
+            <p className="mt-2 text-center text-[12px] leading-relaxed text-fg/45">
+              On a phone, stay in Chrome or Safari. The X app blocks the return.
             </p>
             <div className="glass-strong mt-8 flex flex-col gap-3 rounded-3xl px-4 py-5">
               <GlassButton type="button" className="h-12 w-full rounded-2xl" disabled={busyId !== null} onClick={enterAsGuest}>
@@ -226,6 +227,11 @@ export function HandScan() {
                 </GlassButton>
               ))}
               {authError ? <p className="text-center text-sm text-fg/55">{authError}</p> : null}
+              {busyId && busyId !== "guest" ? (
+                <p className="text-center text-[12px] leading-relaxed text-fg/50">
+                  Waiting for {busyId === "grok-x" ? "X" : "Google"}. If the app opened, tap ⋮ and Open in browser, then keep this page.
+                </p>
+              ) : null}
             </div>
             <button
               type="button"
@@ -253,7 +259,7 @@ export function HandScan() {
   const status = statusLabel(progress, granted, holding);
 
   return (
-    <main className="relative z-10 flex min-h-dvh flex-col bg-black" aria-label="Biometric hand scan">
+    <main className="scan-lock relative z-10 flex min-h-dvh flex-col bg-black" aria-label="Biometric hand scan">
       <div className="flex items-center justify-end px-4 pt-[max(0.6rem,env(safe-area-inset-top))]">
         <GlassButton variant="icon" aria-label="Dismiss scan" onClick={onDismiss}>
           <X className="size-5" strokeWidth={1.6} />
@@ -271,17 +277,9 @@ export function HandScan() {
             onPointerUp={endHold}
             onPointerCancel={endHold}
             onContextMenu={(e) => e.preventDefault()}
+            onDragStart={(e) => e.preventDefault()}
           >
-            <img
-              src={HAND_SRC}
-              alt="Alien hand for biometric scan"
-              width={784}
-              height={1168}
-              fetchPriority="high"
-              decoding="sync"
-              className="mx-auto block h-auto w-full object-contain"
-              draggable={false}
-            />
+            <div className="scan-hand-art" role="img" aria-label="Alien hand for biometric scan" />
             <div className="pointer-events-none absolute inset-[18%_8%_24%_8%] overflow-hidden">
               <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-fg/10 to-fg/0" style={{ height: `${progress}%` }} />
               {holding || granted ? (

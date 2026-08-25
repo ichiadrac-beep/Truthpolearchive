@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { ArrowUp } from "lucide-react";
 import { GlassButton } from "@/components/glass-button";
 import { displayPoleBody } from "@/lib/censor";
 import { listPoleMessages, sendPoleMessage, type PoleMessage } from "@/lib/desk-api";
 import { getGuestId, guestAlias } from "@/lib/guest-id";
-import { authClient, authEnabled, signIn } from "@/lib/auth/client";
+import { authClient, authEnabled } from "@/lib/auth/client";
+import { openOAuthTab, startOAuth } from "@/lib/start-oauth";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import {
   accountChatName,
@@ -17,6 +18,7 @@ import {
   stampScifVisit,
   type ScifClearance,
 } from "@/lib/scif";
+import { useVisualKeyboard } from "@/lib/use-visual-keyboard";
 import { cn } from "@/lib/utils";
 
 export function PoleDesk() {
@@ -39,6 +41,8 @@ export function PoleDesk() {
   const [busy, setBusy] = useState(false);
   const [xBusy, setXBusy] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
+  const fieldRef = useRef<HTMLTextAreaElement>(null);
+  const kb = useVisualKeyboard();
 
   const apply = (payload: { online: number; ttlMin: number; messages: PoleMessage[] }) => {
     setOnline(payload.online);
@@ -73,7 +77,7 @@ export function PoleDesk() {
     const el = scroller.current;
     if (!el) return;
     el.scrollTop = el.scrollHeight;
-  }, [messages.length]);
+  }, [messages.length, kb.open]);
 
   const publicName = anon ? "ANON" : xName || alias;
 
@@ -83,6 +87,7 @@ export function PoleDesk() {
     if (!body || busy) return;
     setBusy(true);
     setDraft("");
+    if (fieldRef.current) fieldRef.current.style.height = "48px";
     try {
       const next = await sendPoleMessage({
         data: {
@@ -98,7 +103,19 @@ export function PoleDesk() {
       setDraft(body);
     } finally {
       setBusy(false);
+      fieldRef.current?.focus();
     }
+  };
+
+  const onDraftKey = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key !== "Enter" || event.shiftKey) return;
+    event.preventDefault();
+    event.currentTarget.form?.requestSubmit();
+  };
+
+  const fitDraft = (el: HTMLTextAreaElement) => {
+    el.style.height = "48px";
+    el.style.height = `${Math.min(96, el.scrollHeight)}px`;
   };
 
   const toggleAnon = () => {
@@ -114,14 +131,19 @@ export function PoleDesk() {
   };
 
   const connectX = () => {
+    const tab = openOAuthTab();
     setXBusy(true);
-    void signIn("grok-x", { callbackURL: "/the-pole", errorCallbackURL: "/the-pole" }).finally(() => {
+    void startOAuth("grok-x", "/the-pole", "/the-pole", tab).catch(() => {
       setXBusy(false);
     });
   };
 
   return (
-    <section className="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col px-5 pt-2" dir="ltr">
+    <section
+      className="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col px-5 pt-2"
+      dir="ltr"
+      style={{ paddingBottom: kb.open ? 8 : undefined }}
+    >
       <header className="shrink-0">
         <div className="flex items-center justify-between gap-3">
           <p className="font-display text-[11px] font-medium tracking-[0.38em] text-fg/45">THE POLE</p>
@@ -130,22 +152,30 @@ export function PoleDesk() {
             {online} online
           </p>
         </div>
-        <h1 className="mt-3 font-serif text-[2.35rem] leading-none text-fg">Live channel</h1>
-        <p className="mt-3 max-w-prose text-sm leading-relaxed text-fg/65">
-          Notes from the desk. Hard swears are cut on send. Lines fade after {ttl} minutes.
-        </p>
-        <p className="mt-2 font-display text-[11px] tracking-[0.16em] text-fg/55">
-          You are {publicName} · {formatScifBadge(scif)} · {scif.days} {scif.days === 1 ? "day" : "days"}
-        </p>
-        <p className="mt-1 text-sm leading-relaxed text-fg/45">
-          SCIF clearance is the desk rank. It rises with days you open TRUTHPOLE.
-          {!anon && !xName ? " Sign in with X to post under your X name." : ""}
-        </p>
+        {kb.open ? (
+          <p className="mt-2 font-display text-[11px] tracking-[0.16em] text-fg/55">
+            {publicName} · {formatScifBadge(scif)}
+          </p>
+        ) : (
+          <>
+            <h1 className="mt-3 font-serif text-[2.35rem] leading-none text-fg">Live channel</h1>
+            <p className="mt-3 max-w-prose text-sm leading-relaxed text-fg/65">
+              Notes from the desk. Hard swears are cut on send. Lines fade after {ttl} minutes.
+            </p>
+            <p className="mt-2 font-display text-[11px] tracking-[0.16em] text-fg/55">
+              You are {publicName} · {formatScifBadge(scif)} · {scif.days} {scif.days === 1 ? "day" : "days"}
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-fg/45">
+              SCIF clearance is the desk rank. It rises with days you open TRUTHPOLE.
+              {!anon && !xName ? " Sign in with X to post under your X name." : ""}
+            </p>
+          </>
+        )}
       </header>
 
       <div
         ref={scroller}
-        className="mt-4 min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain"
+        className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain"
         aria-live="polite"
       >
         {messages.length === 0 ? (
@@ -176,52 +206,90 @@ export function PoleDesk() {
         )}
       </div>
 
-      <form className="shrink-0 pt-3 pb-3" onSubmit={onSend}>
-        <div className="flex flex-wrap gap-2">
-          <GlassButton
-            variant="chip"
-            className={cn("h-10", anon && "glass-strong")}
-            aria-pressed={anon}
-            onClick={toggleAnon}
-          >
-            Anon
-          </GlassButton>
-          <GlassButton
-            variant="chip"
-            className={cn("h-10", graphic && "glass-strong")}
-            aria-pressed={graphic}
-            onClick={toggleGraphic}
-          >
-            Filter graphic
-          </GlassButton>
-          {authEnabled && !xName ? (
-            <GlassButton variant="chip" className="h-10" disabled={xBusy} onClick={connectX}>
-              {xBusy ? "Opening X…" : "Sign in with X"}
+      <form
+        className="shrink-0 pt-2"
+        onSubmit={onSend}
+        autoComplete="off"
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck={false}
+        action="."
+        method="post"
+      >
+        {kb.open ? null : (
+          <div className="flex flex-wrap gap-2">
+            <GlassButton
+              variant="chip"
+              className={cn("h-10 touch-manipulation", anon && "glass-strong")}
+              aria-pressed={anon}
+              onClick={toggleAnon}
+            >
+              Anon
             </GlassButton>
-          ) : null}
-        </div>
-        <p className="mt-2 font-display text-[11px] tracking-[0.18em] text-fg/40">
-          {anon ? `Posting as ANON · ${scif.code}` : `Posting as ${publicName} · ${scif.code}`}
-        </p>
+            <GlassButton
+              variant="chip"
+              className={cn("h-10 touch-manipulation", graphic && "glass-strong")}
+              aria-pressed={graphic}
+              onClick={toggleGraphic}
+            >
+              Filter graphic
+            </GlassButton>
+            {authEnabled && !xName ? (
+              <GlassButton variant="chip" className="h-10 touch-manipulation" disabled={xBusy} onClick={connectX}>
+                {xBusy ? "Waiting for X…" : "Sign in with X"}
+              </GlassButton>
+            ) : null}
+          </div>
+        )}
+        {xBusy && !kb.open ? (
+          <p className="mt-2 text-[12px] leading-relaxed text-fg/50">
+            Stay in Chrome or Safari. If the X app opens, tap ⋮ → Open in browser. Keep this page.
+          </p>
+        ) : null}
+        {kb.open ? null : (
+          <p className="mt-2 font-display text-[11px] tracking-[0.18em] text-fg/40">
+            {anon ? `Posting as ANON · ${scif.code}` : `Posting as ${publicName} · ${scif.code}`}
+          </p>
+        )}
         <div className="pole-composer mt-2">
           <label className="sr-only" htmlFor="pole-draft">
             Message
           </label>
-          <input
+          <textarea
+            ref={fieldRef}
             id="pole-draft"
+            name="pole_note"
             dir="ltr"
+            rows={1}
+            inputMode="text"
+            enterKeyHint="send"
+            autoComplete="off"
+            autoCorrect="on"
+            autoCapitalize="sentences"
+            spellCheck
+            data-lpignore="true"
+            data-1p-ignore="true"
+            data-form-type="other"
             className="glass-field min-w-0 flex-1 rounded-full"
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              fitDraft(e.target);
+            }}
+            onKeyDown={onDraftKey}
+            onFocus={() => {
+              window.setTimeout(() => {
+                scroller.current?.scrollTo({ top: scroller.current.scrollHeight });
+                fieldRef.current?.scrollIntoView({ block: "end" });
+              }, 50);
+            }}
             placeholder={anon ? "Write as ANON…" : xName ? `Write as ${xName}…` : "Write a note…"}
             maxLength={240}
-            autoComplete="off"
-            enterKeyHint="send"
           />
           <GlassButton
             type="submit"
             variant="icon"
-            className="glass-strong size-12 shrink-0"
+            className="glass-strong size-12 shrink-0 touch-manipulation"
             disabled={busy || !draft.trim()}
             aria-label="Send"
           >

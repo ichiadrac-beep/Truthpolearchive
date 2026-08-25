@@ -3,6 +3,7 @@ import { create } from "zustand";
 export const DEFAULT_DESK_HREF = "/archive";
 
 const ACCESS_KEY = "truthpole-access";
+const PENDING_KEY = "truthpole-pending";
 
 type DeskState = {
   hydrated: boolean;
@@ -29,9 +30,31 @@ type DeskState = {
 
 function readGranted() {
   try {
-    return sessionStorage.getItem(ACCESS_KEY) === "1";
+    return localStorage.getItem(ACCESS_KEY) === "1" || sessionStorage.getItem(ACCESS_KEY) === "1";
   } catch {
     return false;
+  }
+}
+
+function writeGranted(on: boolean) {
+  try {
+    if (on) {
+      localStorage.setItem(ACCESS_KEY, "1");
+      sessionStorage.setItem(ACCESS_KEY, "1");
+    } else {
+      localStorage.removeItem(ACCESS_KEY);
+      sessionStorage.removeItem(ACCESS_KEY);
+    }
+  } catch {
+    /* private mode */
+  }
+}
+
+function readPending() {
+  try {
+    return localStorage.getItem(PENDING_KEY);
+  } catch {
+    return null;
   }
 }
 
@@ -47,21 +70,27 @@ export const useDesk = create<DeskState>((set, get) => ({
   archiveSweep: false,
   hydrate: () => {
     if (get().hydrated) return;
-    set({ hydrated: true, accessGranted: readGranted() });
+    set({ hydrated: true, accessGranted: readGranted(), pendingHref: readPending() });
   },
   setHandReady: (ready) => set({ handReady: ready }),
   setPanelOpen: (open) => set({ panelOpen: open }),
   setScanActive: (active) => set({ scanActive: active }),
   requestAccess: (href) => {
     if (get().accessGranted) return true;
+    try {
+      localStorage.setItem(PENDING_KEY, href);
+    } catch {
+      /* private mode */
+    }
     set({ scanOpen: true, pendingHref: href });
     return false;
   },
   dismissScan: () => set({ scanOpen: false, pendingHref: null }),
   completeScan: () => {
-    const href = get().pendingHref ?? DEFAULT_DESK_HREF;
+    const href = get().pendingHref ?? readPending() ?? DEFAULT_DESK_HREF;
+    writeGranted(true);
     try {
-      sessionStorage.setItem(ACCESS_KEY, "1");
+      localStorage.removeItem(PENDING_KEY);
     } catch {
       /* private mode */
     }
@@ -69,8 +98,9 @@ export const useDesk = create<DeskState>((set, get) => ({
     return href;
   },
   signOut: () => {
+    writeGranted(false);
     try {
-      sessionStorage.removeItem(ACCESS_KEY);
+      localStorage.removeItem(PENDING_KEY);
     } catch {
       /* private mode */
     }

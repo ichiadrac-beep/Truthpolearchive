@@ -13,7 +13,8 @@ import {
 } from "@/lib/archive-cases";
 
 type PeekState = { file: ArchiveCase; x: number; y: number };
-type PinView = { file: ArchiveCase; x: number; y: number; r: number };
+type PinView = { file: ArchiveCase; x: number; y: number; ox: number; oy: number; r: number };
+type StackState = { files: ArchiveCase[]; x: number; y: number };
 
 export type ArchiveMapProps = {
   year: number;
@@ -33,7 +34,39 @@ export type ArchiveMapProps = {
 
 const DEFAULT_ROTATE: [number, number] = [-10, 0];
 const MIN_ZOOM = 1;
-const MAX_ZOOM = 7.5;
+const MAX_ZOOM = 12;
+const GEO_URL = "/geo/countries-110m.json";
+
+type GeoCache = typeof globalThis & {
+  __archiveGeo__?: GeoJSON.FeatureCollection | null;
+  __archiveGeoLoad__?: Promise<GeoJSON.FeatureCollection | null>;
+};
+
+function loadCountries(): Promise<GeoJSON.FeatureCollection | null> {
+  const g = globalThis as GeoCache;
+  if (g.__archiveGeo__) return Promise.resolve(g.__archiveGeo__);
+  if (!g.__archiveGeoLoad__) {
+    g.__archiveGeoLoad__ = (async () => {
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        try {
+          const ctrl = new AbortController();
+          const timer = window.setTimeout(() => ctrl.abort(), 9000);
+          const res = await fetch(GEO_URL, { signal: ctrl.signal, cache: "force-cache" });
+          window.clearTimeout(timer);
+          if (!res.ok) throw new Error(`geo ${res.status}`);
+          const json = (await res.json()) as GeoJSON.FeatureCollection;
+          g.__archiveGeo__ = json;
+          return json;
+        } catch {
+          await new Promise((r) => setTimeout(r, 350 * (attempt + 1)));
+        }
+      }
+      g.__archiveGeoLoad__ = undefined;
+      return null;
+    })();
+  }
+  return g.__archiveGeoLoad__;
+}
 
 type View = {
   rotate: [number, number];
@@ -46,7 +79,68 @@ type View = {
 };
 
 function pinRadius(zoom: number) {
-  return Math.max(2.15, 8.6 / Math.pow(zoom, 0.92));
+  return 2.7 + Math.min(zoom, 12) * 0.28;
+}
+
+/** Only fan out pins that truly stack on the same spot. Never shove the whole map. */
+function resolvePinOverlap(pins: PinView[], zoom: number) {
+  if (zoom < 2.6 || pins.length < 2) return;
+  const r = pins[0]?.r ?? 3;
+  const overlap = Math.max(9, r * 2.05);
+  const maxMove = Math.min(40, 11 + zoom * 2);
+  const n = pins.length;
+  const parent = new Int32Array(n);
+  for (let i = 0; i < n; i += 1) parent[i] = i;
+  const find = (i: number): number => {
+    while (parent[i] !== i) {
+      parent[i] = parent[parent[i]];
+      i = parent[i];
+    }
+    return i;
+  };
+  const unite = (a: number, b: number) => {
+    a = find(a);
+    b = find(b);
+    if (a !== b) parent[a] = b;
+  };
+  for (let i = 0; i < n; i += 1) {
+    for (let j = i + 1; j < n; j += 1) {
+      if (Math.hypot(pins[i].ox - pins[j].ox, pins[i].oy - pins[j].oy) < overlap) unite(i, j);
+    }
+  }
+  const groups = new Map<number, number[]>();
+  for (let i = 0; i < n; i += 1) {
+    const root = find(i);
+    const list = groups.get(root);
+    if (list) list.push(i);
+    else groups.set(root, [i]);
+  }
+  for (const group of groups.values()) {
+    if (group.length < 2) continue;
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    let cx = 0;
+    let cy = 0;
+    for (const i of group) {
+      minX = Math.min(minX, pins[i].ox);
+      minY = Math.min(minY, pins[i].oy);
+      maxX = Math.max(maxX, pins[i].ox);
+      maxY = Math.max(maxY, pins[i].oy);
+      cx += pins[i].ox;
+      cy += pins[i].oy;
+    }
+    if (maxX - minX > overlap * 2.4 || maxY - minY > overlap * 2.4) continue;
+    cx /= group.length;
+    cy /= group.length;
+    const rad = Math.min(maxMove, 9 + group.length * 4.2);
+    group.forEach((i, k) => {
+      const ang = (k / group.length) * Math.PI * 2 - Math.PI / 2;
+      pins[i].x = cx + Math.cos(ang) * rad;
+      pins[i].y = cy + Math.sin(ang) * rad;
+    });
+  }
 }
 
 export function ArchiveMap({
@@ -102,7 +196,9 @@ export function ArchiveMap({
   const [ready, setReady] = useState(false);
   const [pins, setPins] = useState<PinView[]>([]);
   const [peek, setPeek] = useState<PeekState | null>(null);
+  const [stack, setStack] = useState<StackState | null>(null);
   const [playing, setPlaying] = useState(autoPlay);
+  const playingRef = useRef(playing);
   const [count, setCount] = useState(
     () => cases.filter((c) => c.year <= year).length,
   );
@@ -113,6 +209,7 @@ export function ArchiveMap({
   yearMinRef.current = yearMin;
   yearMaxRef.current = yearMax;
   stepRef.current = step;
+  playingRef.current = playing;
 
   useEffect(() => {
     setCount(cases.filter((c) => c.year <= year).length);
@@ -134,11 +231,14 @@ export function ArchiveMap({
 
     const draw = () => {
       const geo = geoRef.current;
-      const ctx = canvas.getContext("2d");
-      if (!geo || !ctx || cancelled) return;
+      const ctx = canvas.getContext("2d", { alpha: false });
+      if (!ctx || cancelled) return;
       const w = host.clientWidth;
       const h = host.clientHeight;
-      if (w < 40 || h < 80) return;
+      if (w < 40 || h < 80) {
+        animRef.current = requestAnimationFrame(draw);
+        return;
+      }
 
       const v = viewRef.current;
       v.zoom += (v.targetZoom - v.zoom) * 0.22;
@@ -156,14 +256,21 @@ export function ArchiveMap({
         canvas.style.height = `${h}px`;
       }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, w, h);
       ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, w, h);
+
+      const movingNow =
+        Math.abs(v.targetZoom - v.zoom) > 0.003 ||
+        Math.abs(v.targetTx - v.tx) > 0.15 ||
+        Math.abs(v.targetTy - v.ty) > 0.15 ||
+        Boolean(dragRef.current) ||
+        Boolean(pinchRef.current) ||
+        playingRef.current;
 
       const padX = Math.max(10, w * 0.05);
       const padY = Math.max(18, h * 0.07);
       const projection = geoMollweide()
-        .precision(0.4)
+        .precision(movingNow ? 1.6 : 0.4)
         .rotate([v.rotate[0], v.rotate[1], 0])
         .fitExtent(
           [
@@ -190,11 +297,13 @@ export function ArchiveMap({
       ctx.lineWidth = 0.55;
       ctx.stroke();
 
-      ctx.beginPath();
-      path(geo);
-      ctx.strokeStyle = "rgba(220,220,224,0.82)";
-      ctx.lineWidth = 0.7;
-      ctx.stroke();
+      if (geo) {
+        ctx.beginPath();
+        path(geo);
+        ctx.strokeStyle = "rgba(220,220,224,0.82)";
+        ctx.lineWidth = 0.7;
+        ctx.stroke();
+      }
       ctx.restore();
 
       ctx.beginPath();
@@ -210,14 +319,35 @@ export function ArchiveMap({
         const p = projection([file.lng, file.lat]);
         if (!p) continue;
         if (p[0] < -20 || p[0] > w + 20 || p[1] < -20 || p[1] > h + 20) continue;
-        next.push({ file, x: p[0], y: p[1], r });
+        next.push({ file, x: p[0], y: p[1], ox: p[0], oy: p[1], r });
+      }
+      resolvePinOverlap(next, v.zoom);
+      for (const pin of next) {
+        const moved = Math.hypot(pin.x - pin.ox, pin.y - pin.oy);
+        if (moved > 2.4) {
+          ctx.beginPath();
+          ctx.moveTo(pin.ox, pin.oy);
+          ctx.lineTo(pin.x, pin.y);
+          ctx.strokeStyle = "rgba(177,31,31,0.62)";
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(pin.ox, pin.oy, 1.35, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(230,230,232,0.55)";
+          ctx.fill();
+        }
         ctx.beginPath();
-        ctx.arc(p[0], p[1], r, 0, Math.PI * 2);
+        ctx.arc(pin.x, pin.y, r, 0, Math.PI * 2);
         ctx.fillStyle = "#b11f1f";
         ctx.shadowColor = "rgba(140,20,20,0.85)";
-        ctx.shadowBlur = Math.max(2, 8 / v.zoom);
+        ctx.shadowBlur = movingNow ? 0 : Math.max(2, 7 / Math.max(1, v.zoom * 0.45));
         ctx.fill();
         ctx.shadowBlur = 0;
+        ctx.beginPath();
+        ctx.arc(pin.x, pin.y, r, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(255,255,255,0.55)";
+        ctx.lineWidth = 1.05;
+        ctx.stroke();
       }
       pinsRef.current = next;
       if (!markedReady.current) {
@@ -227,6 +357,7 @@ export function ArchiveMap({
       const settled =
         !dragRef.current &&
         !pinchRef.current &&
+        !playingRef.current &&
         Math.abs(v.targetZoom - v.zoom) < 0.02 &&
         Math.abs(v.targetTx - v.tx) < 0.5;
       if (settled) {
@@ -239,11 +370,7 @@ export function ArchiveMap({
         }
       }
 
-      const moving =
-        Math.abs(v.targetZoom - v.zoom) > 0.003 ||
-        Math.abs(v.targetTx - v.tx) > 0.15 ||
-        Math.abs(v.targetTy - v.ty) > 0.15;
-      if (moving) animRef.current = requestAnimationFrame(draw);
+      if (movingNow) animRef.current = requestAnimationFrame(draw);
     };
 
     const schedule = () => {
@@ -251,31 +378,43 @@ export function ArchiveMap({
       animRef.current = requestAnimationFrame(draw);
     };
 
-    void (async () => {
-      const geo = (await fetch("/geo/countries-110m.json").then((r) => r.json())) as GeoJSON.FeatureCollection;
-      if (cancelled) return;
+    const cached = (globalThis as GeoCache).__archiveGeo__;
+    if (cached) geoRef.current = cached;
+    schedule();
+    void loadCountries().then((geo) => {
+      if (cancelled || !geo) return;
       geoRef.current = geo;
       schedule();
-    })();
+    });
 
     resize = new ResizeObserver(schedule);
     resize.observe(host);
 
-    const hitPin = (clientX: number, clientY: number) => {
+    const hitsAt = (clientX: number, clientY: number) => {
       const rect = canvas.getBoundingClientRect();
       const x = clientX - rect.left;
       const y = clientY - rect.top;
-      let best: PinView | null = null;
-      let bestD = 32;
-      for (const pin of pinsRef.current) {
-        const d = Math.hypot(pin.x - x, pin.y - y);
-        const reach = Math.max(28, pin.r * 4);
-        if (d < reach && d < bestD) {
-          bestD = d;
-          best = pin;
-        }
+      const z = viewRef.current.zoom;
+      const reach = Math.max(36, 24 + z * 3.4);
+      return pinsRef.current
+        .map((p) => ({ p, d: Math.hypot(p.x - x, p.y - y) }))
+        .filter((h) => h.d < reach)
+        .sort((a, b) => a.d - b.d);
+    };
+
+    const hitPin = (clientX: number, clientY: number) => hitsAt(clientX, clientY)[0]?.p ?? null;
+
+    const openHits = (hits: { p: PinView; d: number }[], x: number, y: number) => {
+      if (!hits.length) return;
+      const band = hits.filter((h) => h.d <= hits[0].d + 20).map((h) => h.p.file);
+      const uniq = band.filter((file, i) => band.findIndex((f) => f.id === file.id) === i);
+      if (uniq.length > 1) {
+        setPeek(null);
+        setStack({ files: uniq, x, y });
+        return;
       }
-      return best;
+      setStack(null);
+      onOpenRef.current(hits[0].p.file);
     };
 
     const clearHold = () => {
@@ -358,11 +497,15 @@ export function ArchiveMap({
       const wasPeeking = peekingRef.current;
       dragRef.current = null;
       clearHold();
-      if (drag && !drag.moved && drag.pin && !wasPeeking) {
+      if (drag && !drag.moved && !wasPeeking) {
         dismissPeek();
-        onOpenRef.current(drag.pin);
+        const hits = hitsAt(ev.clientX, ev.clientY);
+        if (hits[0]) openHits(hits, hits[0].p.x, hits[0].p.y);
       }
-      if (drag?.moved) dismissPeek();
+      if (drag?.moved) {
+        dismissPeek();
+        setStack(null);
+      }
       try {
         canvas.releasePointerCapture(ev.pointerId);
       } catch {
@@ -486,7 +629,9 @@ export function ArchiveMap({
             ref={canvasRef}
             className="block size-full cursor-grab touch-none active:cursor-grabbing"
           />
-          {pins.map((pin) => (
+          {pins.map((pin) => {
+            const tap = Math.max(48, pin.r * 6.2);
+            return (
             <button
               key={pin.file.id}
               type="button"
@@ -496,8 +641,8 @@ export function ArchiveMap({
               style={{
                 left: pin.x,
                 top: pin.y,
-                width: Math.max(40, pin.r * 5.5),
-                height: Math.max(40, pin.r * 5.5),
+                width: tap,
+                height: tap,
               }}
               onPointerDown={(ev) => {
                 ev.stopPropagation();
@@ -524,6 +669,15 @@ export function ArchiveMap({
                 if (!shown) {
                   peekingRef.current = false;
                   setPeek(null);
+                  const nearby = pins
+                    .filter((p) => Math.hypot(p.x - pin.x, p.y - pin.y) < 28)
+                    .map((p) => p.file);
+                  const uniq = nearby.filter((file, i) => nearby.findIndex((f) => f.id === file.id) === i);
+                  if (uniq.length > 1) {
+                    setStack({ files: uniq, x: pin.x, y: pin.y });
+                    return;
+                  }
+                  setStack(null);
                   onOpen(pin.file);
                 }
               }}
@@ -536,12 +690,24 @@ export function ArchiveMap({
                 ev.stopPropagation();
               }}
             />
-          ))}
+            );
+          })}
         </div>
         {!ready ? (
           <p className="pointer-events-none absolute inset-0 grid place-items-center font-display text-xs tracking-kicker text-muted">
             PLOTTING FILES
           </p>
+        ) : null}
+
+        {stack ? (
+          <StackCard
+            stack={stack}
+            onOpen={(file) => {
+              setStack(null);
+              onOpen(file);
+            }}
+            onClose={() => setStack(null)}
+          />
         ) : null}
 
         {peek ? (
@@ -647,6 +813,56 @@ export function ArchiveMap({
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function StackCard({
+  stack,
+  onOpen,
+  onClose,
+}: {
+  stack: StackState;
+  onOpen: (file: ArchiveCase) => void;
+  onClose: () => void;
+}) {
+  const width = 280;
+  const placeAbove = stack.y > 210;
+  return (
+    <div
+      role="dialog"
+      aria-label="Cases at this point"
+      className="peek-card glass-strong pointer-events-auto absolute z-40 rounded-3xl px-4 pt-3 pb-2"
+      style={{
+        width,
+        left: `min(max(10px, ${Math.round(stack.x) - width / 2}px), calc(100% - ${width + 10}px))`,
+        top: placeAbove ? Math.max(8, stack.y - 220) : stack.y + 22,
+      }}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <p className="font-display text-[11px] font-medium tracking-[0.32em] text-fg/45">
+          {stack.files.length} CASES HERE
+        </p>
+        <GlassButton variant="icon" className="size-9 shrink-0" aria-label="Close list" onClick={onClose}>
+          <X className="size-4" strokeWidth={1.7} />
+        </GlassButton>
+      </div>
+      <ul className="mt-1 max-h-52 overflow-y-auto overscroll-contain">
+        {stack.files.map((file) => (
+          <li key={file.id} className="border-t border-fg/10 first:border-t-0">
+            <button
+              type="button"
+              className="flex w-full min-h-11 flex-col items-start py-2 text-left"
+              onClick={() => onOpen(file)}
+            >
+              <span className="font-serif text-[1.15rem] leading-none text-fg">{file.title}</span>
+              <span className="mt-1 text-[12px] text-fg/50">
+                {file.place} · {formatYearLabel(file.year)}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

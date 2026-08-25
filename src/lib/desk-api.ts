@@ -1,6 +1,5 @@
-import { censorHard } from "@/lib/censor";
-import { getGuestId, guestAlias } from "@/lib/guest-id";
-import { getScifClearance, type ScifClearance } from "@/lib/scif";
+import { getGuestId } from "@/lib/guest-id";
+import type { ScifClearance } from "@/lib/scif";
 
 export type FilingRow = {
   id: string;
@@ -29,19 +28,6 @@ export type PoleMessage = {
 };
 
 const FILINGS_KEY = "truthpole-filings-v2";
-const POLE_KEY = "truthpole-pole-v2";
-const POLE_TTL_MS = 6 * 60 * 1000;
-
-type PoleStored = {
-  id: string;
-  guestId: string;
-  body: string;
-  at: number;
-  alias: string;
-  anon: boolean;
-  scifCode: string;
-  scifTitle: string;
-};
 
 function loadFilings(): FilingRow[] {
   if (typeof window === "undefined") return [];
@@ -61,42 +47,6 @@ function saveFilings(rows: FilingRow[]) {
   } catch {
     /* quota */
   }
-}
-
-function loadPole(): PoleStored[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(POLE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as PoleStored[];
-    if (!Array.isArray(parsed)) return [];
-    const now = Date.now();
-    return parsed.filter((m) => now - m.at < POLE_TTL_MS).slice(-80);
-  } catch {
-    return [];
-  }
-}
-
-function savePole(rows: PoleStored[]) {
-  try {
-    localStorage.setItem(POLE_KEY, JSON.stringify(rows.slice(-80)));
-  } catch {
-    /* quota */
-  }
-}
-
-function toMessages(rows: PoleStored[], guestId: string): PoleMessage[] {
-  const now = Date.now();
-  return rows.map((m) => ({
-    id: m.id,
-    alias: m.alias || guestAlias(m.guestId),
-    body: m.body,
-    ageSec: Math.max(0, Math.round((now - m.at) / 1000)),
-    mine: m.guestId === guestId,
-    anon: Boolean(m.anon),
-    scifCode: m.scifCode || "SCIF-1",
-    scifTitle: m.scifTitle || "CONFIDENTIAL",
-  }));
 }
 
 export async function submitFiling(args: {
@@ -136,24 +86,14 @@ export async function submitFiling(args: {
 }
 
 export async function heartbeatPole(args: { data: { guestId: string } }): Promise<{ online: number }> {
-  void args;
-  try {
-    const n = Number(sessionStorage.getItem("truthpole-pole-online") || "1");
-    sessionStorage.setItem("truthpole-pole-online", String(Math.max(1, n)));
-  } catch {
-    /* ignore */
-  }
-  return { online: 1 + Math.floor(Math.random() * 3) };
+  const snap = await poleCall({ guestId: args.data.guestId || getGuestId(), heartbeat: true });
+  return { online: snap.online };
 }
 
 export async function listPoleMessages(args: {
   data: { guestId: string };
 }): Promise<{ online: number; ttlMin: number; messages: PoleMessage[] }> {
-  const guestId = args.data.guestId || getGuestId();
-  const rows = loadPole();
-  savePole(rows);
-  const beat = await heartbeatPole({ data: { guestId } });
-  return { online: beat.online, ttlMin: 6, messages: toMessages(rows, guestId) };
+  return poleCall({ guestId: args.data.guestId || getGuestId(), heartbeat: true });
 }
 
 export async function sendPoleMessage(args: {
@@ -165,29 +105,35 @@ export async function sendPoleMessage(args: {
     scif?: ScifClearance;
   };
 }): Promise<{ online: number; ttlMin: number; messages: PoleMessage[] }> {
-  const guestId = args.data.guestId || getGuestId();
-  const body = censorHard(args.data.body);
-  if (!body) return listPoleMessages({ data: { guestId } });
-  const scif = args.data.scif ?? getScifClearance();
-  const anon = Boolean(args.data.anon);
-  const displayName = (args.data.displayName ?? "").trim();
-  const alias = anon ? "ANON" : displayName || guestAlias(guestId);
-  const rows = loadPole();
-  rows.push({
-    id:
-      typeof crypto !== "undefined" && "randomUUID" in crypto
-        ? crypto.randomUUID()
-        : `m-${Date.now()}`,
-    guestId,
-    body,
-    at: Date.now(),
-    alias,
-    anon,
-    scifCode: scif.code,
-    scifTitle: scif.title,
+  return poleCall({
+    guestId: args.data.guestId || getGuestId(),
+    body: args.data.body,
+    anon: args.data.anon,
+    displayName: args.data.displayName,
+    scif: args.data.scif,
   });
-  savePole(rows);
-  const beat = await heartbeatPole({ data: { guestId } });
-  return { online: beat.online, ttlMin: 6, messages: toMessages(rows, guestId) };
+}
+
+async function poleCall(payload: {
+  guestId: string;
+  body?: string;
+  anon?: boolean;
+  displayName?: string;
+  scif?: ScifClearance;
+  heartbeat?: boolean;
+}): Promise<{ online: number; ttlMin: number; messages: PoleMessage[] }> {
+  const res = await fetch("/api/pole", {
+    method: "POST",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    cache: "no-store",
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error("pole offline");
+  const data = (await res.json()) as { online?: number; ttlMin?: number; messages?: PoleMessage[] };
+  return {
+    online: Math.max(1, Number(data.online) || 1),
+    ttlMin: Number(data.ttlMin) || 6,
+    messages: Array.isArray(data.messages) ? data.messages : [],
+  };
 }
 

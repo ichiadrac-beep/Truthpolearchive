@@ -1,4 +1,5 @@
 import type { DeskFile } from "@/lib/desk-file";
+import { ANCIENT_FILES_CONTACT } from "@/lib/ancient-files-contact";
 import { ANCIENT_FILES_EXTRA } from "@/lib/ancient-files-extra";
 
 export const ANCIENT_FILES: DeskFile[] = [
@@ -354,4 +355,5 @@ export const ANCIENT_FILES: DeskFile[] = [
     year: 500,
   },
   ...ANCIENT_FILES_EXTRA,
+  ...ANCIENT_FILES_CONTACT,
 ];

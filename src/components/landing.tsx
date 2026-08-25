@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { AlienLogo } from "@/components/alien-logo";
 import { GlassButton } from "@/components/glass-button";
+import { useClearanceTonight } from "@/hooks/use-clearance";
+import { matchClearancePhrase, revealClearanceMemo } from "@/lib/clearance";
 import { LANDING_TAB_ROWS } from "@/lib/tabs";
 import { useDesk } from "@/lib/store";
 import { APP_VERSION_LABEL } from "@/lib/version";
@@ -56,6 +58,7 @@ export function Landing() {
   const clearExitHome = useDesk((s) => s.clearExitHome);
   const armArchiveSweep = useDesk((s) => s.armArchiveSweep);
   const [ready, setReady] = useState(false);
+  const tonight = useClearanceTonight();
 
   useEffect(() => {
     if (exitHome) clearExitHome();
@@ -66,13 +69,28 @@ export function Landing() {
   }, []);
 
   return (
-    <main className="landing relative z-10 flex min-h-dvh flex-col bg-transparent">
+    <main className="landing relative z-10 flex min-h-dvh flex-col bg-transparent pointer-events-none">
       <LandingCosmos />
-      <div className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col px-6 pt-[max(2.5rem,env(safe-area-inset-top))]">
-        <div className="stagger-in flex flex-1 flex-col items-center justify-center text-center">
-          <p className="font-display text-[11px] font-medium tracking-[0.42em] text-fg/55">
-            CLASSIFIED DESK
-          </p>
+      <div className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col px-6 pt-[max(2.5rem,env(safe-area-inset-top))] pointer-events-none">
+        <div className="stagger-in flex flex-1 flex-col items-center justify-center text-center pointer-events-none">
+          <label className="relative mt-0 block w-full max-w-[18rem] pointer-events-auto">
+            <span className="sr-only">Desk clearance</span>
+            <input
+              name="tp_desk_clearance"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="characters"
+              spellCheck={false}
+              placeholder="CLASSIFIED DESK"
+              className="w-full border-0 bg-transparent text-center font-display text-[11px] font-medium tracking-[0.42em] text-fg/55 caret-fg/40 outline-none placeholder:text-fg/55"
+              aria-label="Classified desk"
+              onChange={(event) => {
+                if (!matchClearancePhrase(event.target.value)) return;
+                event.target.value = "";
+                event.target.blur();
+              }}
+            />
+          </label>
 
           <AlienLogo className="mt-6 h-36 w-36" />
 
@@ -88,27 +106,48 @@ export function Landing() {
             A black record of what the sky keeps returning.
           </p>
 
-          <div className="landing-cta relative z-20 mt-9 w-full max-w-sm">
+          <div className="landing-cta relative z-20 mt-9 w-full max-w-sm pointer-events-auto">
             <GlassButton asChild variant="primary" className="h-12 w-full rounded-full">
               <Link to="/archive" onClick={() => armArchiveSweep()}>
                 Enter the archive
               </Link>
             </GlassButton>
             {ready ? (
-              <GlassButton asChild variant="ghost" className="h-[3.35rem] w-full flex-col rounded-full">
-                <Link to="/archive" aria-label="Tonight’s file: Cussac">
-                  <span className="whitespace-nowrap font-display text-[10px] font-medium tracking-[0.28em] text-fg/55">
-                    TONIGHT’S FILE
-                  </span>
-                  <span className="font-serif text-[15px] font-normal text-fg">Cussac</span>
-                </Link>
-              </GlassButton>
+              <>
+                {tonight.special ? (
+                  <GlassButton
+                    variant="ghost"
+                    className="h-[3.35rem] w-full flex-col rounded-full"
+                    aria-label={`Tonight’s file: ${tonight.title}`}
+                    onClick={() => revealClearanceMemo(tonight.special!)}
+                  >
+                    <span className="whitespace-nowrap font-display text-[10px] font-medium tracking-[0.28em] text-fg/55">
+                      TONIGHT’S FILE
+                    </span>
+                    <span className="font-serif text-[15px] font-normal text-fg">{tonight.title}</span>
+                  </GlassButton>
+                ) : (
+                  <GlassButton asChild variant="ghost" className="h-[3.35rem] w-full flex-col rounded-full">
+                    <Link to="/archive" aria-label={`Tonight’s file: ${tonight.title}`}>
+                      <span className="whitespace-nowrap font-display text-[10px] font-medium tracking-[0.28em] text-fg/55">
+                        TONIGHT’S FILE
+                      </span>
+                      <span className="font-serif text-[15px] font-normal text-fg">{tonight.title}</span>
+                    </Link>
+                  </GlassButton>
+                )}
+                {tonight.anniversary ? (
+                  <p className="mt-2 font-display text-[10px] tracking-[0.28em] text-fg/40">
+                    Anniversary desk.
+                  </p>
+                ) : null}
+              </>
             ) : (
               <div className="h-[3.35rem] w-full" aria-hidden="true" />
             )}
           </div>
 
-          <div className="relative z-20 mt-8 flex w-full flex-col items-center gap-2.5">
+          <div className="relative z-20 mt-8 flex w-full flex-col items-center gap-2.5 pointer-events-auto">
             {LANDING_TAB_ROWS.map((row, i) => (
               <div key={i} className="flex flex-wrap justify-center gap-2">
                 {row.map((tab) => (

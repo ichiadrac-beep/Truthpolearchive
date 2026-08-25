@@ -1,10 +1,24 @@
 TRUTHPOLE — The Archive
-Automated backup created 20260825-110428 UTC
+Full restorefile created 20260825-213056 UTC
+
+Snapshot: restore-20260825-current
+Repo: https://github.com/ichiadrac-beep/Truthpolearchive
+Tag: restore-20260825-current
+Branch: backup/restore-20260825-current
 
 Contents: src, public, server, scripts, migrations, package.json, configs
-Excludes: node_modules, dist, .output, .nitro, .vercel, logs
+Excludes: node_modules, dist, .output, .nitro, .vercel, logs, backups, .git
 
 Restore:
-  unzip -o TRUTHPOLE-backup-20260825-110428.zip -d /path/to/project
+  unzip -o TRUTHPOLE-restore-20260825-current.zip -d /path/to/project
   npm install
   npm run dev   # or: sh startup.sh
+
+Git restore:
+  git clone https://github.com/ichiadrac-beep/Truthpolearchive.git
+  cd Truthpolearchive
+  git checkout restore-20260825-current
+  npm install
+  npm run dev
+
+V 1.0 is unchanged: tag v1.0.0 / branch backup/v1.0

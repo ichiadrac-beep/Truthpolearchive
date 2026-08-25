@@ -11,21 +11,18 @@ type Shoot = {
   w: number;
   color: string;
   glow: string;
-  prism: boolean;
+  head: string;
 };
 type Craft =
   | { kind: "triangle"; x: number; y: number; vx: number; vy: number; life: number; max: number }
   | { kind: "tic"; x: number; y: number; vx: number; vy: number; life: number; max: number }
   | { kind: "orb"; x: number; y: number; vx: number; vy: number; life: number; max: number; color: string };
 
-const SHOOT_PALETTE: { color: string; glow: string; weight: number; prism?: boolean }[] = [
-  { color: "rgba(243,243,241,0.95)", glow: "rgba(243,243,241,0.55)", weight: 58 },
-  { color: "rgba(186,214,255,0.95)", glow: "rgba(140,180,255,0.5)", weight: 16 },
-  { color: "rgba(232,214,160,0.95)", glow: "rgba(232,200,120,0.45)", weight: 12 },
-  { color: "rgba(140,230,170,0.95)", glow: "rgba(90,210,140,0.5)", weight: 8 },
-  { color: "rgba(220,90,90,0.95)", glow: "rgba(200,70,70,0.5)", weight: 4 },
-  { color: "rgba(190,150,255,0.95)", glow: "rgba(160,120,255,0.5)", weight: 1.6 },
-  { color: "rgba(120,255,230,1)", glow: "rgba(255,210,120,0.7)", weight: 0.4, prism: true },
+const SHOOT_PALETTE: { color: string; glow: string; head: string; weight: number }[] = [
+  { color: "rgba(232,232,230,0.88)", glow: "rgba(200,204,210,0.34)", head: "rgba(246,246,244,0.9)", weight: 70 },
+  { color: "rgba(164,204,176,0.72)", glow: "rgba(120,176,140,0.26)", head: "rgba(214,228,216,0.82)", weight: 20 },
+  { color: "rgba(196,160,104,0.74)", glow: "rgba(176,132,72,0.24)", head: "rgba(228,204,158,0.82)", weight: 8 },
+  { color: "rgba(118,32,34,0.8)", glow: "rgba(92,18,20,0.28)", head: "rgba(168,64,66,0.78)", weight: 2 },
 ];
 
 function pickShoot() {
@@ -115,10 +112,10 @@ export function StarField({ paused }: { paused: boolean }) {
         vy: Math.sin(ang) * speed,
         life: 0,
         max: 28 + Math.random() * 18,
-        w: pal.prism ? 2.2 : 1.15 + Math.random() * 0.6,
+        w: 1.05 + Math.random() * 0.45,
         color: pal.color,
         glow: pal.glow,
-        prism: Boolean(pal.prism),
+        head: pal.head,
       });
     };
 
@@ -199,21 +196,14 @@ export function StarField({ paused }: { paused: boolean }) {
         ctx.translate(s.x, s.y);
         ctx.rotate(ang);
         const grad = ctx.createLinearGradient(-len, 0, 8, 0);
-        if (s.prism) {
-          grad.addColorStop(0, "rgba(120,255,230,0)");
-          grad.addColorStop(0.45, `rgba(120,255,230,${0.85 * alpha})`);
-          grad.addColorStop(0.75, `rgba(255,210,140,${0.9 * alpha})`);
-          grad.addColorStop(1, `rgba(255,255,255,${alpha})`);
-        } else {
-          grad.addColorStop(0, "transparent");
-          grad.addColorStop(0.7, s.glow.replace(/[\d.]+\)$/g, `${0.35 * alpha})`));
-          grad.addColorStop(1, s.color.replace(/[\d.]+\)$/g, `${alpha})`));
-        }
+        grad.addColorStop(0, "transparent");
+        grad.addColorStop(0.72, s.glow.replace(/[\d.]+\)$/g, `${0.28 * alpha})`));
+        grad.addColorStop(1, s.color.replace(/[\d.]+\)$/g, `${0.9 * alpha})`));
         ctx.fillStyle = grad;
         ctx.fillRect(-len, -s.w / 2, len + 6, s.w);
         ctx.beginPath();
-        ctx.fillStyle = `rgba(255,255,255,${0.9 * alpha})`;
-        ctx.arc(0, 0, s.w * 0.7, 0, Math.PI * 2);
+        ctx.fillStyle = s.head.replace(/[\d.]+\)$/g, `${0.85 * alpha})`);
+        ctx.arc(0, 0, s.w * 0.62, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
         if (s.life > s.max || s.x > w + 80 || s.y > h + 80) shoots.splice(i, 1);

@@ -16,7 +16,7 @@ export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" },
       { title: APP_NAME },
       { name: "description", content: "TRUTHPOLE — The Archive. A classified desk for UAP files." },
       { name: "theme-color", content: "#050506" },
@@ -33,6 +33,7 @@ export const Route = createRootRoute({
         href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Rajdhani:wght@500;600;700&display=swap",
       },
       { rel: "preload", as: "image", href: "/logo-alien.png" },
+      { rel: "preload", as: "fetch", href: "/geo/countries-110m.json", crossOrigin: "anonymous" },
       { rel: "preload", as: "image", href: "/alien-hand.jpg?v=2" },
       { rel: "preload", as: "audio", href: "/audio/scan.mp3" },
       { rel: "preload", as: "audio", href: "/audio/access-granted.mp3" },

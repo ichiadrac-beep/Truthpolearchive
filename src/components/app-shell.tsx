@@ -12,6 +12,7 @@ import { getGuestId } from "@/lib/guest-id";
 import { stampScifVisit } from "@/lib/scif";
 import { useDesk } from "@/lib/store";
 import { DESK_HEADER } from "@/lib/tabs";
+import { useVisualKeyboard } from "@/lib/use-visual-keyboard";
 import { cn } from "@/lib/utils";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -22,6 +23,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [moreOpen, setMoreOpen] = useState(false);
   const fill = pathname === "/archive" || pathname === "/the-pole";
   const meta = DESK_HEADER[pathname] ?? { name: "Archive" };
+  const kb = useVisualKeyboard();
 
   useEffect(() => {
     const id = getGuestId();
@@ -58,7 +60,14 @@ export function AppShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="relative z-10 flex h-dvh max-h-dvh flex-col overflow-hidden bg-transparent">
+    <div
+      className="relative z-10 flex flex-col overflow-hidden bg-transparent"
+      style={
+        kb.open
+          ? { height: kb.height, maxHeight: kb.height, transform: `translate3d(0, ${kb.offsetTop}px, 0)` }
+          : { height: "100dvh", maxHeight: "100dvh" }
+      }
+    >
       <header className="z-30 flex shrink-0 items-center justify-between gap-3 px-4 pt-[max(0.7rem,env(safe-area-inset-top))] pb-2">
         <Link to="/" className="flex min-w-0 items-center gap-3" aria-label="TRUTHPOLE home">
           <AlienLogo className="h-11 w-11 shrink-0" />
@@ -98,14 +107,16 @@ export function AppShell({ children }: { children: ReactNode }) {
         {children}
       </div>
       <MoreSheet open={moreOpen} onOpenChange={setMoreOpen} onSelect={go} />
-      <div className="z-40 shrink-0">
-        <DeskNav
-          activeHref={pathname}
-          moreOpen={moreOpen}
-          onSelect={go}
-          onMore={() => setMoreOpen((v) => !v)}
-        />
-      </div>
+      {kb.open ? null : (
+        <div className="z-40 shrink-0">
+          <DeskNav
+            activeHref={pathname}
+            moreOpen={moreOpen}
+            onSelect={go}
+            onMore={() => setMoreOpen((v) => !v)}
+          />
+        </div>
+      )}
     </div>
   );
 }
