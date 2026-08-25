@@ -33,7 +33,7 @@ export const Route = createRootRoute({
         href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Rajdhani:wght@500;600;700&display=swap",
       },
       { rel: "preload", as: "image", href: "/logo-alien.png" },
-      { rel: "preload", as: "image", href: "/alien-hand.jpg" },
+      { rel: "preload", as: "image", href: "/alien-hand.jpg?v=2" },
       { rel: "preload", as: "audio", href: "/audio/scan.mp3" },
       { rel: "preload", as: "audio", href: "/audio/access-granted.mp3" },
     ],

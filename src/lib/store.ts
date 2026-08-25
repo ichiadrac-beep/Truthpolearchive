@@ -13,6 +13,7 @@ type DeskState = {
   pendingHref: string | null;
   handReady: boolean;
   exitHome: boolean;
+  archiveSweep: boolean;
   hydrate: () => void;
   setHandReady: (ready: boolean) => void;
   setPanelOpen: (open: boolean) => void;
@@ -22,6 +23,8 @@ type DeskState = {
   completeScan: () => string;
   signOut: () => void;
   clearExitHome: () => void;
+  armArchiveSweep: () => void;
+  consumeArchiveSweep: () => void;
 };
 
 function readGranted() {
@@ -41,6 +44,7 @@ export const useDesk = create<DeskState>((set, get) => ({
   pendingHref: null,
   handReady: false,
   exitHome: false,
+  archiveSweep: false,
   hydrate: () => {
     if (get().hydrated) return;
     set({ hydrated: true, accessGranted: readGranted() });
@@ -78,4 +82,6 @@ export const useDesk = create<DeskState>((set, get) => ({
     });
   },
   clearExitHome: () => set({ exitHome: false }),
+  armArchiveSweep: () => set({ archiveSweep: true }),
+  consumeArchiveSweep: () => set({ archiveSweep: false }),
 }));

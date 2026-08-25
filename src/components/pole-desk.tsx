@@ -1,17 +1,43 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowUp } from "lucide-react";
 import { GlassButton } from "@/components/glass-button";
+import { displayPoleBody } from "@/lib/censor";
 import { listPoleMessages, sendPoleMessage, type PoleMessage } from "@/lib/desk-api";
 import { getGuestId, guestAlias } from "@/lib/guest-id";
+import { authClient, authEnabled, signIn } from "@/lib/auth/client";
+import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import {
+  accountChatName,
+  formatScifBadge,
+  getAnonPref,
+  getGraphicFilterPref,
+  getScifClearance,
+  saveAnonPref,
+  saveGraphicFilterPref,
+  stampScifVisit,
+  type ScifClearance,
+} from "@/lib/scif";
+import { cn } from "@/lib/utils";
 
 export function PoleDesk() {
   const guestId = useRef("guest-preview");
+  const { user } = useCurrentUserState();
+  const sessionUser = authClient.useSession().data?.user as
+    | { username?: string | null; name?: string | null }
+    | undefined;
+  const xName = accountChatName(
+    user ? { ...user, username: sessionUser?.username ?? null } : null,
+  );
   const [alias, setAlias] = useState("GUEST");
+  const [anon, setAnon] = useState(false);
+  const [graphic, setGraphic] = useState(true);
+  const [scif, setScif] = useState<ScifClearance>(() => getScifClearance());
   const [online, setOnline] = useState(1);
   const [ttl, setTtl] = useState(6);
   const [messages, setMessages] = useState<PoleMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
+  const [xBusy, setXBusy] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
 
   const apply = (payload: { online: number; ttlMin: number; messages: PoleMessage[] }) => {
@@ -23,6 +49,9 @@ export function PoleDesk() {
   useEffect(() => {
     guestId.current = getGuestId();
     setAlias(guestAlias(guestId.current));
+    setAnon(getAnonPref());
+    setGraphic(getGraphicFilterPref());
+    setScif(stampScifVisit());
     let alive = true;
     const tick = async () => {
       try {
@@ -46,6 +75,8 @@ export function PoleDesk() {
     el.scrollTop = el.scrollHeight;
   }, [messages.length]);
 
+  const publicName = anon ? "ANON" : xName || alias;
+
   const onSend = async (event: FormEvent) => {
     event.preventDefault();
     const body = draft.trim();
@@ -53,13 +84,40 @@ export function PoleDesk() {
     setBusy(true);
     setDraft("");
     try {
-      const next = await sendPoleMessage({ data: { guestId: guestId.current, body } });
+      const next = await sendPoleMessage({
+        data: {
+          guestId: guestId.current,
+          body,
+          anon,
+          displayName: xName,
+          scif,
+        },
+      });
       apply(next);
     } catch {
       setDraft(body);
     } finally {
       setBusy(false);
     }
+  };
+
+  const toggleAnon = () => {
+    const next = !anon;
+    setAnon(next);
+    saveAnonPref(next);
+  };
+
+  const toggleGraphic = () => {
+    const next = !graphic;
+    setGraphic(next);
+    saveGraphicFilterPref(next);
+  };
+
+  const connectX = () => {
+    setXBusy(true);
+    void signIn("grok-x", { callbackURL: "/the-pole", errorCallbackURL: "/the-pole" }).finally(() => {
+      setXBusy(false);
+    });
   };
 
   return (
@@ -74,9 +132,15 @@ export function PoleDesk() {
         </div>
         <h1 className="mt-3 font-serif text-[2.35rem] leading-none text-fg">Live channel</h1>
         <p className="mt-3 max-w-prose text-sm leading-relaxed text-fg/65">
-          Guest notes. Heavy swears are cut. Lines fade after {ttl} minutes.
+          Notes from the desk. Hard swears are cut on send. Lines fade after {ttl} minutes.
         </p>
-        <p className="mt-1 font-display text-[11px] tracking-[0.2em] text-fg/40">You are {alias}</p>
+        <p className="mt-2 font-display text-[11px] tracking-[0.16em] text-fg/55">
+          You are {publicName} · {formatScifBadge(scif)} · {scif.days} {scif.days === 1 ? "day" : "days"}
+        </p>
+        <p className="mt-1 text-sm leading-relaxed text-fg/45">
+          SCIF clearance is the desk rank. It rises with days you open TRUTHPOLE.
+          {!anon && !xName ? " Sign in with X to post under your X name." : ""}
+        </p>
       </header>
 
       <div
@@ -97,42 +161,73 @@ export function PoleDesk() {
                   : "mr-auto rounded-[1.15rem] rounded-bl-md bg-fg/[0.06]"
               }`}
             >
-              <p className="font-display text-[10px] tracking-[0.2em] text-fg/40">
-                {msg.mine ? "YOU" : msg.alias}
-                <span className="ml-2 tabular-nums">{formatAge(msg.ageSec)}</span>
+              <p className="font-display text-[10px] tracking-[0.16em] text-fg/40">
+                {msg.mine ? `YOU · ${msg.alias}` : msg.alias}
+                {" · "}
+                <span className="text-fg/55">{msg.scifCode}</span>
+                {" · "}
+                <span className="tabular-nums">{formatAge(msg.ageSec)}</span>
               </p>
               <p className="mt-1 whitespace-pre-wrap break-words text-left text-[15px] leading-relaxed text-fg">
-                {msg.body}
+                {displayPoleBody(msg.body, graphic)}
               </p>
             </article>
           ))
         )}
       </div>
 
-      <form className="pole-composer shrink-0 py-3" onSubmit={onSend}>
-        <label className="sr-only" htmlFor="pole-draft">
-          Message
-        </label>
-        <input
-          id="pole-draft"
-          dir="ltr"
-          className="glass-field min-w-0 flex-1 rounded-full"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          placeholder="Write a note…"
-          maxLength={240}
-          autoComplete="off"
-          enterKeyHint="send"
-        />
-        <GlassButton
-          type="submit"
-          variant="icon"
-          className="size-11 shrink-0"
-          disabled={busy || !draft.trim()}
-          aria-label="Send"
-        >
-          <ArrowUp className="size-4" strokeWidth={1.8} />
-        </GlassButton>
+      <form className="shrink-0 pt-3 pb-3" onSubmit={onSend}>
+        <div className="flex flex-wrap gap-2">
+          <GlassButton
+            variant="chip"
+            className={cn("h-10", anon && "glass-strong")}
+            aria-pressed={anon}
+            onClick={toggleAnon}
+          >
+            Anon
+          </GlassButton>
+          <GlassButton
+            variant="chip"
+            className={cn("h-10", graphic && "glass-strong")}
+            aria-pressed={graphic}
+            onClick={toggleGraphic}
+          >
+            Filter graphic
+          </GlassButton>
+          {authEnabled && !xName ? (
+            <GlassButton variant="chip" className="h-10" disabled={xBusy} onClick={connectX}>
+              {xBusy ? "Opening X…" : "Sign in with X"}
+            </GlassButton>
+          ) : null}
+        </div>
+        <p className="mt-2 font-display text-[11px] tracking-[0.18em] text-fg/40">
+          {anon ? `Posting as ANON · ${scif.code}` : `Posting as ${publicName} · ${scif.code}`}
+        </p>
+        <div className="pole-composer mt-2">
+          <label className="sr-only" htmlFor="pole-draft">
+            Message
+          </label>
+          <input
+            id="pole-draft"
+            dir="ltr"
+            className="glass-field min-w-0 flex-1 rounded-full"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder={anon ? "Write as ANON…" : xName ? `Write as ${xName}…` : "Write a note…"}
+            maxLength={240}
+            autoComplete="off"
+            enterKeyHint="send"
+          />
+          <GlassButton
+            type="submit"
+            variant="icon"
+            className="size-11 shrink-0"
+            disabled={busy || !draft.trim()}
+            aria-label="Send"
+          >
+            <ArrowUp className="size-4" strokeWidth={1.8} />
+          </GlassButton>
+        </div>
       </form>
     </section>
   );

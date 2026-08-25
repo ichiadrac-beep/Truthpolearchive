@@ -20,6 +20,7 @@ import { Route as DeskConspiracyRouteImport } from './routes/_desk/conspiracy'
 import { Route as DeskSupportRouteImport } from './routes/_desk/support'
 import { Route as DeskThePoleRouteImport } from './routes/_desk/the-pole'
 import { Route as DeskXFilesRouteImport } from './routes/_desk/x-files'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -75,6 +76,11 @@ const DeskXFilesRoute = DeskXFilesRouteImport.update({
   path: '/x-files',
   getParentRoute: () => DeskRoute,
 } as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/support': typeof DeskSupportRoute
   '/the-pole': typeof DeskThePoleRoute
   '/x-files': typeof DeskXFilesRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByTo {
   '/support': typeof DeskSupportRoute
   '/the-pole': typeof DeskThePoleRoute
   '/x-files': typeof DeskXFilesRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -113,6 +121,7 @@ export interface FileRoutesById {
   '/_desk/support': typeof DeskSupportRoute
   '/_desk/the-pole': typeof DeskThePoleRoute
   '/_desk/x-files': typeof DeskXFilesRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/the-pole'
     | '/x-files'
+    | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/support'
     | '/the-pole'
     | '/x-files'
+    | '/api/auth/$'
   id:
     | '__root__'
     | '/'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/_desk/support'
     | '/_desk/the-pole'
     | '/_desk/x-files'
+    | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -159,6 +171,7 @@ export interface RootRouteChildren {
   DeskRoute: typeof DeskRouteWithChildren
   LoginRoute: typeof LoginRoute
   ScanRoute: typeof ScanRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -240,6 +253,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DeskXFilesRouteImport
       parentRoute: typeof DeskRoute
     }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -270,6 +290,7 @@ const rootRouteChildren: RootRouteChildren = {
   DeskRoute: DeskRouteWithChildren,
   LoginRoute: LoginRoute,
   ScanRoute: ScanRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

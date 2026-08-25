@@ -56,6 +56,7 @@ function LandingCosmos() {
 export function Landing() {
   const exitHome = useDesk((s) => s.exitHome);
   const clearExitHome = useDesk((s) => s.clearExitHome);
+  const armArchiveSweep = useDesk((s) => s.armArchiveSweep);
 
   useEffect(() => {
     if (exitHome) clearExitHome();
@@ -86,7 +87,9 @@ export function Landing() {
 
           <div className="relative z-20 mt-9 flex w-full max-w-sm flex-col gap-3">
             <GlassButton asChild variant="primary" className="landing-sheen h-12 rounded-full">
-              <Link to="/archive">Enter the archive</Link>
+              <Link to="/archive" onClick={() => armArchiveSweep()}>
+                Enter the archive
+              </Link>
             </GlassButton>
             <GlassButton asChild variant="ghost" className="landing-sheen h-[3.35rem] flex-col rounded-full">
               <Link to="/archive" aria-label="Tonight’s file: Cussac">

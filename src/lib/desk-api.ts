@@ -1,4 +1,6 @@
+import { censorHard } from "@/lib/censor";
 import { getGuestId, guestAlias } from "@/lib/guest-id";
+import { getScifClearance, type ScifClearance } from "@/lib/scif";
 
 export type FilingRow = {
   id: string;
@@ -21,13 +23,25 @@ export type PoleMessage = {
   body: string;
   ageSec: number;
   mine: boolean;
+  anon: boolean;
+  scifCode: string;
+  scifTitle: string;
 };
 
 const FILINGS_KEY = "truthpole-filings-v2";
-const POLE_KEY = "truthpole-pole-v1";
+const POLE_KEY = "truthpole-pole-v2";
 const POLE_TTL_MS = 6 * 60 * 1000;
 
-type PoleStored = { id: string; guestId: string; body: string; at: number };
+type PoleStored = {
+  id: string;
+  guestId: string;
+  body: string;
+  at: number;
+  alias: string;
+  anon: boolean;
+  scifCode: string;
+  scifTitle: string;
+};
 
 function loadFilings(): FilingRow[] {
   if (typeof window === "undefined") return [];
@@ -47,12 +61,6 @@ function saveFilings(rows: FilingRow[]) {
   } catch {
     /* quota */
   }
-}
-
-function censor(body: string) {
-  return body
-    .replace(/\b(fuck|shit|cunt|bitch|asshole)\b/gi, "••••")
-    .slice(0, 240);
 }
 
 function loadPole(): PoleStored[] {
@@ -81,10 +89,13 @@ function toMessages(rows: PoleStored[], guestId: string): PoleMessage[] {
   const now = Date.now();
   return rows.map((m) => ({
     id: m.id,
-    alias: guestAlias(m.guestId),
+    alias: m.alias || guestAlias(m.guestId),
     body: m.body,
     ageSec: Math.max(0, Math.round((now - m.at) / 1000)),
     mine: m.guestId === guestId,
+    anon: Boolean(m.anon),
+    scifCode: m.scifCode || "SCIF-1",
+    scifTitle: m.scifTitle || "CONFIDENTIAL",
   }));
 }
 
@@ -146,11 +157,21 @@ export async function listPoleMessages(args: {
 }
 
 export async function sendPoleMessage(args: {
-  data: { guestId: string; body: string };
+  data: {
+    guestId: string;
+    body: string;
+    anon?: boolean;
+    displayName?: string;
+    scif?: ScifClearance;
+  };
 }): Promise<{ online: number; ttlMin: number; messages: PoleMessage[] }> {
   const guestId = args.data.guestId || getGuestId();
-  const body = censor(args.data.body.trim());
+  const body = censorHard(args.data.body);
   if (!body) return listPoleMessages({ data: { guestId } });
+  const scif = args.data.scif ?? getScifClearance();
+  const anon = Boolean(args.data.anon);
+  const displayName = (args.data.displayName ?? "").trim();
+  const alias = anon ? "ANON" : displayName || guestAlias(guestId);
   const rows = loadPole();
   rows.push({
     id:
@@ -160,8 +181,13 @@ export async function sendPoleMessage(args: {
     guestId,
     body,
     at: Date.now(),
+    alias,
+    anon,
+    scifCode: scif.code,
+    scifTitle: scif.title,
   });
   savePole(rows);
   const beat = await heartbeatPole({ data: { guestId } });
   return { online: beat.online, ttlMin: 6, messages: toMessages(rows, guestId) };
 }
+

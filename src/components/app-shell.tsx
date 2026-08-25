@@ -9,6 +9,7 @@ import { startLogin } from "@/lib/enter-desk";
 import { signOut as authSignOut } from "@/lib/auth/client";
 import { heartbeatPole } from "@/lib/desk-api";
 import { getGuestId } from "@/lib/guest-id";
+import { stampScifVisit } from "@/lib/scif";
 import { useDesk } from "@/lib/store";
 import { DESK_HEADER } from "@/lib/tabs";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const id = getGuestId();
+    stampScifVisit();
     const beat = () => {
       void heartbeatPole({ data: { guestId: id } }).catch(() => {});
     };

@@ -25,6 +25,7 @@ export type ArchiveMapProps = {
   showTimeline?: boolean;
   step?: number;
   playMs?: number;
+  autoPlay?: boolean;
   mapLabel?: string;
   countLabel?: string;
   endLabel?: string;
@@ -58,6 +59,7 @@ export function ArchiveMap({
   showTimeline = true,
   step = 1,
   playMs = 72,
+  autoPlay = false,
   mapLabel = "World archive globe",
   countLabel = "cases in view",
   endLabel = "Now",
@@ -100,7 +102,7 @@ export function ArchiveMap({
   const [ready, setReady] = useState(false);
   const [pins, setPins] = useState<PinView[]>([]);
   const [peek, setPeek] = useState<PeekState | null>(null);
-  const [playing, setPlaying] = useState(true);
+  const [playing, setPlaying] = useState(autoPlay);
   const [count, setCount] = useState(
     () => cases.filter((c) => c.year <= year).length,
   );

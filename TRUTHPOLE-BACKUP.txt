@@ -1,16 +1,10 @@
-TRUTHPOLE — The Archive
-Snapshot 20260825-095106 UTC
-
-This commit is the live desk: Archive globe (145 cases), Conspiracy
-file list (112), Ancient file list (119). Globe is Archive-only.
+TRUTHPOLE restore snapshot — 2026-08-25
+Repo: https://github.com/ichiadrac-beep/Truthpolearchive
+Tag: restore-2026-08-25-pole-x-live
+Branch: backup/2026-08-25-pole-x-live
 
 Restore:
   git clone https://github.com/ichiadrac-beep/Truthpolearchive.git
-  npm install
-  npm run dev
-     (or: sh startup.sh)
-
-Includes: src, public, server, scripts, migrations, package.json,
-package-lock.json, vite/tsconfig, startup.sh.
-
-Excludes: node_modules, build output, caches, screenshots.
+  cd Truthpolearchive
+  git checkout restore-2026-08-25-pole-x-live
+  npm install && npm run dev

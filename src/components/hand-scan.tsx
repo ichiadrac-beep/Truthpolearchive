@@ -12,7 +12,7 @@ import {
   unlockAudio,
 } from "@/lib/scan-audio";
 
-export const HAND_SRC = "/alien-hand.jpg";
+export const HAND_SRC = "/alien-hand.jpg?v=2";
 const SCAN_MS = 2800;
 const PROVIDERS = [...GROK_PROVIDERS].sort((a, b) => (a.label === "X" ? -1 : b.label === "X" ? 1 : 0));
 
@@ -250,10 +250,7 @@ export function HandScan() {
   }
 
   const pct = Math.min(100, Math.floor(progress));
-  const match = Math.min(98.7, progress * 0.987);
   const status = statusLabel(progress, granted, holding);
-  const blocks = 10;
-  const filled = Math.round((pct / 100) * blocks);
 
   return (
     <main className="relative z-10 flex min-h-dvh flex-col bg-black" aria-label="Biometric hand scan">
@@ -264,32 +261,12 @@ export function HandScan() {
       </div>
       <div className="flex flex-1 flex-col items-center justify-center px-4 pb-10">
         <div className={`scan-plate w-full max-w-[22rem] ${granted ? "scan-plate-live" : ""}`}>
-          <header className="flex items-start justify-between gap-3 px-4 pt-4">
-            <div>
-              <p className="font-display text-[10px] tracking-[0.28em] text-fg/70">BIOMETRIC SCAN: ALIEN HAND</p>
-              <div className="mt-2 flex gap-[3px]" aria-hidden="true">
-                {Array.from({ length: blocks }).map((_, i) => (
-                  <span
-                    key={i}
-                    className="h-1.5 w-2.5"
-                    style={{
-                      background: i < filled ? "var(--color-fg)" : "color-mix(in oklab, var(--color-fg) 18%, transparent)",
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="font-display text-[10px] tracking-[0.22em] text-fg/55">SYS-ID: AH-0427-9X</p>
-              <p className="mt-2 font-display text-[10px] tracking-[0.4em] text-fg/35">//////</p>
-            </div>
-          </header>
           <button
             ref={plateRef}
             type="button"
             disabled={granted}
             aria-label={granted ? "Scan complete" : "Hold to scan"}
-            className="relative mx-auto mt-2 block w-[86%] cursor-pointer touch-none select-none disabled:cursor-default"
+            className="relative block w-full cursor-pointer touch-none select-none disabled:cursor-default"
             onPointerDown={beginHold}
             onPointerUp={endHold}
             onPointerCancel={endHold}
@@ -298,61 +275,32 @@ export function HandScan() {
             <img
               src={HAND_SRC}
               alt="Alien hand for biometric scan"
-              width={675}
-              height={561}
+              width={784}
+              height={1168}
               fetchPriority="high"
               decoding="sync"
-              className="scan-hand mx-auto block h-auto w-full object-contain"
+              className="mx-auto block h-auto w-full object-contain"
               draggable={false}
             />
-            <div className="pointer-events-none absolute inset-[6%] overflow-hidden">
+            <div className="pointer-events-none absolute inset-[18%_8%_24%_8%] overflow-hidden">
               <div className="absolute inset-x-0 top-0 bg-gradient-to-b from-fg/10 to-fg/0" style={{ height: `${progress}%` }} />
               {holding || granted ? (
                 <div className="scan-beam absolute inset-x-[-8%] h-10" style={{ top: `calc(${progress}% - 1.25rem)` }} />
               ) : null}
             </div>
           </button>
-          <div className="mt-1 grid grid-cols-3 items-end gap-2 px-4 pb-3">
-            <div>
-              <p className="font-display text-[10px] tracking-[0.28em] text-fg/45">SCAN STATUS</p>
-              <p className="mt-1 flex items-center gap-1.5 font-display text-[11px] tracking-[0.2em] text-fg">
-                <span className="grid size-3.5 place-items-center border border-fg/70 text-[9px] leading-none">
-                  {granted ? "✓" : holding ? "·" : "○"}
-                </span>
-                {status}
-              </p>
-            </div>
-            <div className="flex justify-center pb-0.5" aria-hidden="true">
-              <svg viewBox="0 0 32 32" className={`h-8 w-8 text-fg ${holding || granted ? "scan-helix" : ""}`} fill="none" stroke="currentColor" strokeWidth="1.2">
-                <path d="M8 4 C18 10 14 16 24 22 C18 26 12 24 8 28" />
-                <path d="M24 4 C14 10 18 16 8 22 C14 26 20 24 24 28" />
-                <path d="M11 8 H21 M10 16 H22 M11 24 H21" opacity="0.7" />
-              </svg>
-            </div>
-            <div className="text-right">
-              <p className="font-display text-[10px] tracking-[0.22em] text-fg/45">MATCH CONFIDENCE</p>
-              <p className="mt-1 font-display text-sm tabular-nums tracking-wide text-fg">
-                {granted ? "98.7" : match.toFixed(1)}%
-              </p>
-            </div>
-          </div>
-          <div className="scan-banner mx-4 mb-4 px-3 py-2.5 text-center">
-            {granted ? (
-              <p className="font-display text-lg font-semibold tracking-[0.22em] text-fg">ACCESS GRANTED</p>
-            ) : (
-              <p className="font-display text-[13px] font-semibold tracking-[0.22em] text-fg">
-                {holding ? "HOLD STEADY" : "HOLD THE PLATE TO SCAN"}
-              </p>
-            )}
-          </div>
         </div>
+        <p className="mt-4 font-display text-[13px] font-semibold tracking-[0.22em] text-fg">
+          {granted ? "ACCESS GRANTED" : holding ? "HOLD STEADY" : "HOLD THE PLATE TO SCAN"}
+        </p>
+        <p className="mt-1 font-display text-[11px] tracking-[0.28em] text-fg/45">{status}</p>
         {!granted ? (
-          <p className="mt-5 font-display text-3xl font-semibold tabular-nums tracking-wide text-fg">
+          <p className="mt-3 font-display text-3xl font-semibold tabular-nums tracking-wide text-fg">
             {String(pct).padStart(3, "0")}
             <span className="text-lg text-fg/55">%</span>
           </p>
         ) : (
-          <p className="mt-5 font-display text-xs tracking-[0.28em] text-fg/45">OPENING IDENTITY DESK…</p>
+          <p className="mt-3 font-display text-xs tracking-[0.28em] text-fg/45">OPENING IDENTITY DESK…</p>
         )}
       </div>
     </main>
