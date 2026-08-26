@@ -3,7 +3,6 @@ import { appUrl } from "@/lib/app-url";
 export function poleJoinUrl() {
   if (typeof window === "undefined") return "/the-pole";
   const origin = window.location.origin;
-  // Prefer the public archive host when the desk is running on a sandbox host.
   if (/grok-sandbox\.com|localhost|127\.0\.0\.1/i.test(origin)) {
     return "https://thetruth-polearchive.grok.me/the-pole";
   }
@@ -78,7 +77,6 @@ async function pickContacts(): Promise<ContactLike[] | null> {
 export async function inviteContacts(): Promise<"shared" | "sms" | "mail" | "copied" | "aborted"> {
   const url = poleJoinUrl();
   const text = classifiedJoinRequest(url);
-
   const picked = await pickContacts();
   if (picked && picked.length > 0) {
     const tels = picked.flatMap((c) => c.tel ?? []).filter(Boolean);
@@ -94,7 +92,6 @@ export async function inviteContacts(): Promise<"shared" | "sms" | "mail" | "cop
       return "mail";
     }
   }
-
   const payload = { title: "TRUTHPOLE · THE POLE", text, url };
   if (typeof navigator.share === "function") {
     try {
@@ -108,7 +105,6 @@ export async function inviteContacts(): Promise<"shared" | "sms" | "mail" | "cop
       if (err instanceof Error && err.name === "AbortError") return "aborted";
     }
   }
-
   await writeClipboard(text);
   return "copied";
 }
