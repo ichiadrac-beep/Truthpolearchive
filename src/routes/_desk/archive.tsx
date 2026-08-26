@@ -10,19 +10,42 @@ export const Route = createFileRoute("/_desk/archive")({
   component: ArchivePage,
 });
 
+const FIRST_PLAY_KEY = "truthpole-archive-first-play";
+
 function prefersReducedMotion() {
   if (typeof window === "undefined") return false;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+/** First Archive open this session (or landing sweep) → auto-slide left → right. */
+function shouldIntroPlay() {
+  if (typeof window === "undefined") return false;
+  if (prefersReducedMotion()) return false;
+  if (useDesk.getState().archiveSweep) return true;
+  try {
+    return sessionStorage.getItem(FIRST_PLAY_KEY) !== "1";
+  } catch {
+    return true;
+  }
+}
+
+function markIntroPlayed() {
+  try {
+    sessionStorage.setItem(FIRST_PLAY_KEY, "1");
+  } catch {
+    /* private mode */
+  }
+}
+
 function ArchivePage() {
-  const [intro] = useState(() => useDesk.getState().archiveSweep && !prefersReducedMotion());
+  const [intro] = useState(() => shouldIntroPlay());
   const [year, setYear] = useState(intro ? YEAR_MIN : YEAR_MAX);
   const [file, setFile] = useState<ArchiveCase | null>(null);
 
   useEffect(() => {
     useDesk.getState().consumeArchiveSweep();
-  }, []);
+    if (intro) markIntroPlayed();
+  }, [intro]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
