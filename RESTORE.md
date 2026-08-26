@@ -1,24 +1,24 @@
 # TRUTHPOLE — restore files
 
 Frozen snapshots of the desk. **V 1.0 is still there** and is not overwritten.
-This file’s **current restore** is the desk as of 25 Aug 2026 (evening): Ancient
-contact files, Pole mobile keyboard, archive map, clearance phrases, anniversary
-Tonight’s File, tappable glyphs, shooting-star colours.
+This file’s **current restore** is the desk as of **26 Aug 2026** (early morning):
+full live tree after invite, glyphs, archive pin persistence, X-Files real handles,
+and expanded landing sky crafts.
 
 Repo: [ichiadrac-beep/Truthpolearchive](https://github.com/ichiadrac-beep/Truthpolearchive)
 
 ---
 
-## Current restore (25 Aug 2026 desk)
+## Current restore (26 Aug 2026 desk)
 
-**Release:** [restore-20260825-current](https://github.com/ichiadrac-beep/Truthpolearchive/releases/tag/restore-20260825-current)  
-**Tag:** `restore-20260825-current`  
-**Frozen branch:** `backup/restore-20260825-current`  
-**Zip asset:** `TRUTHPOLE-restore-20260825-current.zip`
+**Release:** [restore-20260826-current](https://github.com/ichiadrac-beep/Truthpolearchive/releases/tag/restore-20260826-current)  
+**Tag:** `restore-20260826-current`  
+**Frozen branch:** `backup/restore-20260826-current`  
+**Zip asset:** `TRUTHPOLE-restore-20260826-current.zip`
 
 ### Fastest
 
-1. Open [Releases](https://github.com/ichiadrac-beep/Truthpolearchive/releases) and download **TRUTHPOLE-restore-20260825-current.zip**.
+1. Open [Releases](https://github.com/ichiadrac-beep/Truthpolearchive/releases) and download **TRUTHPOLE-restore-20260826-current.zip**.
 2. Unzip, then:
 
 ```
@@ -31,25 +31,44 @@ npm run dev
 ```
 git clone https://github.com/ichiadrac-beep/Truthpolearchive.git
 cd Truthpolearchive
-git checkout restore-20260825-current
+git checkout restore-20260826-current
 npm install
 npm run dev
 ```
 
-Same snapshot: `backup/restore-20260825-current`
+Same snapshot: `backup/restore-20260826-current`
 
-### What this snapshot includes (on top of V 1.0)
+### What this snapshot includes (on top of the 25 Aug restore)
+
+- **Pole Invite / clearance:** fixed sheet above bottom nav; Invite contacts, X followers, X DMs, Copy; public join URL on sandbox hosts
+- **Landing glyphs:** scattered random positions (no left/right columns on desktop); glyphs only on landing
+- **Archive map:** pins stay visible once they appear until the timeline restarts; first Archive open each session auto-plays left → right
+- **X-Files:** live feed resolves real X handles (never `@desk`); display names; noise filter; credibility meters
+- **Landing sky crafts:** TR-3B triangle, tic-tac, orbs, disks, cigars, domes, boomerangs, rectangles, ovals, chevrons — multi-colour lights, random drift, up to 3 concurrent flybys
+- Full `styles.css` restored (glass, cosmos, pole, archive, reduced-motion)
+
+### Carried forward from 25 Aug restore
 
 - Ancient / pre-modern: Anunnaki, Watchers, pre-biblical contact files
-- Pole live chat: keyboard glued on mobile, no AutoFill bar, nav hidden while typing
-- Archive globe: draws immediately, GeoJSON loads in the background with cache/retry
-- Zoomed pins: only stacked cases fan out; tap picker when several still overlap
-- Hidden phrases on landing/desk: WOW, MJ-12, ZETA → one-off cleared memo (session only)
-- Tonight’s File: local-date “on this day” anniversaries, else the usual rotation
-- 2–3 tappable sky glyphs (Zeta / WOW / 33°N) with tiny glass notes
-- Shooting stars: white ~70%, pale green ~20%, amber ~8%, deep red ~2%
+- Pole live chat: keyboard glued on mobile, SCIF, anon
+- Archive globe: cold-start draw, stacked-pin picker, pulse on timeline year
+- Clearance phrases: WOW / MJ-12 / ZETA
+- Tonight’s File: anniversary preference
+- Shooting stars: white / pale green / amber / deep red weights
 
-App version label is still **V 1.0** (`1.0.0`). This restore is a full tree snapshot, not a version bump.
+App version label remains **V 1.0** (`1.0.0`). This restore is a full tree snapshot, not a version bump.
+
+---
+
+## Previous restore (25 Aug 2026 desk)
+
+**Release:** [restore-20260825-current](https://github.com/ichiadrac-beep/Truthpolearchive/releases/tag/restore-20260825-current)  
+**Tag:** `restore-20260825-current`  
+**Frozen branch:** `backup/restore-20260825-current`
+
+```
+git checkout restore-20260825-current
+```
 
 ---
 
