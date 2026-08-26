@@ -37,7 +37,7 @@ export function PoleInvitePanel({ open, onClose }: Props) {
     <>
       <style>{`
         .pole-invite-scrim{position:fixed;inset:0;z-index:45;border:0;background:color-mix(in oklab,#000 55%,transparent);cursor:pointer}
-        .pole-invite-sheet{position:fixed;z-index:50;left:50%;bottom:calc(4.85rem + env(safe-area-inset-bottom,0px));width:min(22rem,calc(100vw - 1.5rem));max-height:min(70dvh,32rem);overflow-y:auto;overscroll-behavior:contain;padding:0.85rem 0.75rem 0.9rem;border-radius:1.5rem;transform:translateX(-50%);-webkit-overflow-scrolling:touch}
+        .pole-invite-sheet{position:fixed;z-index:50;left:50%;bottom:calc(6.1rem + env(safe-area-inset-bottom,0px));width:min(22rem,calc(100vw - 1.5rem));max-height:min(62dvh,28rem);overflow-y:auto;overscroll-behavior:contain;padding:0.85rem 0.75rem 0.95rem;border-radius:1.5rem;transform:translateX(-50%);-webkit-overflow-scrolling:touch;box-shadow:0 -8px 32px color-mix(in oklab,#000 45%,transparent)}
       `}</style>
       <button type="button" aria-label="Close invite" className="pole-invite-scrim" onClick={onClose} />
       <div role="dialog" aria-label="Issue clearance" className="pole-invite-sheet glass-strong">
@@ -47,7 +47,7 @@ export function PoleInvitePanel({ open, onClose }: Props) {
             <X className="size-3.5" strokeWidth={1.7} />
           </GlassButton>
         </div>
-        <pre className="mt-2 max-h-[28vh] overflow-y-auto whitespace-pre-wrap break-words font-sans text-[13px] leading-relaxed text-fg/85">
+        <pre className="mt-2 max-h-[20vh] overflow-y-auto whitespace-pre-wrap break-words font-sans text-[13px] leading-relaxed text-fg/85">
           {classifiedJoinRequest()}
         </pre>
         <div className="mt-3 flex flex-col gap-2">

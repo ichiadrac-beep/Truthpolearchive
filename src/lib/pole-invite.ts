@@ -1,9 +1,14 @@
 import { appUrl } from "@/lib/app-url";
 
 export function poleJoinUrl() {
-  if (typeof window === "undefined") return "/the-pole";
+  if (typeof window === "undefined") return "https://thetruth-polearchive.grok.me/the-pole";
   const origin = window.location.origin;
-  if (/grok-sandbox\.com|localhost|127\.0\.0\.1/i.test(origin)) {
+  // Always prefer the public archive host for shareable join links.
+  // Sandbox / preview / localhost hosts are ephemeral and break when shared.
+  if (
+    /grok-sandbox\.com|grok\.me|localhost|127\.0\.0\.1|hades-www/i.test(origin) ||
+    origin.includes("grok-code")
+  ) {
     return "https://thetruth-polearchive.grok.me/the-pole";
   }
   return appUrl("/the-pole");
@@ -77,6 +82,7 @@ async function pickContacts(): Promise<ContactLike[] | null> {
 export async function inviteContacts(): Promise<"shared" | "sms" | "mail" | "copied" | "aborted"> {
   const url = poleJoinUrl();
   const text = classifiedJoinRequest(url);
+
   const picked = await pickContacts();
   if (picked && picked.length > 0) {
     const tels = picked.flatMap((c) => c.tel ?? []).filter(Boolean);
@@ -92,6 +98,7 @@ export async function inviteContacts(): Promise<"shared" | "sms" | "mail" | "cop
       return "mail";
     }
   }
+
   const payload = { title: "TRUTHPOLE · THE POLE", text, url };
   if (typeof navigator.share === "function") {
     try {
@@ -105,6 +112,7 @@ export async function inviteContacts(): Promise<"shared" | "sms" | "mail" | "cop
       if (err instanceof Error && err.name === "AbortError") return "aborted";
     }
   }
+
   await writeClipboard(text);
   return "copied";
 }
