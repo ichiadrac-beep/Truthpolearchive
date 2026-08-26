@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, UserPlus, X } from "lucide-react";
 import { GlassButton } from "@/components/glass-button";
 import { displayPoleBody } from "@/lib/censor";
 import { listPoleMessages, sendPoleMessage, type PoleMessage } from "@/lib/desk-api";
@@ -7,6 +7,13 @@ import { getGuestId, guestAlias } from "@/lib/guest-id";
 import { authClient, authEnabled } from "@/lib/auth/client";
 import { openOAuthTab, startOAuth } from "@/lib/start-oauth";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import {
+  classifiedJoinRequest,
+  copyJoinRequest,
+  inviteContacts,
+  inviteXDms,
+  xFollowersInviteHref,
+} from "@/lib/pole-invite";
 import {
   accountChatName,
   formatScifBadge,
@@ -34,20 +41,24 @@ export function PoleDesk() {
   const [anon, setAnon] = useState(false);
   const [graphic, setGraphic] = useState(true);
   const [scif, setScif] = useState<ScifClearance>(() => getScifClearance());
-  const [online, setOnline] = useState(1);
+  const [online, setOnline] = useState(0);
   const [ttl, setTtl] = useState(6);
   const [messages, setMessages] = useState<PoleMessage[]>([]);
+  const [standby, setStandby] = useState(false);
+  const [onDuty, setOnDuty] = useState(false);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [xBusy, setXBusy] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteNote, setInviteNote] = useState("");
   const scroller = useRef<HTMLDivElement>(null);
   const fieldRef = useRef<HTMLTextAreaElement>(null);
   const kb = useVisualKeyboard();
 
   const apply = (payload: { online: number; ttlMin: number; messages: PoleMessage[] }) => {
-    setOnline(payload.online);
-    setTtl(payload.ttlMin);
-    setMessages(payload.messages);
+    setOnline(Math.max(0, payload.online));
+    setTtl(payload.ttlMin || 6);
+    setMessages(Array.isArray(payload.messages) ? payload.messages : []);
   };
 
   useEffect(() => {
@@ -56,17 +67,30 @@ export function PoleDesk() {
     setAnon(getAnonPref());
     setGraphic(getGraphicFilterPref());
     setScif(stampScifVisit());
+    try {
+      sessionStorage.setItem("truthpole-pole-duty", "1");
+      setOnDuty(true);
+    } catch {
+      setOnDuty(true);
+    }
     let alive = true;
+    let misses = 0;
     const tick = async () => {
+      if (typeof document !== "undefined" && document.hidden) return;
       try {
         const next = await listPoleMessages({ data: { guestId: guestId.current } });
-        if (alive) apply(next);
+        if (!alive) return;
+        misses = 0;
+        setStandby(false);
+        apply(next);
       } catch {
-        /* keep last */
+        if (!alive) return;
+        misses += 1;
+        if (misses >= 2) setStandby(true);
       }
     };
     void tick();
-    const id = window.setInterval(tick, 3000);
+    const id = window.setInterval(tick, 4000);
     return () => {
       alive = false;
       window.clearInterval(id);
@@ -78,6 +102,15 @@ export function PoleDesk() {
     if (!el) return;
     el.scrollTop = el.scrollHeight;
   }, [messages.length, kb.open]);
+
+  useEffect(() => {
+    if (!inviteOpen) return;
+    const onKey = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") setInviteOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [inviteOpen]);
 
   const publicName = anon ? "ANON" : xName || alias;
 
@@ -98,8 +131,10 @@ export function PoleDesk() {
           scif,
         },
       });
+      setStandby(false);
       apply(next);
     } catch {
+      setStandby(true);
       setDraft(body);
     } finally {
       setBusy(false);
@@ -138,18 +173,24 @@ export function PoleDesk() {
     });
   };
 
+  const flashInvite = (note: string) => {
+    setInviteNote(note);
+    window.setTimeout(() => setInviteNote(""), 2400);
+  };
+
   return (
     <section
-      className="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col px-5 pt-2"
+      className="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col px-5 pt-3"
       dir="ltr"
+      lang="en"
       style={{ paddingBottom: kb.open ? 8 : undefined }}
     >
       <header className="shrink-0">
         <div className="flex items-center justify-between gap-3">
           <p className="font-display text-[11px] font-medium tracking-[0.38em] text-fg/45">THE POLE</p>
           <p className="flex items-center gap-2 font-display text-[11px] tracking-[0.18em] text-fg/55" aria-live="polite">
-            <span className="size-1.5 rounded-full bg-signal" />
-            {online} online
+            <span className={`size-1.5 rounded-full ${standby ? "bg-fg/35" : "bg-signal/80"}`} />
+            {standby ? "Stand by" : online > 1 ? `${online} viewing` : onDuty ? "On duty" : "Viewing"}
           </p>
         </div>
         {kb.open ? (
@@ -158,16 +199,13 @@ export function PoleDesk() {
           </p>
         ) : (
           <>
-            <h1 className="mt-3 font-serif text-[2.35rem] leading-none text-fg">Live channel</h1>
+            <h1 className="mt-3 font-serif text-[2.2rem] leading-none text-fg">Live channel</h1>
             <p className="mt-3 max-w-prose text-sm leading-relaxed text-fg/65">
-              Notes from the desk. Hard swears are cut on send. Lines fade after {ttl} minutes.
+              Guest notes. Hard swears are cut on send. Lines fade after {ttl} minutes.
             </p>
             <p className="mt-2 font-display text-[11px] tracking-[0.16em] text-fg/55">
-              You are {publicName} · {formatScifBadge(scif)} · {scif.days} {scif.days === 1 ? "day" : "days"}
-            </p>
-            <p className="mt-1 text-sm leading-relaxed text-fg/45">
-              SCIF clearance is the desk rank. It rises with days you open TRUTHPOLE.
-              {!anon && !xName ? " Sign in with X to post under your X name." : ""}
+              You are {publicName} · {formatScifBadge(scif)} · {scif.days}{" "}
+              {scif.days === 1 ? "day" : "days"}
             </p>
           </>
         )}
@@ -175,16 +213,20 @@ export function PoleDesk() {
 
       <div
         ref={scroller}
-        className="mt-3 min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain"
+        className="mt-4 min-h-0 flex-1 space-y-2.5 overflow-y-auto overscroll-contain"
         aria-live="polite"
+        dir="ltr"
       >
         {messages.length === 0 ? (
-          <p className="px-1 py-6 text-center text-sm text-fg/45">No traffic yet. Leave a note.</p>
+          <p className="px-1 py-8 text-center text-sm leading-relaxed text-fg/45">
+            Channel quiet — stand by.
+          </p>
         ) : (
           messages.map((msg) => (
             <article
               key={msg.id}
               dir="ltr"
+              lang="en"
               className={`pole-bubble max-w-[82%] px-3.5 py-2.5 ${
                 msg.mine
                   ? "glass-strong ml-auto rounded-[1.35rem] rounded-br-md"
@@ -198,7 +240,7 @@ export function PoleDesk() {
                 {" · "}
                 <span className="tabular-nums">{formatAge(msg.ageSec)}</span>
               </p>
-              <p className="mt-1 whitespace-pre-wrap break-words text-left text-[15px] leading-relaxed text-fg">
+              <p className="mt-1 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-fg">
                 {displayPoleBody(msg.body, graphic)}
               </p>
             </article>
@@ -207,7 +249,7 @@ export function PoleDesk() {
       </div>
 
       <form
-        className="shrink-0 pt-2"
+        className="shrink-0 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
         onSubmit={onSend}
         autoComplete="off"
         autoCorrect="off"
@@ -215,6 +257,7 @@ export function PoleDesk() {
         spellCheck={false}
         action="."
         method="post"
+        dir="ltr"
       >
         {kb.open ? null : (
           <div className="flex flex-wrap gap-2">
@@ -234,8 +277,23 @@ export function PoleDesk() {
             >
               Filter graphic
             </GlassButton>
+            <GlassButton
+              variant="chip"
+              className={cn("h-10 gap-2 touch-manipulation", inviteOpen && "glass-strong")}
+              aria-pressed={inviteOpen}
+              aria-expanded={inviteOpen}
+              onClick={() => setInviteOpen((v) => !v)}
+            >
+              <UserPlus className="size-3.5" strokeWidth={1.7} />
+              Invite
+            </GlassButton>
             {authEnabled && !xName ? (
-              <GlassButton variant="chip" className="h-10 touch-manipulation" disabled={xBusy} onClick={connectX}>
+              <GlassButton
+                variant="chip"
+                className="h-10 touch-manipulation"
+                disabled={xBusy}
+                onClick={connectX}
+              >
                 {xBusy ? "Waiting for X…" : "Sign in with X"}
               </GlassButton>
             ) : null}
@@ -247,11 +305,11 @@ export function PoleDesk() {
           </p>
         ) : null}
         {kb.open ? null : (
-          <p className="mt-2 font-display text-[11px] tracking-[0.18em] text-fg/40">
+          <p className="mt-2.5 font-display text-[11px] tracking-[0.18em] text-fg/40">
             {anon ? `Posting as ANON · ${scif.code}` : `Posting as ${publicName} · ${scif.code}`}
           </p>
         )}
-        <div className="pole-composer mt-2">
+        <div className="pole-composer mt-2.5">
           <label className="sr-only" htmlFor="pole-draft">
             Message
           </label>
@@ -260,6 +318,7 @@ export function PoleDesk() {
             id="pole-draft"
             name="pole_note"
             dir="ltr"
+            lang="en"
             rows={1}
             inputMode="text"
             enterKeyHint="send"
@@ -270,7 +329,7 @@ export function PoleDesk() {
             data-lpignore="true"
             data-1p-ignore="true"
             data-form-type="other"
-            className="glass-field min-w-0 flex-1 rounded-full"
+            className="glass-field min-w-0 flex-1"
             value={draft}
             onChange={(e) => {
               setDraft(e.target.value);
@@ -278,6 +337,7 @@ export function PoleDesk() {
             }}
             onKeyDown={onDraftKey}
             onFocus={() => {
+              setInviteOpen(false);
               window.setTimeout(() => {
                 scroller.current?.scrollTo({ top: scroller.current.scrollHeight });
                 fieldRef.current?.scrollIntoView({ block: "end" });
@@ -289,7 +349,7 @@ export function PoleDesk() {
           <GlassButton
             type="submit"
             variant="icon"
-            className="glass-strong size-12 shrink-0 touch-manipulation"
+            className="pole-send glass-strong shrink-0 touch-manipulation"
             disabled={busy || !draft.trim()}
             aria-label="Send"
           >
@@ -297,6 +357,83 @@ export function PoleDesk() {
           </GlassButton>
         </div>
       </form>
+
+      {inviteOpen ? (
+        <>
+          <button
+            type="button"
+            aria-label="Close invite"
+            className="pole-invite-scrim"
+            onClick={() => setInviteOpen(false)}
+          />
+          <div role="dialog" aria-label="Issue clearance" className="pole-invite-sheet glass-strong">
+            <div className="flex items-start justify-between gap-2 px-1">
+              <p className="font-display text-[10px] tracking-[0.28em] text-fg/55">ISSUE CLEARANCE</p>
+              <GlassButton
+                variant="icon"
+                className="size-9 shrink-0"
+                aria-label="Close"
+                onClick={() => setInviteOpen(false)}
+              >
+                <X className="size-3.5" strokeWidth={1.7} />
+              </GlassButton>
+            </div>
+            <pre className="mt-2 max-h-[28vh] overflow-y-auto whitespace-pre-wrap break-words font-sans text-[13px] leading-relaxed text-fg/85">
+              {classifiedJoinRequest()}
+            </pre>
+            <div className="mt-3 flex flex-col gap-2">
+              <GlassButton
+                variant="chip"
+                className="h-11 w-full justify-center"
+                onClick={() => {
+                  void inviteContacts().then((result) => {
+                    if (result === "aborted") return;
+                    if (result === "sms") flashInvite("Opened messages for contacts.");
+                    else if (result === "mail") flashInvite("Opened mail for contacts.");
+                    else if (result === "shared") flashInvite("Join request handed off.");
+                    else flashInvite("Copied. Paste to a contact.");
+                  });
+                }}
+              >
+                Invite contacts
+              </GlassButton>
+              <GlassButton variant="chip" className="h-11 w-full justify-center" asChild>
+                <a href={xFollowersInviteHref()} target="_blank" rel="noopener noreferrer">
+                  X followers
+                </a>
+              </GlassButton>
+              <GlassButton
+                variant="chip"
+                className="h-11 w-full justify-center"
+                onClick={() => {
+                  void inviteXDms().then(() => flashInvite("Copied. Paste into an X DM."));
+                }}
+              >
+                X DMs
+              </GlassButton>
+              <GlassButton
+                variant="ghost"
+                className="h-11 w-full justify-center"
+                onClick={() => {
+                  void copyJoinRequest().then(() => flashInvite("Join request copied."));
+                }}
+              >
+                Copy request
+              </GlassButton>
+            </div>
+            {inviteNote ? (
+              <p className="mt-2 font-display text-[11px] tracking-[0.16em] text-fg/55" role="status">
+                {inviteNote}
+              </p>
+            ) : (
+              <p className="mt-2 text-[12px] leading-relaxed text-fg/45">
+                Contacts use the device share sheet. Followers open a classified post. DMs copy the
+                request so you can paste it.
+              </p>
+            )}
+          </div>
+        </>
+      ) : null}
     </section>
   );
 }
