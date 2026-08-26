@@ -59,15 +59,21 @@ export function XLiveBoard({ posts, loading, source, lastRefresh, onRefresh }: X
       <ul className="flex flex-col gap-3">
         {posts.map((post) => {
           const cred = credibilityOf(post);
+          const handle = (post.handle || "").replace(/^@/, "").trim();
+          if (!handle || handle.toLowerCase() === "desk") return null;
+          const name =
+            post.name && post.name.replace(/^@/, "").toLowerCase() !== "desk"
+              ? post.name.replace(/^@/, "")
+              : handle;
           return (
             <li key={post.id}>
               <article className="glass-plain-strong rounded-2xl px-4 py-3.5">
                 <header className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-display text-[11px] font-medium tracking-[0.2em] text-fg/50">
-                      @{post.handle}
+                      @{handle}
                     </p>
-                    <p className="mt-0.5 text-sm font-medium text-fg">{post.name}</p>
+                    <p className="mt-0.5 text-sm font-medium text-fg">{name}</p>
                   </div>
                   <p className="shrink-0 font-display text-[10px] tracking-[0.18em] text-fg/40">
                     {post.when}
@@ -127,8 +133,8 @@ export function XLiveBoard({ posts, loading, source, lastRefresh, onRefresh }: X
         })}
       </ul>
 
-      {posts.length === 0 ? (
-        <p className="py-8 text-center text-sm text-fg/50">No posts matched the keyword filter.</p>
+      {posts.length === 0 && !loading ? (
+        <p className="py-8 text-center text-sm text-fg/45">Channel quiet — stand by for the next pull.</p>
       ) : null}
     </div>
   );
@@ -146,11 +152,11 @@ function Meter({
   emphasize?: boolean;
 }) {
   return (
-    <div className={`rounded-xl px-2 py-2 ${emphasize ? "bg-fg/10" : "bg-fg/6"}`}>
-      <dt className="font-display text-[10px] tracking-[0.18em] text-fg/45">{label}</dt>
-      <dd className="mt-1 font-serif text-lg leading-none text-fg">{value}</dd>
-      <div className="mt-1.5 h-px bg-fg/15">
-        <div className="h-px bg-fg/70" style={{ width: `${Math.max(4, Math.min(100, value))}%` }} />
+    <div className={`rounded-xl px-2.5 py-2 ${emphasize ? "glass-plain-strong" : "glass-plain"}`}>
+      <p className="font-display text-[9px] tracking-[0.18em] text-fg/45">{label}</p>
+      <p className="mt-1 font-display text-lg tabular-nums text-fg">{value}</p>
+      <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-fg/10">
+        <div className="h-full rounded-full bg-fg/55" style={{ width: `${Math.max(2, Math.min(100, value))}%` }} />
       </div>
       <p className="mt-1 text-[10px] leading-tight text-fg/40">{hint}</p>
     </div>
