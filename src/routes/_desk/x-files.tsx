@@ -7,6 +7,7 @@ import { XLiveBoard } from "@/components/x-live-board";
 import type { FilingRow } from "@/lib/desk-api";
 import {
   fetchXFeed,
+  recentXPosts,
   X_FEED_REFRESH_MS,
   type XFeedPost,
 } from "@/lib/x-feed";
@@ -29,7 +30,7 @@ function XFilesPage() {
     setLoading(true);
     try {
       const result = await fetchXFeed();
-      setPosts(result.posts);
+      setPosts(recentXPosts(result.posts));
       setSource(result.source);
       setLastRefresh(new Date());
     } finally {
@@ -75,8 +76,8 @@ function XFilesPage() {
         Live X feed
       </h1>
       <p className="max-w-prose text-sm leading-normal text-muted">
-        Live posts from UAP accounts on X, including @Truthpole. Tap Submit an encounter to file a
-        report. Fetch latest reloads the feed.
+        Live posts from UAP accounts on X from the last 48 hours, newest first. Tap Submit an
+        encounter to file a report. Fetch latest reloads the feed.
       </p>
 
       <div className="flex flex-wrap gap-2">
@@ -102,10 +103,10 @@ function XFilesPage() {
         <div
           id="encounter-form"
           ref={formAnchor}
-          className="glass-plain-strong relative flex flex-col gap-3 rounded-2xl p-4"
+          className="glass-sheet relative flex flex-col gap-3 rounded-2xl p-4"
         >
           <div className="flex items-center justify-between gap-3">
-            <p className="font-display text-[11px] tracking-[0.28em] text-fg/50">
+            <p className="font-display text-[11px] tracking-[0.28em] text-fg/70">
               SUBMIT AN ENCOUNTER
             </p>
             <GlassButton

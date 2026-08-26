@@ -1,23 +1,15 @@
 # TRUTHPOLE — The Archive
 
-UFO / UAP desk. Map lives on Archive only.
+Classified desk for UAP files: world map archive, conspiracy / ancient files,
+live X-Files, and The Pole.
 
-**Current restore** (26 Aug 2026) — full tree you can put back if `main` is overwritten:
+## Quick start
 
-- Tag: `restore-20260826-current`
-- Branch: `backup/restore-20260826-current`
-- Release: https://github.com/ichiadrac-beep/Truthpolearchive/releases/tag/restore-20260826-current
-- Zip: `TRUTHPOLE-restore-20260826-current.zip`
+```bash
+npm install
+npm run dev
+```
 
-**Previous restore** (25 Aug 2026 evening):
+App Builder Play expects the dev server on `0.0.0.0:8080`.
 
-- Tag: `restore-20260825-current`
-- Branch: `backup/restore-20260825-current`
-
-**V 1.0** is still frozen and was not overwritten:
-
-- Tag: `v1.0.0`
-- Branch: `backup/v1.0`
-- Release: https://github.com/ichiadrac-beep/Truthpolearchive/releases/tag/v1.0.0
-
-See [RESTORE.md](RESTORE.md) for checkout steps.
+See **RESTORE.md** for full restore instructions from this snapshot package.

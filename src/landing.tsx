@@ -28,9 +28,6 @@ function LandingCosmos() {
           />
         ))}
       </svg>
-      <span className="shoot-star absolute left-0 top-[16%] h-px w-48" style={{ animationDelay: "0s", animationDuration: "6s" }} />
-      <span className="shoot-star absolute left-[6%] top-[38%] h-px w-36" style={{ animationDelay: "2.2s", animationDuration: "7.5s" }} />
-      <span className="shoot-star absolute left-[-6%] top-[60%] h-px w-44" style={{ animationDelay: "4.5s", animationDuration: "6.8s" }} />
       <svg viewBox="0 0 16 16" width="22" height="22" className="glyph-float absolute text-fg" style={{ top: "12%", left: "9%", ["--glyph-rot" as string]: "12deg" }}>
         <path d="M8 0 L10 6 L16 8 L10 10 L8 16 L6 10 L0 8 L6 6 Z" fill="none" stroke="currentColor" strokeWidth="1.2" />
       </svg>
@@ -93,10 +90,12 @@ export function Landing() {
 
           <div className="relative z-20 mt-9 flex w-full max-w-sm flex-col gap-3">
             <GlassButton asChild variant="primary" className="landing-sheen h-12 rounded-full">
-              <Link to="/archive">Enter the archive</Link>
+              <Link to="/archive" search={{}}>
+                Enter the archive
+              </Link>
             </GlassButton>
             <GlassButton asChild variant="ghost" className="landing-sheen h-[3.35rem] flex-col rounded-full">
-              <Link to="/archive" aria-label="Tonight’s file: Cussac">
+              <Link to="/archive" search={{}} aria-label="Tonight’s file: Cussac">
                 <span className="font-display text-[10px] font-medium tracking-[0.38em] text-fg/55">
                   TONIGHT’S FILE
                 </span>

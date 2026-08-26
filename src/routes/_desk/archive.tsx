@@ -1,12 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ArchiveMap } from "@/components/archive-map";
 import { FilePanel } from "@/components/file-panel";
-import { YEAR_MAX, YEAR_MIN, type ArchiveCase } from "@/lib/archive-cases";
-import type { DeskFile } from "@/lib/desk-file";
+import { ARCHIVE_CASES, YEAR_MAX, YEAR_MIN, type ArchiveCase } from "@/lib/archive-cases";
+import { archiveToDesk } from "@/lib/desk-file";
 import { useDesk } from "@/lib/store";
 
+type ArchiveSearch = {
+  file?: string;
+};
+
 export const Route = createFileRoute("/_desk/archive")({
+  validateSearch: (search: Record<string, unknown>): ArchiveSearch => {
+    if (typeof search.file === "string" && search.file) return { file: search.file };
+    return {};
+  },
   component: ArchivePage,
 });
 
@@ -38,14 +46,25 @@ function markIntroPlayed() {
 }
 
 function ArchivePage() {
-  const [intro] = useState(() => shouldIntroPlay());
-  const [year, setYear] = useState(intro ? YEAR_MIN : YEAR_MAX);
-  const [file, setFile] = useState<ArchiveCase | null>(null);
+  const { file: fileId } = Route.useSearch();
+  const seeded = fileId ? (ARCHIVE_CASES.find((row) => row.id === fileId) ?? null) : null;
+  const [intro] = useState(() => !seeded && shouldIntroPlay());
+  const [year, setYear] = useState(seeded ? seeded.year : intro ? YEAR_MIN : YEAR_MAX);
+  const [file, setFile] = useState<ArchiveCase | null>(seeded);
+  const pool = useMemo(() => ARCHIVE_CASES.map(archiveToDesk), []);
 
   useEffect(() => {
     useDesk.getState().consumeArchiveSweep();
     if (intro) markIntroPlayed();
   }, [intro]);
+
+  useEffect(() => {
+    if (!fileId) return;
+    const found = ARCHIVE_CASES.find((row) => row.id === fileId) ?? null;
+    if (!found) return;
+    setYear(found.year);
+    setFile(found);
+  }, [fileId]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -56,21 +75,15 @@ function ArchivePage() {
         autoPlay={intro}
         playMs={intro ? 48 : 72}
       />
-      <FilePanel file={file ? archiveToDesk(file) : null} onClose={() => setFile(null)} />
+      <FilePanel
+        file={file ? archiveToDesk(file) : null}
+        pool={pool}
+        onClose={() => setFile(null)}
+        onOpen={(next) => {
+          const found = ARCHIVE_CASES.find((item) => item.id === next.id) ?? null;
+          setFile(found);
+        }}
+      />
     </div>
   );
-}
-
-function archiveToDesk(file: ArchiveCase): DeskFile {
-  return {
-    id: file.id,
-    title: file.title,
-    kicker: String(file.year),
-    subtitle: `${file.place} · ${file.country}`,
-    lede: file.summary,
-    summary: file.summary,
-    body: "",
-    evidence: "",
-    sources: file.sources ?? [],
-  };
 }

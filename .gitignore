@@ -17,3 +17,7 @@ tmp/
 .env.*
 .node_modules.lock
 AGENTS.md
+
+# full restore snapshots
+!restores/
+!restores/**

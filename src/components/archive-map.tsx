@@ -193,6 +193,9 @@ export function ArchiveMap({
   const animRef = useRef(0);
   const markedReady = useRef(false);
   const pinKeyRef = useRef("");
+  /** Once a pin appears this pass, keep it until the playhead restarts. */
+  const revealedRef = useRef<Set<string>>(new Set());
+  const lastYearRef = useRef(year);
   const [ready, setReady] = useState(false);
   const [pins, setPins] = useState<PinView[]>([]);
   const [peek, setPeek] = useState<PeekState | null>(null);
@@ -210,6 +213,15 @@ export function ArchiveMap({
   yearMaxRef.current = yearMax;
   stepRef.current = step;
   playingRef.current = playing;
+
+  // Playhead moved backward (restart / scrub left) → clear the pass.
+  if (year < lastYearRef.current - 1) {
+    revealedRef.current.clear();
+  }
+  lastYearRef.current = year;
+  for (const c of cases) {
+    if (c.year <= year) revealedRef.current.add(c.id);
+  }
 
   useEffect(() => {
     setCount(cases.filter((c) => c.year <= year).length);
@@ -313,9 +325,14 @@ export function ArchiveMap({
       ctx.stroke();
 
       const r = pinRadius(v.zoom);
+      const revealed = revealedRef.current;
+      // Keep every pin that has already appeared this pass (cleared only on restart).
+      for (const file of casesRef.current) {
+        if (file.year <= yearRef.current) revealed.add(file.id);
+      }
       const next: PinView[] = [];
       for (const file of casesRef.current) {
-        if (file.year > yearRef.current) continue;
+        if (!revealed.has(file.id)) continue;
         const p = projection([file.lng, file.lat]);
         if (!p) continue;
         if (p[0] < -20 || p[0] > w + 20 || p[1] < -20 || p[1] > h + 20) continue;
@@ -354,13 +371,13 @@ export function ArchiveMap({
         markedReady.current = true;
         setReady(true);
       }
+      // Update hit targets while playing so pins stay tappable and visible as a set.
       const settled =
         !dragRef.current &&
         !pinchRef.current &&
-        !playingRef.current &&
         Math.abs(v.targetZoom - v.zoom) < 0.02 &&
         Math.abs(v.targetTx - v.tx) < 0.5;
-      if (settled) {
+      if (settled || playingRef.current) {
         const key =
           next.map((p) => p.file.id).join("|") +
           `@${Math.round(v.zoom * 20)}:${Math.round(v.tx)}:${Math.round(v.ty)}`;
@@ -776,7 +793,12 @@ export function ArchiveMap({
                   setPlaying(false);
                   return;
                 }
-                if (yearRef.current >= yearMax) onYear(yearMin);
+                if (yearRef.current >= yearMax) {
+                  // Restart pass from the left — clear revealed pins so they reappear as the year advances.
+                  revealedRef.current.clear();
+                  lastYearRef.current = yearMin;
+                  onYear(yearMin);
+                }
                 setPlaying(true);
               }}
             >
@@ -832,7 +854,7 @@ function StackCard({
     <div
       role="dialog"
       aria-label="Cases at this point"
-      className="peek-card glass-strong pointer-events-auto absolute z-40 rounded-3xl px-4 pt-3 pb-2"
+      className="peek-card glass-sheet pointer-events-auto absolute z-40 overflow-hidden rounded-3xl px-4 pt-3 pb-2"
       style={{
         width,
         left: `min(max(10px, ${Math.round(stack.x) - width / 2}px), calc(100% - ${width + 10}px))`,
@@ -882,7 +904,7 @@ function PeekCard({
     <div
       role="dialog"
       aria-label={`Peek ${peek.file.title}`}
-      className="peek-card glass-strong pointer-events-auto absolute z-40 rounded-3xl px-4 pt-3 pb-3"
+      className="peek-card glass-sheet pointer-events-auto absolute z-40 overflow-hidden rounded-3xl px-4 pt-3 pb-3"
       style={{
         width,
         left: `min(max(10px, ${Math.round(peek.x) - width / 2}px), calc(100% - ${width + 10}px))`,

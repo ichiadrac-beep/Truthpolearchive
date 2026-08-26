@@ -1,4 +1,5 @@
 import { ARCHIVE_CASES_EXTRA } from "@/lib/archive-cases-extra";
+import { ARCHIVE_CASES_WORLD } from "@/lib/archive-cases-world";
 
 export type ArchiveCase = {
   id: string;
@@ -702,4 +703,5 @@ export const ARCHIVE_CASES: ArchiveCase[] = [
     ],
   },
   ...ARCHIVE_CASES_EXTRA,
+  ...ARCHIVE_CASES_WORLD,
 ];

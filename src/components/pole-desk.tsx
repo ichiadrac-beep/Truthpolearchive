@@ -44,9 +44,11 @@ export function PoleDesk() {
   const [busy, setBusy] = useState(false);
   const [xBusy, setXBusy] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [composing, setComposing] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
   const fieldRef = useRef<HTMLTextAreaElement>(null);
   const kb = useVisualKeyboard();
+  const kbUp = kb.open || composing;
 
   const apply = (payload: { online: number; ttlMin: number; messages: PoleMessage[] }) => {
     setOnline(Math.max(0, payload.online));
@@ -94,7 +96,7 @@ export function PoleDesk() {
     const el = scroller.current;
     if (!el) return;
     el.scrollTop = el.scrollHeight;
-  }, [messages.length, kb.open]);
+  }, [messages.length, kbUp]);
 
   const publicName = anon ? "ANON" : xName || alias;
 
@@ -162,7 +164,7 @@ export function PoleDesk() {
       className="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col px-5 pt-3"
       dir="ltr"
       lang="en"
-      style={{ paddingBottom: kb.open ? 8 : undefined }}
+      style={{ paddingBottom: kbUp ? 8 : undefined }}
     >
       <header className="shrink-0">
         <div className="flex items-center justify-between gap-3">
@@ -172,7 +174,7 @@ export function PoleDesk() {
             {standby ? "Stand by" : online > 1 ? `${online} viewing` : onDuty ? "On duty" : "Viewing"}
           </p>
         </div>
-        {kb.open ? (
+        {kbUp ? (
           <p className="mt-2 font-display text-[11px] tracking-[0.16em] text-fg/55">
             {publicName} · {formatScifBadge(scif)}
           </p>
@@ -228,7 +230,10 @@ export function PoleDesk() {
       </div>
 
       <form
-        className="shrink-0 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+        className={cn(
+          "shrink-0 pt-3",
+          kbUp ? "pb-2" : "pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+        )}
         onSubmit={onSend}
         autoComplete="off"
         autoCorrect="off"
@@ -238,7 +243,7 @@ export function PoleDesk() {
         method="post"
         dir="ltr"
       >
-        {kb.open ? null : (
+        {kbUp ? null : (
           <div className="flex flex-wrap gap-2">
             <GlassButton
               variant="chip"
@@ -278,12 +283,12 @@ export function PoleDesk() {
             ) : null}
           </div>
         )}
-        {xBusy && !kb.open ? (
+        {xBusy && !kbUp ? (
           <p className="mt-2 text-[12px] leading-relaxed text-fg/50">
             Stay in Chrome or Safari. If the X app opens, tap ⋮ → Open in browser. Keep this page.
           </p>
         ) : null}
-        {kb.open ? null : (
+        {kbUp ? null : (
           <p className="mt-2.5 font-display text-[11px] tracking-[0.18em] text-fg/40">
             {anon ? `Posting as ANON · ${scif.code}` : `Posting as ${publicName} · ${scif.code}`}
           </p>
@@ -317,10 +322,16 @@ export function PoleDesk() {
             onKeyDown={onDraftKey}
             onFocus={() => {
               setInviteOpen(false);
+              setComposing(true);
               window.setTimeout(() => {
                 scroller.current?.scrollTo({ top: scroller.current.scrollHeight });
-                fieldRef.current?.scrollIntoView({ block: "end" });
-              }, 50);
+              }, 80);
+            }}
+            onBlur={() => {
+              window.setTimeout(() => {
+                const el = document.activeElement;
+                if (el !== fieldRef.current) setComposing(false);
+              }, 60);
             }}
             placeholder={anon ? "Write as ANON…" : xName ? `Write as ${xName}…` : "Write a note…"}
             maxLength={240}

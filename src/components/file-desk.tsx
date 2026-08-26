@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { FilePanel } from "@/components/file-panel";
-import type { DeskFile } from "@/lib/desk-file";
+import { relatedDeskFiles, type DeskFile } from "@/lib/desk-file";
 import { cn } from "@/lib/utils";
 
 type FileDeskProps = {
@@ -50,6 +50,7 @@ export function FileDesk({ section, title, intro, tag, files }: FileDeskProps) {
         <ul className="mt-6 flex flex-col">
           {visible.map((file) => {
             const selected = file.id === selectedId;
+            const linked = relatedDeskFiles(file, files).length;
             return (
               <li key={file.id} className="border-t border-fg/10 first:border-t-0">
                 <button
@@ -67,7 +68,7 @@ export function FileDesk({ section, title, intro, tag, files }: FileDeskProps) {
                   <p className="text-[17px] text-fg">{file.title}</p>
                   <p className="mt-1 text-sm text-fg/50">
                     {file.subtitle}
-                    {file.sources.length ? ` · ${file.sources.length} linked` : ""}
+                    {linked ? ` · ${linked} linked` : ""}
                   </p>
                   <p className="mt-2 font-display text-[11px] tracking-[0.32em] text-fg/40">{tag}</p>
                   <p className="mt-1 text-sm text-fg/45">{file.kicker}</p>
@@ -77,7 +78,15 @@ export function FileDesk({ section, title, intro, tag, files }: FileDeskProps) {
           })}
         </ul>
       </section>
-      <FilePanel file={openFile} onClose={() => setOpenFile(null)} />
+      <FilePanel
+        file={openFile}
+        pool={files}
+        onClose={() => setOpenFile(null)}
+        onOpen={(next) => {
+          setSelectedId(next.id);
+          setOpenFile(next);
+        }}
+      />
     </>
   );
 }

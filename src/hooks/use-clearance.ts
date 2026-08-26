@@ -5,7 +5,7 @@ import { pickTonightFile, type TonightPick } from "@/lib/tonight";
 export function useClearanceTonight(): TonightPick {
   const [tonight, setTonight] = useState<TonightPick>(() =>
     typeof window === "undefined"
-      ? { title: "Cussac", anniversary: false, special: null }
+      ? { title: "Cussac", anniversary: false, special: null, caseId: null }
       : pickTonightFile(),
   );
   useEffect(() => {

@@ -1,20 +1,25 @@
+import { ARCHIVE_CASES } from "@/lib/archive-cases";
 import { tonightClearance, type ClearanceId } from "@/lib/clearance";
 
 export type TonightPick = {
   title: string;
   anniversary: boolean;
   special: ClearanceId | null;
+  caseId: string | null;
 };
 
 type Anniversary = {
   month: number;
   day: number;
+  through?: number;
   title: string;
   id: string;
 };
 
-/** Local-date matches for Tonight’s File. Day-of-year only — year is the anniversary. */
-export const TONIGHT_ANNIVERSARIES: Anniversary[] = [
+const CASE_IDS = new Set(ARCHIVE_CASES.map((row) => row.id));
+
+/** Local-date matches for Tonight’s File. Only ids that exist in ARCHIVE_CASES. */
+const ANNIVERSARIES: Anniversary[] = [
   { month: 1, day: 7, title: "Mantell", id: "mantell" },
   { month: 1, day: 8, title: "Trans-en-Provence", id: "trans-en-provence" },
   { month: 1, day: 16, title: "Trindade Island", id: "trindade" },
@@ -29,9 +34,7 @@ export const TONIGHT_ANNIVERSARIES: Anniversary[] = [
   { month: 5, day: 11, title: "McMinnville", id: "mcmminville" },
   { month: 6, day: 24, title: "Kenneth Arnold", id: "kenneth-arnold" },
   { month: 7, day: 1, title: "Valensole", id: "valensole" },
-  { month: 7, day: 7, title: "Roswell", id: "roswell" },
-  { month: 7, day: 8, title: "Roswell", id: "roswell" },
-  { month: 7, day: 9, title: "Roswell", id: "roswell" },
+  { month: 7, day: 2, through: 9, title: "Roswell", id: "roswell" },
   { month: 7, day: 19, title: "Washington National", id: "washington-flap" },
   { month: 7, day: 20, title: "Washington National", id: "washington-flap" },
   { month: 7, day: 26, title: "Washington National", id: "washington-flap" },
@@ -54,22 +57,37 @@ export const TONIGHT_ANNIVERSARIES: Anniversary[] = [
   { month: 11, day: 14, title: "Nimitz / Tic Tac", id: "nimitz" },
   { month: 11, day: 17, title: "JAL 1628", id: "jal-1628" },
   { month: 12, day: 9, title: "Kecksburg", id: "kecksburg" },
-  { month: 12, day: 26, title: "Rendlesham Forest", id: "rendlesham" },
-  { month: 12, day: 27, title: "Rendlesham Forest", id: "rendlesham" },
-  { month: 12, day: 28, title: "Rendlesham Forest", id: "rendlesham" },
-];
+  { month: 12, day: 26, through: 28, title: "Rendlesham Forest", id: "rendlesham" },
+].filter((row) => CASE_IDS.has(row.id));
+
+export const TONIGHT_ANNIVERSARIES = ANNIVERSARIES;
 
 export function anniversaryFor(date: Date = new Date()) {
   const month = date.getMonth() + 1;
   const day = date.getDate();
-  return TONIGHT_ANNIVERSARIES.find((row) => row.month === month && row.day === day) ?? null;
+  return (
+    ANNIVERSARIES.find((row) => {
+      if (row.month !== month) return false;
+      const end = row.through ?? row.day;
+      return day >= row.day && day <= end;
+    }) ?? null
+  );
 }
 
 export function pickTonightFile(date: Date = new Date()): TonightPick {
   const match = anniversaryFor(date);
   if (match) {
-    return { title: match.title, anniversary: true, special: null };
+    return { title: match.title, anniversary: true, special: null, caseId: match.id };
   }
   const cleared = tonightClearance();
-  return { title: cleared.title, anniversary: false, special: cleared.special };
+  if (cleared.special) {
+    return { title: cleared.title, anniversary: false, special: cleared.special, caseId: null };
+  }
+  const desk = ARCHIVE_CASES.find((row) => row.id === "cussac");
+  return {
+    title: desk?.title ?? "Cussac",
+    anniversary: false,
+    special: null,
+    caseId: desk ? desk.id : null,
+  };
 }

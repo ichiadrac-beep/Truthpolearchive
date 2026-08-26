@@ -1,97 +1,54 @@
-# TRUTHPOLE — restore files
+# TRUTHPOLE — Full restore snapshot
 
-Frozen snapshots of the desk. **V 1.0 is still there** and is not overwritten.
-This file’s **current restore** is the desk as of **26 Aug 2026** (early morning):
-full live tree after invite, glyphs, archive pin persistence, X-Files real handles,
-and expanded landing sky crafts.
+**Tag / label:** `restore-20260827-live`
+**Date:** 27 August 2026 (00:30 BST)
+**What this is:** Complete restorable snapshot of the live TRUTHPOLE desk.
 
 Repo: [ichiadrac-beep/Truthpolearchive](https://github.com/ichiadrac-beep/Truthpolearchive)
 
----
+## Included in this package
 
-## Current restore (26 Aug 2026 desk)
+| Path | Contents |
+|------|----------|
+| `src/` | Full app (landing, archive map, star-field, desks, panels, X-Files, Pole, styles) |
+| `public/` | Static assets (logos, geo, audio, `og.jpg` 1200×630) |
+| `scripts/` | Dev / preview / migrate helpers |
+| `server/` | Server routes |
+| `migrations/` | DB migrations |
+| `.grok/app-env.json` | App Builder env |
+| `package.json` + lock | Dependencies |
+| `vite.config.ts`, `tsconfig.json`, `startup.sh` | Build & revive |
 
-**Release:** [restore-20260826-current](https://github.com/ichiadrac-beep/Truthpolearchive/releases/tag/restore-20260826-current)  
-**Tag:** `restore-20260826-current`  
-**Frozen branch:** `backup/restore-20260826-current`  
-**Zip asset:** `TRUTHPOLE-restore-20260826-current.zip`
+**Not included:** `node_modules/` (run `npm install` after restore).
 
-### Fastest
+## Key features in this snapshot
 
-1. Open [Releases](https://github.com/ichiadrac-beep/Truthpolearchive/releases) and download **TRUTHPOLE-restore-20260826-current.zip**.
-2. Unzip, then:
+1. Landing sky — rare craft, landing-only duels, Zeta Reticuli + Cygnus charts.
+2. Tonight’s File — anniversary windows; tap opens that archive file.
+3. File panels — CLASSIFIED stamp, desk summary, full record, real sources/related, share.
+4. Archive — extra non-US pins; opaque peek card; year slider still filters.
+5. X-Files — 48h newest-first, correct @handles, credibility breakdown (heuristic label).
+6. Guest filing form — readable labels/placeholders on a solid dark sheet.
+7. The Pole — message board stays visible while the keyboard is open.
+8. More sheet — opaque glass.
+9. Share card — custom `public/og.jpg` 1200×630.
 
-```
+## Restore steps
+
+```bash
+unzip TRUTHPOLE-restore-20260827-live.zip -d truthpole
+cd truthpole
+rm -rf node_modules
 npm install
-npm run dev
+npm run build
+sh startup.sh    # 0.0.0.0:8080
 ```
 
-### From git (does not depend on later `main` commits)
+Or clone the repo:
 
-```
+```bash
 git clone https://github.com/ichiadrac-beep/Truthpolearchive.git
 cd Truthpolearchive
-git checkout restore-20260826-current
 npm install
-npm run dev
+sh startup.sh
 ```
-
-Same snapshot: `backup/restore-20260826-current`
-
-### What this snapshot includes (on top of the 25 Aug restore)
-
-- **Pole Invite / clearance:** fixed sheet above bottom nav; Invite contacts, X followers, X DMs, Copy; public join URL on sandbox hosts
-- **Landing glyphs:** scattered random positions (no left/right columns on desktop); glyphs only on landing
-- **Archive map:** pins stay visible once they appear until the timeline restarts; first Archive open each session auto-plays left → right
-- **X-Files:** live feed resolves real X handles (never `@desk`); display names; noise filter; credibility meters
-- **Landing sky crafts:** TR-3B triangle, tic-tac, orbs, disks, cigars, domes, boomerangs, rectangles, ovals, chevrons — multi-colour lights, random drift, up to 3 concurrent flybys
-- Full `styles.css` restored (glass, cosmos, pole, archive, reduced-motion)
-
-### Carried forward from 25 Aug restore
-
-- Ancient / pre-modern: Anunnaki, Watchers, pre-biblical contact files
-- Pole live chat: keyboard glued on mobile, SCIF, anon
-- Archive globe: cold-start draw, stacked-pin picker, pulse on timeline year
-- Clearance phrases: WOW / MJ-12 / ZETA
-- Tonight’s File: anniversary preference
-- Shooting stars: white / pale green / amber / deep red weights
-
-App version label remains **V 1.0** (`1.0.0`). This restore is a full tree snapshot, not a version bump.
-
----
-
-## Previous restore (25 Aug 2026 desk)
-
-**Release:** [restore-20260825-current](https://github.com/ichiadrac-beep/Truthpolearchive/releases/tag/restore-20260825-current)  
-**Tag:** `restore-20260825-current`  
-**Frozen branch:** `backup/restore-20260825-current`
-
-```
-git checkout restore-20260825-current
-```
-
----
-
-## V 1.0 (frozen, 25 Aug 2026 morning)
-
-**Release:** [v1.0.0 — TRUTHPOLE V 1.0](https://github.com/ichiadrac-beep/Truthpolearchive/releases/tag/v1.0.0)  
-**Tag:** `v1.0.0`  
-**Frozen branch:** `backup/v1.0`  
-**Zip asset:** `TRUTHPOLE-v1.0-20260825-110439.zip`
-
-```
-git clone https://github.com/ichiadrac-beep/Truthpolearchive.git
-cd Truthpolearchive
-git checkout v1.0.0
-npm install
-npm run dev
-```
-
-Includes: landing + archive globe, Conspiracy and Ancient desks, X-Files watch
-list, The Pole (anon / X / SCIF), Articles wire, liquid-glass, hand-scan, support.
-
----
-
-## Earlier restore
-
-- [restore-2026-08-25-pole-x-live](https://github.com/ichiadrac-beep/Truthpolearchive/releases/tag/restore-2026-08-25-pole-x-live) — Pole X / SCIF live chat

@@ -28,8 +28,7 @@ export function XLiveBoard({ posts, loading, source, lastRefresh, onRefresh }: X
             {lastRefresh
               ? `Updated ${lastRefresh.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
               : "Waiting for first pull"}
-            {" · "}
-            auto every 5 min
+            {" · last 48h · newest first · auto every 3 min"}
           </p>
         </div>
         <GlassButton
@@ -54,6 +53,10 @@ export function XLiveBoard({ posts, loading, source, lastRefresh, onRefresh }: X
         <p className="mt-1.5 text-[11px] leading-relaxed text-fg/55">
           {X_FEED_KEYWORDS.join(" · ")}
         </p>
+        <p className="mt-2.5 text-[11px] leading-snug text-fg/45">
+          Credibility scores are a desk heuristic from available engagement, links, and media — not
+          official truth ratings.
+        </p>
       </div>
 
       <ul className="flex flex-col gap-3">
@@ -65,15 +68,21 @@ export function XLiveBoard({ posts, loading, source, lastRefresh, onRefresh }: X
             post.name && post.name.replace(/^@/, "").toLowerCase() !== "desk"
               ? post.name.replace(/^@/, "")
               : handle;
+          const missingCounts = post.likes == null && post.reposts == null && post.replies == null;
           return (
             <li key={post.id}>
               <article className="glass-plain-strong rounded-2xl px-4 py-3.5">
                 <header className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-display text-[11px] font-medium tracking-[0.2em] text-fg/50">
+                    <a
+                      href={`https://x.com/${handle}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block truncate font-display text-[13px] font-semibold tracking-[0.14em] text-fg"
+                    >
                       @{handle}
-                    </p>
-                    <p className="mt-0.5 text-sm font-medium text-fg">{name}</p>
+                    </a>
+                    <p className="mt-0.5 truncate text-sm text-fg/70">{name}</p>
                   </div>
                   <p className="shrink-0 font-display text-[10px] tracking-[0.18em] text-fg/40">
                     {post.when}
@@ -81,29 +90,42 @@ export function XLiveBoard({ posts, loading, source, lastRefresh, onRefresh }: X
                 </header>
                 <p className="mt-3 text-sm leading-relaxed text-fg/90">{post.text}</p>
 
-                <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <div className="mt-3 rounded-2xl bg-fg/6 px-3 py-2.5">
                   <Meter
-                    label="CREDIBILITY"
+                    label="OVERALL"
                     value={cred.overall}
                     hint={cred.label}
                     emphasize
                   />
-                  <Meter
-                    label="VIRALITY"
-                    value={cred.virality}
-                    hint={`${formatCount(post.likes)} likes · ${formatCount(post.reposts)} rt`}
-                  />
-                  <Meter
-                    label="COMMENTS"
-                    value={cred.comments}
-                    hint={`${formatCount(post.replies)} replies scored`}
-                  />
-                  <Meter
-                    label="EVIDENCE"
-                    value={cred.evidence}
-                    hint={post.hasMedia ? "Media + source trust" : "Source trust"}
-                  />
-                </dl>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    <Meter
+                      label="VIRALITY"
+                      value={cred.virality}
+                      hint={
+                        missingCounts
+                          ? "Counts pending"
+                          : `${formatCount(post.likes)} likes · ${formatCount(post.reposts)} rt`
+                      }
+                    />
+                    <Meter
+                      label="COMMENTS"
+                      value={cred.comments}
+                      hint={
+                        missingCounts
+                          ? "Signal pending"
+                          : `${formatCount(post.replies)} replies`
+                      }
+                    />
+                    <Meter
+                      label="EVIDENCE"
+                      value={cred.evidence}
+                      hint={post.hasMedia ? "Media + links" : "Source + links"}
+                    />
+                  </div>
+                  <p className="mt-2 text-[10px] leading-snug text-fg/40">
+                    Desk heuristic from engagement, links, and media — not an official truth rating.
+                  </p>
+                </div>
 
                 <footer className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
                   {post.views != null ? (
@@ -118,7 +140,7 @@ export function XLiveBoard({ posts, loading, source, lastRefresh, onRefresh }: X
                     </span>
                   ) : null}
                   <a
-                    href={post.url}
+                    href={post.url.startsWith("http") ? post.url : `https://x.com/${handle}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="ml-auto inline-flex items-center gap-1 font-display text-[10px] tracking-[0.18em] text-fg/70 underline decoration-fg/25 underline-offset-2"
@@ -133,8 +155,8 @@ export function XLiveBoard({ posts, loading, source, lastRefresh, onRefresh }: X
         })}
       </ul>
 
-      {posts.length === 0 && !loading ? (
-        <p className="py-8 text-center text-sm text-fg/45">Channel quiet — stand by for the next pull.</p>
+      {posts.length === 0 ? (
+        <p className="py-8 text-center text-sm text-fg/50">No posts matched the keyword filter.</p>
       ) : null}
     </div>
   );
@@ -152,13 +174,23 @@ function Meter({
   emphasize?: boolean;
 }) {
   return (
-    <div className={`rounded-xl px-2.5 py-2 ${emphasize ? "glass-plain-strong" : "glass-plain"}`}>
-      <p className="font-display text-[9px] tracking-[0.18em] text-fg/45">{label}</p>
-      <p className="mt-1 font-display text-lg tabular-nums text-fg">{value}</p>
-      <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-fg/10">
-        <div className="h-full rounded-full bg-fg/55" style={{ width: `${Math.max(2, Math.min(100, value))}%` }} />
+    <div className={emphasize ? "" : "min-w-0"}>
+      <dt className="font-display text-[10px] tracking-[0.16em] text-fg/45">{label}</dt>
+      <div className={emphasize ? "flex items-baseline gap-2" : ""}>
+        <dd className={`mt-0.5 leading-none text-fg ${emphasize ? "font-serif text-2xl" : "font-serif text-base"}`}>
+          {value}
+        </dd>
+        {emphasize ? (
+          <span className="font-display text-[10px] tracking-[0.18em] text-fg/50">{hint}</span>
+        ) : null}
       </div>
-      <p className="mt-1 text-[10px] leading-tight text-fg/40">{hint}</p>
+      <div className="mt-1.5 h-0.5 rounded-full bg-fg/15">
+        <div
+          className="h-0.5 rounded-full bg-fg/75"
+          style={{ width: `${Math.max(4, Math.min(100, value))}%` }}
+        />
+      </div>
+      {!emphasize ? <p className="mt-1 text-[10px] leading-tight text-fg/40">{hint}</p> : null}
     </div>
   );
 }

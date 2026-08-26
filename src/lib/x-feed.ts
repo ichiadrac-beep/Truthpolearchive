@@ -12,6 +12,7 @@ export type XFeedPost = {
   replies?: number;
   views?: number;
   hasMedia?: boolean;
+  at?: number;
 };
 
 export type CredibilityBreakdown = {
@@ -56,8 +57,10 @@ export const X_FEED_KEYWORDS = [
   "whistleblower",
 ] as const;
 
-/** Auto-refresh interval (ms). Default 5 minutes. */
-export const X_FEED_REFRESH_MS = 5 * 60 * 1000;
+/** Auto-refresh interval (ms). */
+export const X_FEED_REFRESH_MS = 3 * 60 * 1000;
+/** Only keep posts from now back 48 hours. */
+export const X_FEED_WINDOW_MS = 48 * 60 * 60 * 1000;
 
 /** Source trust for evidence leg of the credibility meter */
 const SOURCE_TRUST: Record<string, number> = {
@@ -68,7 +71,7 @@ const SOURCE_TRUST: Record<string, number> = {
   NewsNation: 82,
   theblackvault: 90,
   lesliekean: 88,
-  roscoulthart: 86,
+  rosscoulthart: 86,
   ProfAviLoeb: 85,
   GarryPNolan: 84,
   ChrisMellon5: 78,
@@ -107,9 +110,10 @@ export function credibilityOf(post: XFeedPost): CredibilityBreakdown {
 
   const comments = clamp(logScale(replies, 15, 200));
 
-  const trust = SOURCE_TRUST[post.handle] ?? 50;
+  const trust = SOURCE_TRUST[post.handle] ?? SOURCE_TRUST[post.handle?.replace(/^@/, "") ?? ""] ?? 50;
   let evidence = trust * 0.7;
   if (post.hasMedia) evidence += 12;
+  if (/https?:\/\//i.test(post.text) || /https?:\/\/x\.com\//i.test(post.url)) evidence += 6;
   const primary =
     /\b(AARO|PURSUE|Pentagon|Congress|FOIA|hearing|whistleblower|crash|biologic|NHI|Navy|radar)\b/i.test(
       post.text,
@@ -348,18 +352,75 @@ export const X_FEED_SEED: XFeedPost[] = [
   },
 ];
 
-const CACHE_KEY = "truthpole-x-feed-v3";
+const CACHE_KEY = "truthpole-x-feed-v6";
+const TWITTER_EPOCH = 1288834974657n;
+
+function snowflakeTime(id: string): number | null {
+  const raw = id.match(/(\d{15,20})/);
+  if (!raw) return null;
+  try {
+    const ms = Number((BigInt(raw[1]) >> 22n) + TWITTER_EPOCH);
+    if (ms > 1.2e12 && ms < Date.now() + 86_400_000) return ms;
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+function parseWhenString(when: string): number | null {
+  if (!when) return null;
+  const iso = Date.parse(when);
+  if (!Number.isNaN(iso)) return iso;
+  const m = when.match(/^(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})$/);
+  if (!m) return null;
+  const parsed = Date.parse(`${m[1]} ${m[2]} ${m[3]} UTC`);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+export function postTime(post: XFeedPost): number {
+  if (typeof post.at === "number" && post.at > 1e12) return post.at;
+  return snowflakeTime(post.id) ?? snowflakeTime(post.url) ?? parseWhenString(post.when) ?? 0;
+}
+
+export function formatWhen(at: number, now = Date.now()): string {
+  if (!at) return "Recent";
+  const mins = Math.max(0, Math.round((now - at) / 60_000));
+  if (mins < 1) return "now";
+  if (mins < 60) return `${mins}m`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 48) return `${hrs}h`;
+  const days = Math.round(hrs / 24);
+  return `${days}d`;
+}
+
+/** Last 48 hours, newest → oldest. */
+export function recentXPosts(posts: XFeedPost[], now = Date.now()): XFeedPost[] {
+  const cut = now - X_FEED_WINDOW_MS;
+  return posts
+    .filter((p) => p.handle && p.handle.toLowerCase() !== "desk")
+    .map((p) => {
+      const at = postTime(p);
+      return { ...p, at, when: at ? formatWhen(at, now) : p.when };
+    })
+    .filter((p) => (p.at ?? 0) >= cut)
+    .sort((a, b) => (b.at ?? 0) - (a.at ?? 0));
+}
+
+function stripDeskPosts(posts: XFeedPost[]) {
+  return posts.filter((p) => p.handle && p.handle.toLowerCase() !== "desk");
+}
 
 export function loadCachedFeed(): XFeedPost[] {
-  if (typeof window === "undefined") return X_FEED_SEED;
+  if (typeof window === "undefined") return recentXPosts(X_FEED_SEED);
   try {
     const raw = sessionStorage.getItem(CACHE_KEY);
-    if (!raw) return X_FEED_SEED;
+    if (!raw) return recentXPosts(X_FEED_SEED);
     const parsed = JSON.parse(raw) as XFeedPost[];
-    if (!Array.isArray(parsed) || parsed.length === 0) return X_FEED_SEED;
-    return parsed;
+    if (!Array.isArray(parsed) || parsed.length === 0) return recentXPosts(X_FEED_SEED);
+    const clean = recentXPosts(stripDeskPosts(parsed));
+    return clean.length ? clean : recentXPosts(X_FEED_SEED);
   } catch {
-    return X_FEED_SEED;
+    return recentXPosts(X_FEED_SEED);
   }
 }
 
@@ -382,8 +443,11 @@ export async function fetchXFeed(): Promise<{ posts: XFeedPost[]; source: "api" 
     if (res.ok) {
       const data = (await res.json()) as { posts?: XFeedPost[] };
       if (Array.isArray(data.posts) && data.posts.length > 0) {
-        saveCachedFeed(data.posts);
-        return { posts: data.posts, source: "api" };
+        const posts = recentXPosts(stripDeskPosts(data.posts));
+        if (posts.length > 0) {
+          saveCachedFeed(posts);
+          return { posts, source: "api" };
+        }
       }
     }
   } catch {
@@ -399,4 +463,246 @@ export function formatCount(n?: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return String(n);
+}
+
+/* ── Live gather (Google News site:x.com) ───────────────────────────── */
+
+const DISPLAY_NAMES: Record<string, string> = {
+  Truthpole: "T R U T H P O L E",
+  rosscoulthart: "Ross Coulthart",
+  JeremyCorbell: "Jeremy Corbell",
+  g_knapp: "George Knapp",
+  lesliekean: "Leslie Kean",
+  LueElizondo: "Lue Elizondo",
+  ChrisMellon5: "Christopher Mellon",
+  ProfAviLoeb: "Professor Avi Loeb",
+  GarryPNolan: "Garry P. Nolan",
+  RepTimBurchett: "Rep. Tim Burchett",
+  EricBurlison: "Rep. Eric Burlison",
+  RepLuna: "Rep. Anna Paulina Luna",
+  theblackvault: "John Greenewald, Jr.",
+  UAPJames: "UAP James",
+  NewsNation: "NewsNation",
+};
+
+const ACCOUNT_LOOKUP = new Map<string, string>(
+  X_FEED_ACCOUNTS.map((h) => [h.toLowerCase(), h]),
+);
+
+function stripXml(s: string) {
+  return s
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/gi, "$1")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function xmlTag(block: string, name: string) {
+  const m = block.match(new RegExp(`<${name}[^>]*>([\\s\\S]*?)</${name}>`, "i"));
+  return m ? stripXml(m[1]) : "";
+}
+
+function relativeWhen(raw: string): { when: string; at: number } | null {
+  const d = new Date(raw);
+  const at = d.getTime();
+  if (Number.isNaN(at) || at < Date.now() - X_FEED_WINDOW_MS) return null;
+  return { when: formatWhen(at), at };
+}
+
+function slugId(url: string, title: string) {
+  const base = `${url}|${title}`.slice(0, 180);
+  let h = 0;
+  for (let i = 0; i < base.length; i += 1) h = (h * 31 + base.charCodeAt(i)) | 0;
+  return `x-${Math.abs(h).toString(36)}`;
+}
+
+/** Resolve X handle from title/body/url — never returns "desk". Prefer the x.com path. */
+export function resolveXHandle(text: string, url: string, source = "", fallback?: string): string | null {
+  const path = url.match(/(?:x\.com|twitter\.com)\/([A-Za-z0-9_]{2,30})(?:\/status|\/|$)/i);
+  if (path) {
+    const key = path[1].toLowerCase();
+    if (!["i", "intent", "search", "home", "share", "hashtag"].includes(key)) {
+      return ACCOUNT_LOOKUP.get(key) ?? path[1];
+    }
+  }
+
+  const stripped = text.replace(/\s*[-–—]\s*x\.com\s*$/i, "").trim();
+  if (stripped.length > 0 && stripped.length <= 48) {
+    const exact = ACCOUNT_LOOKUP.get(stripped.replace(/^@/, "").toLowerCase());
+    if (exact) return exact;
+    for (const [handle, name] of Object.entries(DISPLAY_NAMES)) {
+      if (stripped.toLowerCase() === name.toLowerCase()) return handle;
+    }
+  }
+
+  for (const [handle, name] of Object.entries(DISPLAY_NAMES)) {
+    const prefix = `${name.toLowerCase()}:`;
+    if (stripped.toLowerCase().startsWith(prefix)) return handle;
+  }
+
+  const dash = text.match(/\s[-–—]\s+@([A-Za-z0-9_]{2,30})\s*$/);
+  if (dash) {
+    const hit = ACCOUNT_LOOKUP.get(dash[1].toLowerCase());
+    if (hit) return hit;
+  }
+
+  const src = source.replace(/^@/, "").trim();
+  if (src && !/^x\.com$/i.test(src) && !/google/i.test(src)) {
+    const hit = ACCOUNT_LOOKUP.get(src.toLowerCase());
+    if (hit) return hit;
+  }
+
+  if (fallback) {
+    const mentioned = new RegExp(`@${fallback}\\b`, "i").test(text);
+    if (!mentioned) return ACCOUNT_LOOKUP.get(fallback.toLowerCase()) ?? fallback;
+  }
+
+  return null;
+}
+
+function displayNameFor(handle: string) {
+  return (
+    DISPLAY_NAMES[handle] ??
+    DISPLAY_NAMES[
+      (ACCOUNT_LOOKUP.get(handle.toLowerCase()) ?? handle) as string
+    ] ??
+    handle.replace(/_/g, " ")
+  );
+}
+
+const KEEP_X =
+  /\b(uaps?\b|ufology|extraterrestrial|non-human|\bnhi\b|whistleblower|aaro|pursue|immaculate constellation|crash retriev|tic[- ]?tac|gimbal|gofast|biologics?|unidentified (aerial|anomalous)|flying saucer|disclosure|nuclear (?:power|plant|site)s?.{0,40}(uap|drone)|uap.{0,50}(orb|drone|hearing|file|report))\b/i;
+
+const SKIP_X =
+  /\b(slot|casino|free spins|nasdaq|etf|ufo plast|ufo_rockband|ufo rockband|miffest|hard charger|captcha|hyundai|ioniq|ice cream|burger|backpack|greyhound)\b/i;
+
+function isUfologyText(text: string) {
+  if (SKIP_X.test(text)) return false;
+  if (KEEP_X.test(text)) return true;
+  return /\bufo\b/i.test(text) && /\b(sighting|craft|pentagon|congress|pilot|radar|navy|hearing|whistle)\b/i.test(text);
+}
+
+function parseGoogleXItems(xml: string, fallbackHandle?: string): XFeedPost[] {
+  const blocks = xml.match(/<item\b[\s\S]*?<\/item>/gi) ?? [];
+  const rows: XFeedPost[] = [];
+  for (const block of blocks) {
+    const title = xmlTag(block, "title");
+    const link = xmlTag(block, "link");
+    const pub = xmlTag(block, "pubDate");
+    const source = xmlTag(block, "source");
+    if (!title || !link) continue;
+
+    let text = title.replace(/\s*[-–—]\s*x\.com\s*$/i, "").trim();
+    const ufology =
+      isUfologyText(text) ||
+      Boolean(fallbackHandle && /\b(uap|ufo|aaro|nhi|whistle|orb|drone|nuclear|disclos)\b/i.test(text));
+    if (!ufology) continue;
+
+    const handle =
+      resolveXHandle(text, link, source, fallbackHandle) ??
+      (/\b(this week(?:'s)? q&a|this week on ["“]?reality check|premiering now)\b/i.test(text)
+        ? "NewsNation"
+        : null);
+    if (!handle) continue;
+    if (handle.toLowerCase() === "desk") continue;
+
+    const snow = snowflakeTime(link) ?? snowflakeTime(title);
+    const dated = relativeWhen(pub);
+    const at = dated?.at ?? snow ?? 0;
+    if (!at || at < Date.now() - X_FEED_WINDOW_MS) continue;
+
+    const post: XFeedPost = {
+      id: slugId(link, text),
+      handle,
+      name: displayNameFor(handle),
+      text,
+      when: formatWhen(at),
+      url: link,
+      hasMedia: false,
+      at,
+    };
+    rows.push(post);
+  }
+  return rows;
+}
+
+async function pullXml(url: string) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 9000);
+  try {
+    const res = await fetch(url, {
+      signal: ctrl.signal,
+      headers: {
+        Accept: "application/rss+xml, application/xml, text/xml, */*",
+        "User-Agent": "TRUTHPOLE/1.0 (ufology desk; +https://x.com/Truthpole)",
+      },
+    });
+    if (!res.ok) return "";
+    return await res.text();
+  } catch {
+    return "";
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function googleXQuery(extra: string) {
+  const q = encodeURIComponent(`site:x.com (${extra}) when:2d`);
+  return `https://news.google.com/rss/search?q=${q}&hl=en-US&gl=US&ceid=US:en`;
+}
+
+/**
+ * Live pull of X posts from the last 48 hours (newest first).
+ * Watched handles + ufology keywords. Drops anything older than 48h.
+ */
+export async function gatherXFeed(): Promise<XFeedPost[]> {
+  const mains = [
+    "rosscoulthart",
+    "NewsNation",
+    "ProfAviLoeb",
+    "theblackvault",
+    "UAPJames",
+    "Truthpole",
+    "LueElizondo",
+    "JeremyCorbell",
+  ] as const;
+  const feeds: Promise<XFeedPost[]>[] = [
+    pullXml(googleXQuery("UAP OR ufology OR AARO OR NHI OR whistleblower OR \"crash retrieval\" OR PURSUE")).then(
+      (xml) => parseGoogleXItems(xml),
+    ),
+    pullXml(googleXQuery("UFO (sighting OR pentagon OR congress OR hearing OR craft OR disclosure)")).then((xml) =>
+      parseGoogleXItems(xml),
+    ),
+    ...mains.map((handle) =>
+      pullXml(googleXQuery(`@${handle}`)).then((xml) => parseGoogleXItems(xml, handle)),
+    ),
+  ];
+
+  const batches = await Promise.all(feeds);
+  const seen = new Set<string>();
+  const merged: XFeedPost[] = [];
+  for (const row of batches.flat()) {
+    const key = row.text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim()
+      .slice(0, 120);
+    if (!key || seen.has(key)) continue;
+    if (row.handle.toLowerCase() === "desk") continue;
+    seen.add(key);
+    merged.push(row);
+  }
+  const live = recentXPosts(merged);
+  const seed = recentXPosts(X_FEED_SEED);
+  const seenLive = new Set(live.map((p) => p.text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().slice(0, 80)));
+  const extra = seed.filter((p) => {
+    const key = p.text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().slice(0, 80);
+    return key && !seenLive.has(key);
+  });
+  return recentXPosts([...live, ...extra]).slice(0, 40);
 }

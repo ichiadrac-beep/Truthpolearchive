@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
+import { X } from "lucide-react";
 import { AlienLogo } from "@/components/alien-logo";
 import { GlassButton } from "@/components/glass-button";
 import { useClearanceTonight } from "@/hooks/use-clearance";
@@ -8,48 +9,199 @@ import { LANDING_TAB_ROWS } from "@/lib/tabs";
 import { useDesk } from "@/lib/store";
 import { APP_VERSION_LABEL } from "@/lib/version";
 
+type ChartNote = {
+  id: string;
+  kicker: string;
+  title: string;
+  line: string;
+  label: string;
+};
+
+type ChartDef = ChartNote & {
+  viewBox: string;
+  className: string;
+  style: CSSProperties;
+  lines: string;
+  strokeWidth: number;
+  stars: { x: number; y: number; r: number }[];
+};
+
+type NoteAnchor = { left: number; top: number; width: number };
+
+function placeNote(rect: DOMRect): NoteAnchor {
+  const width = Math.min(268, Math.max(196, window.innerWidth - 28));
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const preferRight = rect.left + rect.width / 2 < vw * 0.5;
+  let left = preferRight ? rect.right + 10 : rect.left - width - 10;
+  left = Math.max(12, Math.min(left, vw - width - 12));
+  let top = rect.top + rect.height / 2 - 48;
+  top = Math.max(12, Math.min(top, vh - 140));
+  return { left, top, width };
+}
+
+const STAR_CHARTS: ChartDef[] = [
+  {
+    id: "zeta",
+    kicker: "19–20 SEP 1961",
+    title: "Zeta Reticuli",
+    line: "Hill map · two suns",
+    label: "Zeta Reticuli star chart",
+    viewBox: "0 0 40 28",
+    className: "h-[40px] w-[58px] sm:h-[56px] sm:w-[80px]",
+    style: {
+      top: "max(0.45rem, env(safe-area-inset-top))",
+      left: "2.5%",
+    },
+    lines: "M4 18 L8 10 L14 14 L10 20 Z M22 8 L26 4 L32 7 L36 14 L30 18 L24 16 Z",
+    strokeWidth: 0.55,
+    stars: [
+      { x: 4, y: 18, r: 0.85 },
+      { x: 8, y: 10, r: 0.7 },
+      { x: 14, y: 14, r: 0.75 },
+      { x: 10, y: 20, r: 0.65 },
+      { x: 22, y: 8, r: 0.8 },
+      { x: 26, y: 4, r: 1.15 },
+      { x: 32, y: 7, r: 0.7 },
+      { x: 36, y: 14, r: 0.75 },
+      { x: 30, y: 18, r: 0.65 },
+      { x: 24, y: 16, r: 0.7 },
+    ],
+  },
+  {
+    id: "cygnus",
+    kicker: "NORTHERN CROSS",
+    title: "Cygnus",
+    line: "Deneb · Albireo · the rift",
+    label: "Cygnus star chart",
+    viewBox: "0 0 100 70",
+    className: "h-[86px] w-[124px] sm:h-[128px] sm:w-[184px]",
+    style: {
+      top: "max(6.4rem, calc(env(safe-area-inset-top) + 5.6rem))",
+      right: "0.25%",
+      left: "auto",
+    },
+    lines: "M12 40 L28 18 L48 28 L62 12 L82 30 M48 28 L58 48 L36 52 L12 40",
+    strokeWidth: 0.7,
+    stars: [
+      { x: 12, y: 40, r: 1.15 },
+      { x: 28, y: 18, r: 1.05 },
+      { x: 48, y: 28, r: 1.7 },
+      { x: 62, y: 12, r: 1.1 },
+      { x: 82, y: 30, r: 1.25 },
+      { x: 58, y: 48, r: 1.05 },
+      { x: 36, y: 52, r: 0.95 },
+    ],
+  },
+];
+
+function StarChart({
+  chart,
+  open,
+  onOpen,
+}: {
+  chart: ChartDef;
+  open: boolean;
+  onOpen: (el: HTMLButtonElement) => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={chart.label}
+      aria-expanded={open}
+      className={`star-chart-hit pointer-events-auto absolute z-[12] text-fg ${chart.className}`}
+      style={chart.style}
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onOpen(event.currentTarget);
+      }}
+    >
+      <svg viewBox={chart.viewBox} className="h-full w-full" aria-hidden="true">
+        <path className="star-chart-lines" d={chart.lines} strokeWidth={chart.strokeWidth} />
+        {chart.stars.map((s, i) => (
+          <g
+            key={i}
+            className="star-chart-node"
+            style={
+              {
+                ["--star-delay" as string]: `${(i * 0.73) % 4.2}s`,
+                ["--star-dur" as string]: `${4.2 + (i % 5) * 0.55}s`,
+              } as CSSProperties
+            }
+          >
+            <circle className="star-chart-glow" cx={s.x} cy={s.y} r={s.r * 2.4} />
+            <circle className="star-chart-core" cx={s.x} cy={s.y} r={s.r} />
+          </g>
+        ))}
+      </svg>
+    </button>
+  );
+}
 
 function LandingCosmos() {
-  const stars = [
-    [6, 10], [12, 22], [18, 8], [24, 30], [30, 14], [36, 42], [42, 6], [48, 20],
-    [54, 36], [60, 12], [66, 28], [72, 8], [78, 40], [84, 16], [90, 32], [94, 50],
-    [8, 48], [16, 58], [22, 70], [32, 62], [40, 78], [50, 54], [58, 68], [68, 80],
-    [76, 58], [86, 72], [92, 64], [10, 86], [28, 88], [46, 92], [64, 90], [82, 86],
-    [4, 34], [20, 40], [34, 24], [56, 44], [70, 48], [88, 24], [14, 16], [44, 48],
-  ];
+  const [note, setNote] = useState<ChartNote | null>(null);
+  const [anchor, setAnchor] = useState<NoteAnchor | null>(null);
+
+  useEffect(() => {
+    if (!note) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setNote(null);
+        setAnchor(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [note]);
+
+  const closeNote = () => {
+    setNote(null);
+    setAnchor(null);
+  };
+
   return (
-    <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-      <div className="cosmos-wash absolute inset-0" />
-      {/* dense star field — matches first-build look */}
-      <svg className="absolute inset-0 h-full w-full" preserveAspectRatio="xMidYMid slice">
-        {stars.map(([x, y], i) => (
-          <circle
-            key={i}
-            cx={`${x}%`}
-            cy={`${y}%`}
-            r={i % 6 === 0 ? 1.8 : i % 3 === 0 ? 1.2 : 0.75}
-            fill="#f3f3f1"
-            opacity={0.55 + (i % 5) * 0.1}
+    <>
+      <div className="pointer-events-none absolute inset-0 z-[12] overflow-hidden">
+        {STAR_CHARTS.map((chart) => (
+          <StarChart
+            key={chart.id}
+            chart={chart}
+            open={note?.id === chart.id}
+            onOpen={(el) => {
+              if (note?.id === chart.id) {
+                closeNote();
+                return;
+              }
+              setAnchor(placeNote(el.getBoundingClientRect()));
+              setNote(chart);
+            }}
           />
         ))}
-      </svg>
-      {/* constellation top-left like original */}
-      <svg viewBox="0 0 100 70" width="120" height="84" className="absolute text-fg" style={{ top: "6%", left: "6%", opacity: 0.55 }}>
-        <path d="M12 40 L28 18 L48 28 L62 12 L82 30 M48 28 L58 48 L36 52 L12 40" fill="none" stroke="currentColor" strokeWidth="0.9" />
-        {[[12,40],[28,18],[48,28],[62,12],[82,30],[58,48],[36,52]].map(([x,y],i)=>(
-          <circle key={i} cx={x} cy={y} r={i===2?2:1.4} fill="currentColor" />
-        ))}
-      </svg>
-      <svg viewBox="0 0 16 16" width="22" height="22" className="glyph-float absolute text-fg" style={{ top: "22%", left: "82%", ["--glyph-rot" as string]: "12deg", opacity: 0.5 }}>
-        <path d="M8 0 L10 6 L16 8 L10 10 L8 16 L6 10 L0 8 L6 6 Z" fill="none" stroke="currentColor" strokeWidth="1.2" />
-      </svg>
-      <svg viewBox="0 0 16 16" width="18" height="18" className="glyph-float absolute text-fg" style={{ top: "70%", left: "10%", animationDelay: "2s", ["--glyph-rot" as string]: "-18deg", opacity: 0.45 }}>
-        <path d="M8 1 L15 8 L8 15 L1 8 Z" fill="none" stroke="currentColor" strokeWidth="1.2" />
-      </svg>
-      <svg viewBox="0 0 16 16" width="20" height="20" className="glyph-float absolute text-fg" style={{ top: "78%", left: "78%", animationDelay: "3.5s", ["--glyph-rot" as string]: "28deg", opacity: 0.4 }}>
-        <path d="M2 2 L14 2 L14 14 L2 14 Z M5 5 L11 5 L11 11 L5 11 Z" fill="none" stroke="currentColor" strokeWidth="1.1" />
-      </svg>
-    </div>
+      </div>
+
+      {note && anchor ? (
+        <div
+          className="glyph-note glass-strong pointer-events-auto fixed z-[60] rounded-2xl px-3.5 py-3"
+          style={{
+            left: anchor.left,
+            top: anchor.top,
+            width: anchor.width,
+          }}
+          role="dialog"
+          aria-label={note.title}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <p className="font-display text-[10px] tracking-[0.28em] text-fg/45">{note.kicker}</p>
+            <GlassButton variant="icon" className="size-8 shrink-0" aria-label="Close note" onClick={closeNote}>
+              <X className="size-3.5" strokeWidth={1.7} />
+            </GlassButton>
+          </div>
+          <p className="mt-1 font-serif text-[1.35rem] leading-none text-fg">{note.title}</p>
+          <p className="mt-2 text-[12px] leading-snug text-fg/60">{note.line}</p>
+        </div>
+      ) : null}
+    </>
   );
 }
 
@@ -74,16 +226,23 @@ export function Landing() {
       <div className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col px-6 pt-[max(2.5rem,env(safe-area-inset-top))] pointer-events-none">
         <div className="stagger-in flex flex-1 flex-col items-center justify-center text-center pointer-events-none">
           <label className="relative mt-0 block w-full max-w-[18rem] pointer-events-auto">
-            <span className="sr-only">Desk clearance</span>
+            <span className="pointer-events-none block text-center font-display text-[11px] font-medium tracking-[0.42em] text-fg/55">
+              CLASSIFIED DESK
+            </span>
             <input
-              name="tp_desk_clearance"
+              type="text"
+              name="sky_mark"
               autoComplete="off"
               autoCorrect="off"
               autoCapitalize="characters"
               spellCheck={false}
-              placeholder="CLASSIFIED DESK"
-              className="w-full border-0 bg-transparent text-center font-display text-[11px] font-medium tracking-[0.42em] text-fg/55 caret-fg/40 outline-none placeholder:text-fg/55"
+              inputMode="text"
+              enterKeyHint="done"
+              data-lpignore="true"
+              data-1p-ignore="true"
+              data-form-type="other"
               aria-label="Classified desk"
+              className="absolute inset-0 w-full border-0 bg-transparent text-center text-[11px] text-transparent caret-transparent outline-none"
               onChange={(event) => {
                 if (!matchClearancePhrase(event.target.value)) return;
                 event.target.value = "";
@@ -128,7 +287,11 @@ export function Landing() {
                   </GlassButton>
                 ) : (
                   <GlassButton asChild variant="ghost" className="h-[3.35rem] w-full flex-col rounded-full">
-                    <Link to="/archive" aria-label={`Tonight’s file: ${tonight.title}`}>
+                    <Link
+                      to="/archive"
+                      search={tonight.caseId ? { file: tonight.caseId } : {}}
+                      aria-label={`Tonight’s file: ${tonight.title}`}
+                    >
                       <span className="whitespace-nowrap font-display text-[10px] font-medium tracking-[0.28em] text-fg/55">
                         TONIGHT’S FILE
                       </span>

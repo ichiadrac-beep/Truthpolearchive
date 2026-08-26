@@ -1,20 +1,9 @@
-TRUTHPOLE — full restorable snapshot
-====================================
-Date:     26 Aug 2026
-Tag:      restore-20260826-current
-Branch:   backup/restore-20260826-current
-Version:  1.0.0 (label unchanged; this is a tree snapshot)
+TRUTHPOLE full restore — 2026-08-27 (live)
+Snapshot: restore-20260827-live
+Repo: https://github.com/ichiadrac-beep/Truthpolearchive
 
-Includes all improvements through 26 Aug 2026:
-- Pole invite clearance sheet (above bottom nav)
-- Scattered landing glyphs (landing only)
-- Archive pin persistence + first-open autoplay
-- X-Files real handles (no @desk)
-- Landing sky UAP crafts (TR-3B, orbs, disks, cigars, etc.)
-- Full styles.css (glass / cosmos / desk)
-
-Restore:
-  git checkout restore-20260826-current
-  npm install && npm run dev
-
-Or unzip TRUTHPOLE-restore-20260826-current.zip from the GitHub Release.
+Includes: landing charts + rare UFOs + duels, file panels, Tonight’s File,
+extra non-US archive pins, X-Files 48h + credibility, readable filing form,
+Pole keyboard keeps the channel visible, opaque peek/More sheets,
+custom 1200×630 og.jpg, public, scripts, server, migrations, package lock.
+No node_modules — run npm install after unpack.

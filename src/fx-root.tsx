@@ -17,12 +17,8 @@ export function FxRoot() {
 
   return (
     <div className={cn(paused && "fx-paused")}>
-      {/* Always-on CSS star dots + streaks — visible even if canvas fails */}
-      <div className="cosmos-sky" aria-hidden="true">
-        <span className="shoot-star" />
-        <span className="shoot-star" />
-        <span className="shoot-star" />
-      </div>
+      {/* Static star wash — craft UFOs + rare meteors drawn on StarField canvas */}
+      <div className="cosmos-sky" aria-hidden="true" />
       <StarField paused={paused} />
       <GlyphField paused={paused} />
       <HandPreloader />

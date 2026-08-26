@@ -109,7 +109,7 @@ export function WitnessForm({ onFiled, onCancel }: WitnessFormProps) {
 
   if (done) {
     return (
-      <div className="glass-strong flex flex-col rounded-2xl px-4 py-5" role="status" aria-live="polite">
+      <div className="glass-sheet flex flex-col rounded-2xl px-4 py-5" role="status" aria-live="polite">
         <p className="font-display text-xs font-medium tracking-kicker text-signal">PENDING REVIEW</p>
         <p className="mt-2 font-display text-lg font-semibold tracking-tight text-fg">Filed. Not published.</p>
         <p className="mt-2 max-w-prose text-sm leading-normal text-muted">
@@ -123,8 +123,8 @@ export function WitnessForm({ onFiled, onCancel }: WitnessFormProps) {
   }
 
   return (
-    <form className="glass flex flex-col gap-3 rounded-2xl px-4 py-4" onSubmit={onSubmit} autoComplete="off">
-      <p className="font-display text-xs font-medium tracking-kicker text-muted">GUEST FILING — NO LOGIN</p>
+    <form className="filing-form flex flex-col gap-3" onSubmit={onSubmit} autoComplete="off">
+      <p className="font-display text-xs font-medium tracking-[0.22em] text-fg/75">GUEST FILING — NO LOGIN</p>
       <Field label="Title" htmlFor="filing-title">
         <input
           id="filing-title"
@@ -228,7 +228,7 @@ function Field({
 }) {
   return (
     <label className="flex flex-col gap-1.5" htmlFor={htmlFor}>
-      <span className="font-display text-xs font-medium tracking-kicker text-muted">{label}</span>
+      <span className="font-display text-xs font-medium tracking-[0.18em] text-fg/80">{label}</span>
       {children}
     </label>
   );
@@ -251,8 +251,8 @@ function FilePick({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="font-display text-xs font-medium tracking-kicker text-muted">{label}</span>
-      <label htmlFor={id} className="glass inline-flex min-h-11 cursor-pointer items-center rounded-xl px-3 text-sm text-fg">
+      <span className="font-display text-xs font-medium tracking-[0.18em] text-fg/80">{label}</span>
+      <label htmlFor={id} className="filing-pick inline-flex min-h-11 cursor-pointer items-center rounded-xl px-3 text-sm text-fg">
         <input
           id={id}
           ref={inputRef}

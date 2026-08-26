@@ -64,7 +64,14 @@ export function AppShell({ children }: { children: ReactNode }) {
       className="relative z-10 flex flex-col overflow-hidden bg-transparent"
       style={
         kb.open
-          ? { height: kb.height, maxHeight: kb.height, transform: `translate3d(0, ${kb.offsetTop}px, 0)` }
+          ? {
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: kb.height,
+              maxHeight: kb.height,
+            }
           : { height: "100dvh", maxHeight: "100dvh" }
       }
     >

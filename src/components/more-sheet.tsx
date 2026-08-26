@@ -21,10 +21,10 @@ export function MoreSheet({ open, onOpenChange, onSelect }: MoreSheetProps) {
       <button
         type="button"
         aria-label="Close more desks"
-        className="absolute inset-0 z-30 bg-black/50"
+        className="absolute inset-0 z-30 bg-black/70"
         onClick={() => onOpenChange(false)}
       />
-      <div className="glass-strong absolute right-3 bottom-[4.65rem] left-3 z-40 overflow-hidden rounded-3xl px-2 py-3">
+      <div className="glass-sheet absolute right-3 bottom-[4.65rem] left-3 z-40 overflow-hidden rounded-3xl px-2 py-3">
         <p className="px-4 pb-1 font-display text-[11px] tracking-[0.38em] text-fg/50">MORE DESKS</p>
         {MORE_LINKS.map((link) => {
           const Icon = ICONS[link.icon];

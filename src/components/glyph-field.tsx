@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { useRouterState } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { GlassButton } from "@/components/glass-button";
 
@@ -20,9 +21,7 @@ type GlyphNote = {
   line: string;
 };
 
-type Hotspot = GlyphNote & {
-  top: string;
-  left: string;
+type GlyphSpec = GlyphNote & {
   size: number;
   rotate: number;
   delay: string;
@@ -30,16 +29,20 @@ type Hotspot = GlyphNote & {
   mark: MarkKind;
 };
 
+type PlacedGlyph = GlyphSpec & {
+  top: number;
+  left: number;
+};
+
+type Box = { left: number; top: number; right: number; bottom: number };
+
 /**
- * Irregular scatter — not left/right columns.
- * Keep clear of the centre desk (logo + CTAs ~30–70% x).
- * Sizes differ; tops and lefts never form a grid.
+ * Clickable sky marks. Positions are rolled on each landing visit so they
+ * never sit in two columns or on top of desk controls.
  */
-const HOTSPOTS: Hotspot[] = [
+const GLYPHS: GlyphSpec[] = [
   {
     id: "zeta",
-    top: "4%",
-    left: "3%",
     size: 44,
     rotate: -14,
     delay: "0s",
@@ -51,8 +54,6 @@ const HOTSPOTS: Hotspot[] = [
   },
   {
     id: "wow",
-    top: "9%",
-    left: "88%",
     size: 26,
     rotate: 8,
     delay: "0.6s",
@@ -64,8 +65,6 @@ const HOTSPOTS: Hotspot[] = [
   },
   {
     id: "sirius",
-    top: "26%",
-    left: "92%",
     size: 38,
     rotate: 21,
     delay: "1.3s",
@@ -77,8 +76,6 @@ const HOTSPOTS: Hotspot[] = [
   },
   {
     id: "mj12",
-    top: "18%",
-    left: "14%",
     size: 22,
     rotate: -6,
     delay: "1.9s",
@@ -90,8 +87,6 @@ const HOTSPOTS: Hotspot[] = [
   },
   {
     id: "roswell",
-    top: "42%",
-    left: "2%",
     size: 33,
     rotate: 16,
     delay: "0.4s",
@@ -103,8 +98,6 @@ const HOTSPOTS: Hotspot[] = [
   },
   {
     id: "rendlesham",
-    top: "48%",
-    left: "86%",
     size: 29,
     rotate: -19,
     delay: "2.4s",
@@ -116,8 +109,6 @@ const HOTSPOTS: Hotspot[] = [
   },
   {
     id: "corridor",
-    top: "63%",
-    left: "11%",
     size: 24,
     rotate: 11,
     delay: "1.1s",
@@ -129,8 +120,6 @@ const HOTSPOTS: Hotspot[] = [
   },
   {
     id: "tictac",
-    top: "72%",
-    left: "91%",
     size: 41,
     rotate: -9,
     delay: "0.9s",
@@ -142,8 +131,6 @@ const HOTSPOTS: Hotspot[] = [
   },
   {
     id: "phoenix",
-    top: "84%",
-    left: "6%",
     size: 36,
     rotate: 4,
     delay: "1.7s",
@@ -169,6 +156,89 @@ function placeNote(rect: DOMRect): NoteAnchor {
   return { left, top, width };
 }
 
+function inflate(r: DOMRect | Box, pad: number): Box {
+  return {
+    left: r.left - pad,
+    top: r.top - pad,
+    right: r.right + pad,
+    bottom: r.bottom + pad,
+  };
+}
+
+function overlaps(a: Box, b: Box) {
+  return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
+}
+
+function collectAvoid(pad = 16): Box[] {
+  const nodes = document.querySelectorAll(
+    'a, button, input, [role="button"], .landing-cta, .landing h1, .landing .alien-mark, .landing label',
+  );
+  const boxes: Box[] = [];
+  nodes.forEach((el) => {
+    if (el.closest(".landing-glyphs, .glyph-note")) return;
+    const r = el.getBoundingClientRect();
+    if (r.width < 8 || r.height < 8) return;
+    if (r.bottom < 0 || r.top > window.innerHeight || r.right < 0 || r.left > window.innerWidth) return;
+    boxes.push(inflate(r, pad));
+  });
+  return boxes;
+}
+
+function shuffle<T>(list: T[]): T[] {
+  const out = list.slice();
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = out[i];
+    out[i] = out[j]!;
+    out[j] = tmp!;
+  }
+  return out;
+}
+
+function scatterGlyphs(): PlacedGlyph[] {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const placed: PlacedGlyph[] = [];
+  const order = shuffle(GLYPHS);
+
+  const tryPlace = (avoid: Box[]) => {
+    for (const spec of order) {
+      if (placed.some((p) => p.id === spec.id)) continue;
+      const hit = 12 + spec.size;
+      for (let n = 0; n < 90; n++) {
+        const band = Math.random();
+        let left: number;
+        if (band < 0.42) left = 4 + Math.random() * Math.max(6, vw * 0.22 - hit);
+        else if (band < 0.84) left = vw * 0.76 + Math.random() * Math.max(6, vw * 0.22 - hit);
+        else left = 8 + Math.random() * Math.max(6, vw - hit - 16);
+        const top = 6 + Math.random() * Math.max(6, vh - hit - 18);
+        const box: Box = { left, top, right: left + hit, bottom: top + hit };
+        if (box.left < 2 || box.top < 2 || box.right > vw - 2 || box.bottom > vh - 2) continue;
+        if (avoid.some((a) => overlaps(box, a))) continue;
+        if (
+          placed.some((p) =>
+            overlaps(box, {
+              left: p.left,
+              top: p.top,
+              right: p.left + 12 + p.size,
+              bottom: p.top + 12 + p.size,
+            }),
+          )
+        ) {
+          continue;
+        }
+        placed.push({ ...spec, left, top });
+        break;
+      }
+    }
+  };
+
+  tryPlace(collectAvoid(18));
+  if (placed.length < 5) tryPlace(collectAvoid(8));
+
+  return placed;
+}
+
 export function GlyphField({
   paused = false,
   onQuiet,
@@ -176,12 +246,39 @@ export function GlyphField({
   paused?: boolean;
   onQuiet?: (quiet: boolean) => void;
 } = {}) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const onLanding = pathname === "/";
   const [note, setNote] = useState<GlyphNote | null>(null);
   const [anchor, setAnchor] = useState<NoteAnchor | null>(null);
+  const [spots, setSpots] = useState<PlacedGlyph[]>([]);
 
   useEffect(() => {
     onQuiet?.(Boolean(note));
   }, [note, onQuiet]);
+
+  useEffect(() => {
+    if (!onLanding) {
+      setNote(null);
+      setAnchor(null);
+      setSpots([]);
+    }
+  }, [onLanding]);
+
+  useLayoutEffect(() => {
+    if (!onLanding) return;
+    let cancelled = false;
+    const run = () => {
+      if (cancelled) return;
+      setSpots(scatterGlyphs());
+    };
+    const t = window.setTimeout(run, 40);
+    window.addEventListener("resize", run);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+      window.removeEventListener("resize", run);
+    };
+  }, [onLanding]);
 
   useEffect(() => {
     if (!note) return;
@@ -200,10 +297,12 @@ export function GlyphField({
     setAnchor(null);
   };
 
+  if (!onLanding) return null;
+
   return (
     <>
-      <div className="landing-glyphs pointer-events-none absolute inset-0 z-[5] overflow-hidden">
-        {HOTSPOTS.map((spot) => (
+      <div className="landing-glyphs pointer-events-none fixed inset-0 z-[8] overflow-hidden">
+        {spots.map((spot) => (
           <button
             key={spot.id}
             type="button"
@@ -236,7 +335,7 @@ export function GlyphField({
 
       {note && anchor ? (
         <div
-          className="glass-strong pointer-events-auto fixed z-[60] rounded-2xl px-3.5 py-3"
+          className="glyph-note glass-strong pointer-events-auto fixed z-[60] rounded-2xl px-3.5 py-3"
           style={{
             left: anchor.left,
             top: anchor.top,
