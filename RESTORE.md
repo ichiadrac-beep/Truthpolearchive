@@ -1,10 +1,12 @@
 # TRUTHPOLE — Full restore snapshot
 
 **Tag / label:** `restore-20260827-live`
-**Date:** 27 August 2026 (00:30 BST)
+**Date:** 27 August 2026 (01:14 BST) — overwritten live snapshot
+**Commit:** `29fd3fa`
 **What this is:** Complete restorable snapshot of the live TRUTHPOLE desk.
 
 Repo: [ichiadrac-beep/Truthpolearchive](https://github.com/ichiadrac-beep/Truthpolearchive)
+Zip: `restores/TRUTHPOLE-restore-20260827-live.zip`
 
 ## Included in this package
 
@@ -41,7 +43,7 @@ cd truthpole
 rm -rf node_modules
 npm install
 npm run build
-sh startup.sh    # 0.0.0.0:8080
+sh startup.sh
 ```
 
 Or clone the repo:
