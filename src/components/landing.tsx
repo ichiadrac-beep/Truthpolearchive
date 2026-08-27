@@ -260,7 +260,7 @@ export function Landing() {
             />
           </label>
 
-          <AlienLogo className="mt-6 h-36 w-36" />
+          <AlienLogo className="mt-6 h-36 w-36" glitchOnTap />
 
           <h1 className="mt-7 font-display text-[1.65rem] font-semibold tracking-[0.34em] text-fg">
             TRUTHPOLE

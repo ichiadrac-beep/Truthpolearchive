@@ -1,15 +1,14 @@
-TRUTHPOLE — restore file(3)
-Created 2026-08-27 (signal bar, zoom bounce, sky hum, scratch redaction)
+TRUTHPOLE — restore file(4)
+Created 2026-08-27 (landing alien chromatic glitch)
 
 This is NOT Complete build. Complete build stays on branch complete-build
 and restores/TRUTHPOLE-restore-20260827-live.zip.
-restore file(1) stays at restores/restore-file-1.zip.
-restore file(2) stays at restores/restore-file-2.zip.
+Earlier restores stay at restore-file-1.zip, restore-file-2.zip, restore-file-3.zip.
 
-This package is restores/restore-file-3.zip.
+This package is restores/restore-file-4.zip.
 
 Restore:
-  unzip restore-file-3.zip -d truthpole
+  unzip restore-file-4.zip -d truthpole
   cd truthpole
   npm install
   npm run build

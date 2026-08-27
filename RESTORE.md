@@ -16,18 +16,23 @@ Archive ↔ Conspiracy ↔ Ancient Related cross-links.
 Linked counts, case status tags, ticking archive count, desk-only decrypt.  
 **Zip:** [`restores/restore-file-2.zip`](restores/restore-file-2.zip)
 
-## restore file(3) (current — 27 Aug 2026)
+## restore file(3)
 
 X-Files signal bar, map zoom bounce, sky hum, scratch-to-declassify.  
+**Zip:** [`restores/restore-file-3.zip`](restores/restore-file-3.zip)
+
+## restore file(4) (current — 27 Aug 2026)
+
+Landing alien chromatic-aberration glitch on tap.  
 Does **not** replace Complete build or earlier restore files.
 
-**Zip:** [`restores/restore-file-3.zip`](restores/restore-file-3.zip)  
-**Docs:** [restores/RESTORE-FILE-3.md](restores/RESTORE-FILE-3.md) · [restores/INDEX.md](restores/INDEX.md)
+**Zip:** [`restores/restore-file-4.zip`](restores/restore-file-4.zip)  
+**Docs:** [restores/RESTORE-FILE-4.md](restores/RESTORE-FILE-4.md) · [restores/INDEX.md](restores/INDEX.md)
 
 ```bash
-curl -L -o restore-file-3.zip \
-  https://github.com/ichiadrac-beep/Truthpolearchive/raw/main/restores/restore-file-3.zip
-unzip restore-file-3.zip -d truthpole
+curl -L -o restore-file-4.zip \
+  https://github.com/ichiadrac-beep/Truthpolearchive/raw/main/restores/restore-file-4.zip
+unzip restore-file-4.zip -d truthpole
 cd truthpole
 npm install
 npm run build
@@ -42,6 +47,7 @@ sh startup.sh
 | restore file(1) | `restores/restore-file-1.zip` |
 | restore file(2) | `restores/restore-file-2.zip` |
 | restore file(3) | `restores/restore-file-3.zip` |
-| restore file(4) | `restores/restore-file-4.zip` (next backup only) |
+| restore file(4) | `restores/restore-file-4.zip` |
+| restore file(5) | `restores/restore-file-5.zip` (next backup only) |
 
 Never replace older restore zips.
