@@ -4,7 +4,6 @@ import { AccessVeil } from "@/components/access-veil";
 import { ClearanceHost } from "@/components/clearance-host";
 import { HandPreloader } from "@/components/hand-scan";
 import { StarField } from "@/components/star-field";
-import { armHum, duckHum } from "@/lib/desk-hum";
 import { useDesk } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -18,12 +17,7 @@ export function FxRoot() {
 
   useEffect(() => {
     hydrate();
-    armHum();
   }, [hydrate]);
-
-  useEffect(() => {
-    duckHum(scanActive);
-  }, [scanActive]);
 
   return (
     <>
