@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useRouterState } from "@tanstack/react-router";
+import { AccessVeil } from "@/components/access-veil";
 import { ClearanceHost } from "@/components/clearance-host";
 import { HandPreloader } from "@/components/hand-scan";
 import { StarField } from "@/components/star-field";
@@ -29,6 +30,7 @@ export function FxRoot() {
         <div className="crt-glitch" />
       </div>
       <ClearanceHost />
+      <AccessVeil />
     </>
   );
 }

@@ -136,7 +136,7 @@ export function WitnessForm({ onFiled, onCancel }: WitnessFormProps) {
           maxLength={120}
         />
       </Field>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3">
         <Field label="Location" htmlFor="filing-location">
           <input
             id="filing-location"
@@ -178,7 +178,7 @@ export function WitnessForm({ onFiled, onCancel }: WitnessFormProps) {
           maxLength={1200}
         />
       </Field>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3">
         <FilePick
           id="filing-image"
           label="Image"
@@ -203,7 +203,7 @@ export function WitnessForm({ onFiled, onCancel }: WitnessFormProps) {
         />
       </div>
       {error ? <p className="text-sm text-signal">{error}</p> : null}
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-col gap-2">
         <GlassButton type="submit" disabled={busy} className="flex-1">
           {busy ? "Filing…" : "Submit for review"}
         </GlassButton>

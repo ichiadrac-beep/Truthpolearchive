@@ -66,8 +66,10 @@ function RootDocument() {
       >
         <PreviewHostBridge />
         <AuthProvider>
-          <FxRoot />
-          <Outlet />
+          <div className="phone-stage">
+            <FxRoot />
+            <Outlet />
+          </div>
         </AuthProvider>
         <Scripts />
       </body>

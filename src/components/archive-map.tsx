@@ -1,9 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Minus, Plus, RotateCcw, Pause, Play, X } from "lucide-react";
 import * as Slider from "@radix-ui/react-slider";
 import { geoGraticule10, geoPath } from "d3-geo";
 import { geoMollweide } from "d3-geo-projection";
 import { GlassButton } from "@/components/glass-button";
+import { LinkedCount } from "@/components/linked-count";
+import { StatusFilter, StatusTag } from "@/components/status-tag";
+import { statusOf, type CaseStatus } from "@/lib/case-status";
+import { relatedCount } from "@/lib/desk-catalog";
+import { archiveToDesk } from "@/lib/desk-file";
 import {
   ARCHIVE_CASES,
   YEAR_MAX,
@@ -19,7 +24,7 @@ type StackState = { files: ArchiveCase[]; x: number; y: number };
 export type ArchiveMapProps = {
   year: number;
   onYear: (year: number) => void;
-  onOpen: (file: ArchiveCase) => void;
+  onOpen: (file: ArchiveCase, opts?: { related?: boolean }) => void;
   cases?: ArchiveCase[];
   yearMin?: number;
   yearMax?: number;
@@ -202,13 +207,23 @@ export function ArchiveMap({
   const [stack, setStack] = useState<StackState | null>(null);
   const [playing, setPlaying] = useState(autoPlay);
   const playingRef = useRef(playing);
+  const [statusFilter, setStatusFilter] = useState<CaseStatus | "all">("all");
+  const filteredCases = useMemo(() => {
+    if (statusFilter === "all") return cases;
+    return cases.filter((row) => statusOf(row.id, "archive") === statusFilter);
+  }, [cases, statusFilter]);
   const [count, setCount] = useState(
     () => cases.filter((c) => c.year <= year).length,
+  );
+  const countRef = useRef(count);
+  const targetCount = useMemo(
+    () => filteredCases.filter((row) => row.year <= year).length,
+    [filteredCases, year],
   );
 
   yearRef.current = year;
   onOpenRef.current = onOpen;
-  casesRef.current = cases;
+  casesRef.current = filteredCases;
   yearMinRef.current = yearMin;
   yearMaxRef.current = yearMax;
   stepRef.current = step;
@@ -219,13 +234,48 @@ export function ArchiveMap({
     revealedRef.current.clear();
   }
   lastYearRef.current = year;
-  for (const c of cases) {
+  for (const c of filteredCases) {
     if (c.year <= year) revealedRef.current.add(c.id);
   }
 
   useEffect(() => {
-    setCount(cases.filter((c) => c.year <= year).length);
-  }, [year, cases]);
+    countRef.current = count;
+  }, [count]);
+
+  useEffect(() => {
+    if (countRef.current === targetCount) {
+      setCount(targetCount);
+      return;
+    }
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      countRef.current = targetCount;
+      setCount(targetCount);
+      return;
+    }
+    let raf = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const current = countRef.current;
+      if (current === targetCount) return;
+      const elapsed = Math.min(48, now - last);
+      last = now;
+      const dist = Math.abs(targetCount - current);
+      const rate = dist > 40 ? 220 : dist > 14 ? 120 : 68;
+      const steps = Math.max(1, Math.round((elapsed / 1000) * rate));
+      const next = current + Math.sign(targetCount - current) * Math.min(steps, dist);
+      countRef.current = next;
+      setCount(next);
+      if (next !== targetCount) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [targetCount]);
+
+  useEffect(() => {
+    setPeek(null);
+    setStack(null);
+  }, [statusFilter]);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -610,7 +660,7 @@ export function ArchiveMap({
   useEffect(() => {
     const host = hostRef.current as (HTMLDivElement & { __redraw?: () => void }) | null;
     host?.__redraw?.();
-  }, [year, cases]);
+  }, [year, filteredCases]);
 
   useEffect(() => {
     if (!playing || !showTimeline) return;
@@ -719,9 +769,9 @@ export function ArchiveMap({
         {stack ? (
           <StackCard
             stack={stack}
-            onOpen={(file) => {
+            onOpen={(file, opts) => {
               setStack(null);
-              onOpen(file);
+              onOpen(file, opts);
             }}
             onClose={() => setStack(null)}
           />
@@ -730,11 +780,11 @@ export function ArchiveMap({
         {peek ? (
           <PeekCard
             peek={peek}
-            onOpen={() => {
+            onOpen={(opts) => {
               const file = peek.file;
               peekingRef.current = false;
               setPeek(null);
-              onOpen(file);
+              onOpen(file, opts);
             }}
             onClose={() => {
               peekingRef.current = false;
@@ -777,9 +827,10 @@ export function ArchiveMap({
       {showTimeline ? (
         <div className="z-20 shrink-0 px-4 pb-3 pt-1">
           <p className="font-display text-[11px] tracking-[0.38em] text-fg/45">TIMELINE</p>
+          <StatusFilter value={statusFilter} onChange={setStatusFilter} className="mt-2" />
           <div className="mt-1 flex items-end justify-between gap-3">
             <p className="font-serif text-[2rem] leading-none text-fg">{formatYearLabel(year)}</p>
-            <p className="pb-1 text-sm text-fg/45">
+            <p className="pb-1 text-sm tabular-nums text-fg/45">
               {count} {countLabel}
             </p>
           </div>
@@ -845,7 +896,7 @@ function StackCard({
   onClose,
 }: {
   stack: StackState;
-  onOpen: (file: ArchiveCase) => void;
+  onOpen: (file: ArchiveCase, opts?: { related?: boolean }) => void;
   onClose: () => void;
 }) {
   const width = 280;
@@ -872,16 +923,23 @@ function StackCard({
       <ul className="mt-1 max-h-52 overflow-y-auto overscroll-contain">
         {stack.files.map((file) => (
           <li key={file.id} className="border-t border-fg/10 first:border-t-0">
-            <button
-              type="button"
-              className="flex w-full min-h-11 flex-col items-start py-2 text-left"
-              onClick={() => onOpen(file)}
-            >
-              <span className="font-serif text-[1.15rem] leading-none text-fg">{file.title}</span>
-              <span className="mt-1 text-[12px] text-fg/50">
-                {file.place} · {formatYearLabel(file.year)}
-              </span>
-            </button>
+            <div className="flex w-full min-h-11 items-start justify-between gap-2 py-2">
+              <button
+                type="button"
+                className="min-w-0 flex-1 text-left"
+                onClick={() => onOpen(file)}
+              >
+                <span className="block font-serif text-[1.15rem] leading-none text-fg">{file.title}</span>
+                <span className="mt-1 block text-[12px] text-fg/50">
+                  {file.place} · {formatYearLabel(file.year)}
+                </span>
+                <StatusTag id={file.id} desk="archive" className="mt-1.5" />
+              </button>
+              <LinkedCount
+                count={relatedCount(archiveToDesk(file))}
+                onClick={() => onOpen(file, { related: true })}
+              />
+            </div>
           </li>
         ))}
       </ul>
@@ -895,11 +953,12 @@ function PeekCard({
   onClose,
 }: {
   peek: PeekState;
-  onOpen: () => void;
+  onOpen: (opts?: { related?: boolean }) => void;
   onClose: () => void;
 }) {
   const width = 268;
   const placeAbove = peek.y > 170;
+  const linked = relatedCount(archiveToDesk(peek.file));
   return (
     <div
       role="dialog"
@@ -921,8 +980,12 @@ function PeekCard({
       <p className="mt-2 text-sm leading-snug text-fg/55">
         {peek.file.place} · {formatYearLabel(peek.file.year)}
       </p>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <StatusTag id={peek.file.id} desk="archive" />
+        <LinkedCount count={linked} onClick={() => onOpen({ related: true })} />
+      </div>
       <div className="mt-3 flex items-center gap-3">
-        <GlassButton variant="chip" className="h-10 min-w-0 flex-1 rounded-full" onClick={onOpen}>
+        <GlassButton variant="chip" className="h-10 min-w-0 flex-1 rounded-full" onClick={() => onOpen()}>
           Open file
         </GlassButton>
       </div>

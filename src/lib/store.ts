@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { accessCopy, type AccessVeil } from "@/lib/access";
 
 export const DEFAULT_DESK_HREF = "/archive";
 
@@ -15,6 +16,7 @@ type DeskState = {
   handReady: boolean;
   exitHome: boolean;
   archiveSweep: boolean;
+  accessVeil: AccessVeil | null;
   hydrate: () => void;
   setHandReady: (ready: boolean) => void;
   setPanelOpen: (open: boolean) => void;
@@ -26,6 +28,8 @@ type DeskState = {
   clearExitHome: () => void;
   armArchiveSweep: () => void;
   consumeArchiveSweep: () => void;
+  startAccess: (href: string) => void;
+  clearAccess: () => void;
 };
 
 function readGranted() {
@@ -68,6 +72,7 @@ export const useDesk = create<DeskState>((set, get) => ({
   handReady: false,
   exitHome: false,
   archiveSweep: false,
+  accessVeil: null,
   hydrate: () => {
     if (get().hydrated) return;
     set({ hydrated: true, accessGranted: readGranted(), pendingHref: readPending() });
@@ -114,4 +119,11 @@ export const useDesk = create<DeskState>((set, get) => ({
   clearExitHome: () => set({ exitHome: false }),
   armArchiveSweep: () => set({ archiveSweep: true }),
   consumeArchiveSweep: () => set({ archiveSweep: false }),
+  startAccess: (href) => {
+    const copy = accessCopy(href);
+    set({
+      accessVeil: { href, kicker: copy.kicker, title: copy.title, nonce: Date.now() },
+    });
+  },
+  clearAccess: () => set({ accessVeil: null }),
 }));

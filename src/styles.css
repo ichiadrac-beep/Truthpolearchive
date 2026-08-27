@@ -45,6 +45,28 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Mobile-first desk: keep the phone layout in the live preview,
+     even when the pane is a wide desktop viewport. */
+  .phone-stage {
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    max-width: 430px;
+    min-height: 100dvh;
+    margin-inline: auto;
+    overflow: clip;
+    transform: translateZ(0);
+  }
+
+  .phone-stage .cosmos-sky,
+  .phone-stage .crt-overlay,
+  .phone-stage .crt-vignette,
+  .phone-stage .crt-glitch,
+  .phone-stage .shoot-layer,
+  .phone-stage .landing-glyphs {
+    position: absolute;
+  }
+
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
@@ -211,6 +233,73 @@
     letter-spacing: 0.42em;
   }
 
+  .status-tag {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    line-height: 1.2;
+    border: 0.5px solid;
+    border-radius: 999px;
+    padding: 0.22rem 0.55rem;
+    white-space: nowrap;
+  }
+
+  .status-tag-unresolved {
+    color: var(--color-muted);
+    border-color: color-mix(in oklab, var(--color-fg) 18%, transparent);
+  }
+
+  .status-tag-disputed {
+    color: var(--color-signal);
+    border-color: color-mix(in oklab, var(--color-signal) 42%, transparent);
+  }
+
+  .status-tag-confirmed {
+    color: var(--color-fg);
+    border-color: color-mix(in oklab, var(--color-fg) 30%, transparent);
+  }
+
+  .status-tag-all {
+    color: var(--color-fg);
+    border-color: color-mix(in oklab, var(--color-fg) 22%, transparent);
+  }
+
+  .status-tag-active {
+    background: color-mix(in oklab, var(--color-fg) 10%, transparent);
+  }
+
+  button.status-tag {
+    cursor: pointer;
+    min-height: 2.75rem;
+    padding-inline: 0.75rem;
+  }
+
+  .decrypt-line {
+    font-variant-numeric: tabular-nums;
+    white-space: pre-wrap;
+  }
+
+  .access-veil {
+    position: absolute;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    padding: 1.75rem 1.35rem;
+    background: color-mix(in oklab, var(--color-bg) 88%, transparent);
+    pointer-events: auto;
+    opacity: 1;
+    transition: opacity 180ms var(--ease-out);
+  }
+
+  .access-veil-leave {
+    opacity: 0;
+    pointer-events: none;
+  }
+
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -263,9 +352,12 @@
   }
 
   .file-sheet {
-    left: 50%;
-    width: min(32rem, 100%);
-    margin-left: calc(-0.5 * min(32rem, 100vw));
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 32rem;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .file-row-current {

@@ -5,6 +5,7 @@ import { AlienLogo } from "@/components/alien-logo";
 import { DeskNav } from "@/components/desk-nav";
 import { GlassButton } from "@/components/glass-button";
 import { MoreSheet } from "@/components/more-sheet";
+import { accessNavigate } from "@/lib/access-nav";
 import { startLogin } from "@/lib/enter-desk";
 import { signOut as authSignOut } from "@/lib/auth/client";
 import { heartbeatPole } from "@/lib/desk-api";
@@ -40,7 +41,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const go = (href: string) => {
     setMoreOpen(false);
-    router.history.push(href);
+    accessNavigate(router.history, href);
   };
 
   const onSignOut = () => {

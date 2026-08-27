@@ -1,8 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, Share2, Square, Volume2, X } from "lucide-react";
 import { useRouter, useRouterState } from "@tanstack/react-router";
 import { Drawer } from "vaul";
 import { GlassButton } from "@/components/glass-button";
+import { LinkedCount } from "@/components/linked-count";
+import { StatusTag } from "@/components/status-tag";
+import { accessNavigate } from "@/lib/access-nav";
+import { deskFromPath } from "@/lib/case-status";
 import { DESK_META, hrefFor, relatedFromCatalog } from "@/lib/desk-catalog";
 import {
   deskSummary,
@@ -19,15 +23,17 @@ type FilePanelProps = {
   pool?: DeskFile[];
   onClose: () => void;
   onOpen?: (file: DeskFile) => void;
+  focusRelated?: boolean;
 };
 
-export function FilePanel({ file, onClose, onOpen }: FilePanelProps) {
+export function FilePanel({ file, onClose, onOpen, focusRelated = false }: FilePanelProps) {
   const router = useRouter();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const setPanelOpen = useDesk((s) => s.setPanelOpen);
   const open = file !== null;
   const [speaking, setSpeaking] = useState(false);
   const [copied, setCopied] = useState(false);
+  const relatedRef = useRef<HTMLElement>(null);
 
   const summary = file ? deskSummary(file.summary || file.lede) : "";
   const record = file ? fullRecord(file) : "";
@@ -45,6 +51,18 @@ export function FilePanel({ file, onClose, onOpen }: FilePanelProps) {
     setCopied(false);
     return () => window.speechSynthesis?.cancel();
   }, [file?.id]);
+
+  useEffect(() => {
+    if (!focusRelated || !related.length) return;
+    const timer = window.setTimeout(() => {
+      relatedRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [file?.id, focusRelated, related.length]);
+
+  const jumpRelated = () => {
+    relatedRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const toggleSpeak = () => {
     const synth = window.speechSynthesis;
@@ -96,7 +114,7 @@ export function FilePanel({ file, onClose, onOpen }: FilePanelProps) {
       onOpen?.(item);
       return;
     }
-    router.history.push(hrefFor(item));
+    accessNavigate(router.history, hrefFor(item));
   };
 
   return (
@@ -126,6 +144,10 @@ export function FilePanel({ file, onClose, onOpen }: FilePanelProps) {
                   {file?.title ?? ""}
                 </Drawer.Title>
                 {file?.subtitle ? <p className="mt-2 text-sm leading-snug text-fg/55">{file.subtitle}</p> : null}
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  {file ? <StatusTag id={file.id} desk={deskFromPath(pathname)} /> : null}
+                  <LinkedCount count={related.length} onClick={jumpRelated} className="-ml-0.5" />
+                </div>
               </div>
               <div className="flex shrink-0 items-center gap-2 pt-0.5">
                 <GlassButton
@@ -206,8 +228,10 @@ export function FilePanel({ file, onClose, onOpen }: FilePanelProps) {
               ) : null}
 
               {related.length ? (
-                <section className="pb-5">
-                  <h3 className="font-display text-xs font-medium tracking-kicker text-muted">Related</h3>
+                <section ref={relatedRef} className="pb-5" id="file-related">
+                  <h3 className="font-display text-xs font-medium tracking-kicker text-muted">
+                    Related · {related.length} linked
+                  </h3>
                   <ul className="mt-2 flex flex-col gap-1">
                     {related.map((item) => (
                       <li key={`${item.desk}-${item.id}`}>
@@ -219,9 +243,12 @@ export function FilePanel({ file, onClose, onOpen }: FilePanelProps) {
                           <span className="block text-sm text-fg underline decoration-fg/35 underline-offset-2">
                             {item.title}
                           </span>
-                          <span className="mt-0.5 block font-display text-[11px] tracking-[0.22em] text-fg/45">
-                            {DESK_META[item.desk].label}
-                            {item.kicker ? ` · ${item.kicker}` : ""}
+                          <span className="mt-1 flex flex-wrap items-center gap-2">
+                            <StatusTag id={item.id} desk={item.desk} />
+                            <span className="font-display text-[11px] tracking-[0.22em] text-fg/45">
+                              {DESK_META[item.desk].label}
+                              {item.kicker ? ` · ${item.kicker}` : ""}
+                            </span>
                           </span>
                         </button>
                       </li>

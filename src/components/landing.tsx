@@ -1,9 +1,10 @@
 import { useEffect, useState, type CSSProperties } from "react";
-import { Link } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { AlienLogo } from "@/components/alien-logo";
 import { GlassButton } from "@/components/glass-button";
 import { useClearanceTonight } from "@/hooks/use-clearance";
+import { accessNavigate } from "@/lib/access-nav";
 import { matchClearancePhrase, revealClearanceMemo } from "@/lib/clearance";
 import { LANDING_TAB_ROWS } from "@/lib/tabs";
 import { useDesk } from "@/lib/store";
@@ -48,7 +49,7 @@ const STAR_CHARTS: ChartDef[] = [
     line: "Hill map · two suns",
     label: "Zeta Reticuli star chart",
     viewBox: "0 0 40 28",
-    className: "h-[40px] w-[58px] sm:h-[56px] sm:w-[80px]",
+    className: "h-[40px] w-[58px]",
     style: {
       top: "max(0.45rem, env(safe-area-inset-top))",
       left: "2.5%",
@@ -75,7 +76,7 @@ const STAR_CHARTS: ChartDef[] = [
     line: "Deneb · Albireo · the rift",
     label: "Cygnus star chart",
     viewBox: "0 0 100 70",
-    className: "h-[86px] w-[124px] sm:h-[128px] sm:w-[184px]",
+    className: "h-[86px] w-[124px]",
     style: {
       top: "max(6.4rem, calc(env(safe-area-inset-top) + 5.6rem))",
       right: "0.25%",
@@ -206,11 +207,14 @@ function LandingCosmos() {
 }
 
 export function Landing() {
+  const router = useRouter();
   const exitHome = useDesk((s) => s.exitHome);
   const clearExitHome = useDesk((s) => s.clearExitHome);
   const armArchiveSweep = useDesk((s) => s.armArchiveSweep);
   const [ready, setReady] = useState(false);
   const tonight = useClearanceTonight();
+
+  const goDesk = (href: string) => accessNavigate(router.history, href);
 
   useEffect(() => {
     if (exitHome) clearExitHome();
@@ -242,6 +246,7 @@ export function Landing() {
               data-1p-ignore="true"
               data-form-type="other"
               aria-label="Classified desk"
+              suppressHydrationWarning
               className="absolute inset-0 w-full border-0 bg-transparent text-center text-[11px] text-transparent caret-transparent outline-none"
               onChange={(event) => {
                 if (!matchClearancePhrase(event.target.value)) return;
@@ -266,10 +271,15 @@ export function Landing() {
           </p>
 
           <div className="landing-cta relative z-20 mt-9 w-full max-w-sm pointer-events-auto">
-            <GlassButton asChild variant="primary" className="h-12 w-full rounded-full">
-              <Link to="/archive" onClick={() => armArchiveSweep()}>
-                Enter the archive
-              </Link>
+            <GlassButton
+              variant="primary"
+              className="h-12 w-full rounded-full"
+              onClick={() => {
+                armArchiveSweep();
+                goDesk("/archive");
+              }}
+            >
+              Enter the archive
             </GlassButton>
             {ready ? (
               <>
@@ -286,17 +296,18 @@ export function Landing() {
                     <span className="font-serif text-[15px] font-normal text-fg">{tonight.title}</span>
                   </GlassButton>
                 ) : (
-                  <GlassButton asChild variant="ghost" className="h-[3.35rem] w-full flex-col rounded-full">
-                    <Link
-                      to="/archive"
-                      search={tonight.caseId ? { file: tonight.caseId } : {}}
-                      aria-label={`Tonight’s file: ${tonight.title}`}
-                    >
-                      <span className="whitespace-nowrap font-display text-[10px] font-medium tracking-[0.28em] text-fg/55">
-                        TONIGHT’S FILE
-                      </span>
-                      <span className="font-serif text-[15px] font-normal text-fg">{tonight.title}</span>
-                    </Link>
+                  <GlassButton
+                    variant="ghost"
+                    className="h-[3.35rem] w-full flex-col rounded-full"
+                    aria-label={`Tonight’s file: ${tonight.title}`}
+                    onClick={() =>
+                      goDesk(tonight.caseId ? `/archive?file=${encodeURIComponent(tonight.caseId)}` : "/archive")
+                    }
+                  >
+                    <span className="whitespace-nowrap font-display text-[10px] font-medium tracking-[0.28em] text-fg/55">
+                      TONIGHT’S FILE
+                    </span>
+                    <span className="font-serif text-[15px] font-normal text-fg">{tonight.title}</span>
                   </GlassButton>
                 )}
                 {tonight.anniversary ? (
@@ -314,8 +325,13 @@ export function Landing() {
             {LANDING_TAB_ROWS.map((row, i) => (
               <div key={i} className="flex flex-wrap justify-center gap-2">
                 {row.map((tab) => (
-                  <GlassButton asChild key={tab.href} variant="chip" className="h-11 rounded-full px-5">
-                    <Link to={tab.href}>{tab.label}</Link>
+                  <GlassButton
+                    key={tab.href}
+                    variant="chip"
+                    className="h-11 rounded-full px-5"
+                    onClick={() => goDesk(tab.href)}
+                  >
+                    {tab.label}
                   </GlassButton>
                 ))}
               </div>

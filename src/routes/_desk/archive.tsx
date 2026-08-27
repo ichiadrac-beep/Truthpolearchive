@@ -55,6 +55,8 @@ function ArchivePage() {
   const [file, setFile] = useState<ArchiveCase | null>(seeded);
   const pool = useMemo(() => ARCHIVE_CASES.map(archiveToDesk), []);
 
+  const [focusRelated, setFocusRelated] = useState(false);
+
   useEffect(() => {
     useDesk.getState().consumeArchiveSweep();
     if (intro) markIntroPlayed();
@@ -63,6 +65,7 @@ function ArchivePage() {
   useEffect(() => {
     if (!fileId) {
       setFile(null);
+      setFocusRelated(false);
       return;
     }
     const found = ARCHIVE_CASES.find((row) => row.id === fileId) ?? null;
@@ -71,8 +74,9 @@ function ArchivePage() {
     setFile(found);
   }, [fileId]);
 
-  const show = (row: ArchiveCase) => {
+  const show = (row: ArchiveCase, opts?: { related?: boolean }) => {
     setYear(row.year);
+    setFocusRelated(Boolean(opts?.related));
     setFile(row);
     router.history.replace(`/archive?file=${encodeURIComponent(row.id)}`);
   };
@@ -89,8 +93,10 @@ function ArchivePage() {
       <FilePanel
         file={file ? archiveToDesk(file) : null}
         pool={pool}
+        focusRelated={focusRelated}
         onClose={() => {
           setFile(null);
+          setFocusRelated(false);
           router.history.replace("/archive");
         }}
         onOpen={(next) => {

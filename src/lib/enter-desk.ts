@@ -1,3 +1,4 @@
+import { accessNavigate } from "@/lib/access-nav";
 import { DEFAULT_DESK_HREF, useDesk } from "@/lib/store";
 
 type HistoryLike = { push: (href: string) => void; replace?: (href: string) => void };
@@ -12,7 +13,7 @@ export function startLogin(history: HistoryLike, returnHref?: string) {
 /** Enter desk without scan when already granted, else go to scan. */
 export function enterDesk(history: HistoryLike, href = DEFAULT_DESK_HREF) {
   if (useDesk.getState().accessGranted) {
-    history.push(href);
+    accessNavigate(history, href);
     return;
   }
   startLogin(history, href);

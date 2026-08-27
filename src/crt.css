@@ -151,3 +151,12 @@ h1 {
     display: none;
   }
 }
+
+.phone-stage .cosmos-sky,
+.phone-stage .crt-overlay,
+.phone-stage .crt-vignette,
+.phone-stage .crt-glitch,
+.phone-stage .shoot-layer,
+.phone-stage .landing-glyphs {
+  position: absolute;
+}
