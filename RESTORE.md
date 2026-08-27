@@ -3,7 +3,7 @@
 ## Live restore snapshot (overwrite target)
 
 **File:** `restores/TRUTHPOLE-restore-20260827-live.zip`  
-**Updated:** 2026-08-27 08:32 BST  
+**Updated:** 2026-08-27 08:39 BST  
 **Snapshotted commit:** `dcf00796fb4a304c26de3901ea7a19da4aeb7312`  
 **Repo:** [ichiadrac-beep/Truthpolearchive](https://github.com/ichiadrac-beep/Truthpolearchive)
 
