@@ -21,21 +21,28 @@ Linked counts, case status tags, ticking archive count, desk-only decrypt.
 X-Files signal bar, map zoom bounce, sky hum, scratch-to-declassify.  
 **Zip:** [`restores/restore-file-3.zip`](restores/restore-file-3.zip)
 
-## restore file(4) (current — 27 Aug 2026)
+## restore file(4)
 
 Landing alien chromatic-aberration glitch on tap.  
-Does **not** replace Complete build or earlier restore files.
+**Zip:** [`restores/restore-file-4.zip`](restores/restore-file-4.zip)
 
-**Zip:** [`restores/restore-file-4.zip`](restores/restore-file-4.zip)  
-**Docs:** [restores/RESTORE-FILE-4.md](restores/RESTORE-FILE-4.md) · [restores/INDEX.md](restores/INDEX.md)
+## Truthpole-Complete 2 (current complete snapshot — 27 Aug 2026)
+
+Full restorable copy of the live desk: restore file(2) + Tonight’s file first-paint (Cussac).  
+Does **not** replace Complete build or restore files 1–4.
+
+**Zip:** [`restores/Truthpole-Complete-2.zip`](restores/Truthpole-Complete-2.zip)  
+**Docs:** [restores/TRUTHPOLE-COMPLETE-2.md](restores/TRUTHPOLE-COMPLETE-2.md) · [restores/INDEX.md](restores/INDEX.md)
 
 ```bash
-curl -L -o restore-file-4.zip \
-  https://github.com/ichiadrac-beep/Truthpolearchive/raw/main/restores/restore-file-4.zip
-unzip restore-file-4.zip -d truthpole
+curl -L -o Truthpole-Complete-2.zip \
+  https://github.com/ichiadrac-beep/Truthpolearchive/raw/main/restores/Truthpole-Complete-2.zip
+unzip -o Truthpole-Complete-2.zip -d truthpole
 cd truthpole
+rm -f .node_modules.lock
+rm -rf node_modules
 npm install
-npm run build
+chmod +x startup.sh
 sh startup.sh
 ```
 
@@ -48,6 +55,7 @@ sh startup.sh
 | restore file(2) | `restores/restore-file-2.zip` |
 | restore file(3) | `restores/restore-file-3.zip` |
 | restore file(4) | `restores/restore-file-4.zip` |
-| restore file(5) | `restores/restore-file-5.zip` (next backup only) |
+| Truthpole-Complete 2 | `restores/Truthpole-Complete-2.zip` |
+| restore file(5) | `restores/restore-file-5.zip` (next numbered restore only) |
 
 Never replace older restore zips.
