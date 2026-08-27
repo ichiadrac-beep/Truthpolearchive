@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { FilePlus2, X } from "lucide-react";
+import { FilePlus2, Images, X } from "lucide-react";
 import { GlassButton } from "@/components/glass-button";
+import { SightingsBoard } from "@/components/sightings-board";
 import { WitnessForm } from "@/components/witness-form";
 import { XLiveBoard } from "@/components/x-live-board";
 import type { FilingRow } from "@/lib/desk-api";
@@ -22,6 +23,7 @@ function XFilesPage() {
   const [source, setSource] = useState<"api" | "seed">("seed");
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [formOpen, setFormOpen] = useState(false);
+  const [boardOpen, setBoardOpen] = useState(false);
   const [pending, setPending] = useState<FilingRow[]>([]);
   const timer = useRef<number | null>(null);
   const formAnchor = useRef<HTMLDivElement>(null);
@@ -62,10 +64,10 @@ function XFilesPage() {
   }, []);
 
   useEffect(() => {
-    if (formOpen) {
+    if (formOpen || boardOpen) {
       formAnchor.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
-  }, [formOpen]);
+  }, [formOpen, boardOpen]);
 
   return (
     <section className="mx-auto flex w-full max-w-lg flex-col gap-4 px-5 pt-2 pb-6">
@@ -76,8 +78,8 @@ function XFilesPage() {
         Live X feed
       </h1>
       <p className="max-w-prose text-sm leading-normal text-muted">
-        Live posts from UAP accounts on X from the last 48 hours, newest first. Tap Submit an
-        encounter to file a report. Fetch latest reloads the feed.
+        Live posts from UAP accounts on X from the last 48 hours, newest first. File an encounter
+        with a photo or video, then open Witness files to read the community desk.
       </p>
 
       <div className="flex flex-wrap gap-2">
@@ -85,12 +87,29 @@ function XFilesPage() {
           type="button"
           variant="chip"
           className="h-10 gap-2 px-4"
-          onClick={() => setFormOpen(true)}
+          onClick={() => {
+            setFormOpen(true);
+            setBoardOpen(false);
+          }}
           aria-expanded={formOpen}
           aria-controls="encounter-form"
         >
           <FilePlus2 className="size-3.5" strokeWidth={1.8} />
           Submit an encounter
+        </GlassButton>
+        <GlassButton
+          type="button"
+          variant="chip"
+          className="h-10 gap-2 px-4"
+          onClick={() => {
+            setBoardOpen(true);
+            setFormOpen(false);
+          }}
+          aria-expanded={boardOpen}
+          aria-controls="witness-files"
+        >
+          <Images className="size-3.5" strokeWidth={1.8} />
+          Witness files
         </GlassButton>
         {pending.length > 0 ? (
           <p className="self-center font-display text-[10px] tracking-[0.18em] text-fg/45">
@@ -123,9 +142,35 @@ function XFilesPage() {
             onFiled={(item) => {
               setPending((prev) => [item, ...prev.filter((p) => p.id !== item.id)]);
               setFormOpen(false);
+              if (item.imageData || item.videoData) setBoardOpen(true);
             }}
             onCancel={() => setFormOpen(false)}
           />
+        </div>
+      ) : null}
+
+      {boardOpen ? (
+        <div
+          id="witness-files"
+          ref={formAnchor}
+          className="glass-sheet relative flex max-h-[70dvh] min-h-[18rem] flex-col gap-3 overflow-hidden rounded-2xl p-4"
+        >
+          <div className="flex shrink-0 items-center justify-between gap-3">
+            <div>
+              <p className="font-display text-[11px] tracking-[0.28em] text-fg/70">WITNESS FILES</p>
+              <p className="mt-1 text-xs text-fg/45">Guest photos and video. Like or note each file.</p>
+            </div>
+            <GlassButton
+              type="button"
+              variant="icon"
+              className="size-9 shrink-0"
+              aria-label="Close witness files"
+              onClick={() => setBoardOpen(false)}
+            >
+              <X className="size-4" strokeWidth={1.8} />
+            </GlassButton>
+          </div>
+          <SightingsBoard />
         </div>
       ) : null}
 
