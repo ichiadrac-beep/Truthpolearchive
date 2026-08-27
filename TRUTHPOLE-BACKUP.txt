@@ -1,10 +1,14 @@
-TRUTHPOLE full restore — 2026-08-27 08:39 BST (live, backup overwrite)
-Snapshot: restore-20260827-live
-Commit: dcf00796fb4a304c26de3901ea7a19da4aeb7312
-Repo: https://github.com/ichiadrac-beep/Truthpolearchive
-Zip path: restores/TRUTHPOLE-restore-20260827-live.zip
+TRUTHPOLE — restore file(1)
+Created 2026-08-27 (cross-link snapshot)
 
-Includes: full source tree (src/, public/, scripts/, server/, migrations/),
-package.json + package-lock.json, startup.sh, Vite/tsconfig, and related config.
-No node_modules, dist, .git, .nitro, or nested restores/*.zip.
-Restore steps: unzip → npm install → npm run build → sh startup.sh
+This is NOT Complete build. Complete build stays on branch complete-build
+and restores/TRUTHPOLE-restore-20260827-live.zip.
+
+This package is restores/restore-file-1.zip.
+
+Restore:
+  unzip restore-file-1.zip -d truthpole
+  cd truthpole
+  npm install
+  npm run build
+  sh startup.sh

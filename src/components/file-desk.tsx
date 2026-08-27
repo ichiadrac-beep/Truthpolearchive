@@ -1,6 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "@tanstack/react-router";
 import { FilePanel } from "@/components/file-panel";
-import { relatedDeskFiles, type DeskFile } from "@/lib/desk-file";
+import { relatedCount } from "@/lib/desk-catalog";
+import { type DeskFile } from "@/lib/desk-file";
 import { cn } from "@/lib/utils";
 
 type FileDeskProps = {
@@ -9,12 +11,26 @@ type FileDeskProps = {
   intro: string;
   tag: string;
   files: DeskFile[];
+  deskPath: string;
+  seedId?: string;
 };
 
-export function FileDesk({ section, title, intro, tag, files }: FileDeskProps) {
+export function FileDesk({ section, title, intro, tag, files, deskPath, seedId }: FileDeskProps) {
+  const router = useRouter();
   const [openFile, setOpenFile] = useState<DeskFile | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+
+  useEffect(() => {
+    if (!seedId) {
+      setOpenFile(null);
+      setSelectedId(null);
+      return;
+    }
+    const found = files.find((file) => file.id === seedId) ?? null;
+    setOpenFile(found);
+    setSelectedId(found?.id ?? null);
+  }, [seedId, files]);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -27,6 +43,17 @@ export function FileDesk({ section, title, intro, tag, files }: FileDeskProps) {
         .includes(q),
     );
   }, [files, query]);
+
+  const open = (file: DeskFile) => {
+    setSelectedId(file.id);
+    setOpenFile(file);
+    router.history.replace(`${deskPath}?file=${encodeURIComponent(file.id)}`);
+  };
+
+  const close = () => {
+    setOpenFile(null);
+    router.history.replace(deskPath);
+  };
 
   return (
     <>
@@ -50,16 +77,13 @@ export function FileDesk({ section, title, intro, tag, files }: FileDeskProps) {
         <ul className="mt-6 flex flex-col">
           {visible.map((file) => {
             const selected = file.id === selectedId;
-            const linked = relatedDeskFiles(file, files).length;
+            const linked = relatedCount(file);
             return (
               <li key={file.id} className="border-t border-fg/10 first:border-t-0">
                 <button
                   type="button"
                   aria-current={selected ? "true" : undefined}
-                  onClick={() => {
-                    setSelectedId(file.id);
-                    setOpenFile(file);
-                  }}
+                  onClick={() => open(file)}
                   className={cn(
                     "w-full py-4 text-left",
                     selected && "bg-fg/6",
@@ -81,11 +105,8 @@ export function FileDesk({ section, title, intro, tag, files }: FileDeskProps) {
       <FilePanel
         file={openFile}
         pool={files}
-        onClose={() => setOpenFile(null)}
-        onOpen={(next) => {
-          setSelectedId(next.id);
-          setOpenFile(next);
-        }}
+        onClose={close}
+        onOpen={open}
       />
     </>
   );

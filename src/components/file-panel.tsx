@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Check, Share2, Square, Volume2, X } from "lucide-react";
+import { useRouter, useRouterState } from "@tanstack/react-router";
 import { Drawer } from "vaul";
 import { GlassButton } from "@/components/glass-button";
+import { DESK_META, hrefFor, relatedFromCatalog } from "@/lib/desk-catalog";
 import {
   deskSummary,
   fullRecord,
   linkSources,
-  relatedDeskFiles,
   sharePayload,
   speechForFile,
   type DeskFile,
@@ -20,7 +21,9 @@ type FilePanelProps = {
   onOpen?: (file: DeskFile) => void;
 };
 
-export function FilePanel({ file, pool = [], onClose, onOpen }: FilePanelProps) {
+export function FilePanel({ file, onClose, onOpen }: FilePanelProps) {
+  const router = useRouter();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const setPanelOpen = useDesk((s) => s.setPanelOpen);
   const open = file !== null;
   const [speaking, setSpeaking] = useState(false);
@@ -29,7 +32,7 @@ export function FilePanel({ file, pool = [], onClose, onOpen }: FilePanelProps) 
   const summary = file ? deskSummary(file.summary || file.lede) : "";
   const record = file ? fullRecord(file) : "";
   const links = useMemo(() => (file ? linkSources(file.sources) : []), [file]);
-  const related = useMemo(() => (file ? relatedDeskFiles(file, pool) : []), [file, pool]);
+  const related = useMemo(() => (file ? relatedFromCatalog(file) : []), [file]);
 
   useEffect(() => {
     setPanelOpen(open);
@@ -85,6 +88,15 @@ export function FilePanel({ file, pool = [], onClose, onOpen }: FilePanelProps) 
     } catch {
       /* no clipboard */
     }
+  };
+
+  const openRelated = (item: (typeof related)[number]) => {
+    const path = DESK_META[item.desk].path;
+    if (path === pathname) {
+      onOpen?.(item);
+      return;
+    }
+    router.history.push(hrefFor(item));
   };
 
   return (
@@ -198,18 +210,18 @@ export function FilePanel({ file, pool = [], onClose, onOpen }: FilePanelProps) 
                   <h3 className="font-display text-xs font-medium tracking-kicker text-muted">Related</h3>
                   <ul className="mt-2 flex flex-col gap-1">
                     {related.map((item) => (
-                      <li key={item.id}>
+                      <li key={`${item.desk}-${item.id}`}>
                         <button
                           type="button"
                           className="w-full rounded-xl px-3 py-2.5 text-left active:bg-fg/8"
-                          onClick={() => onOpen?.(item)}
+                          onClick={() => openRelated(item)}
                         >
                           <span className="block text-sm text-fg underline decoration-fg/35 underline-offset-2">
                             {item.title}
                           </span>
                           <span className="mt-0.5 block font-display text-[11px] tracking-[0.22em] text-fg/45">
-                            {item.kicker}
-                            {item.subtitle ? ` · ${item.subtitle}` : ""}
+                            {DESK_META[item.desk].label}
+                            {item.kicker ? ` · ${item.kicker}` : ""}
                           </span>
                         </button>
                       </li>

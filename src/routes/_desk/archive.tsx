@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { ArchiveMap } from "@/components/archive-map";
 import { FilePanel } from "@/components/file-panel";
 import { ARCHIVE_CASES, YEAR_MAX, YEAR_MIN, type ArchiveCase } from "@/lib/archive-cases";
+import { CATALOG_BY_ID, hrefFor } from "@/lib/desk-catalog";
 import { archiveToDesk } from "@/lib/desk-file";
 import { useDesk } from "@/lib/store";
 
@@ -46,6 +47,7 @@ function markIntroPlayed() {
 }
 
 function ArchivePage() {
+  const router = useRouter();
   const { file: fileId } = Route.useSearch();
   const seeded = fileId ? (ARCHIVE_CASES.find((row) => row.id === fileId) ?? null) : null;
   const [intro] = useState(() => !seeded && shouldIntroPlay());
@@ -59,29 +61,46 @@ function ArchivePage() {
   }, [intro]);
 
   useEffect(() => {
-    if (!fileId) return;
+    if (!fileId) {
+      setFile(null);
+      return;
+    }
     const found = ARCHIVE_CASES.find((row) => row.id === fileId) ?? null;
     if (!found) return;
     setYear(found.year);
     setFile(found);
   }, [fileId]);
 
+  const show = (row: ArchiveCase) => {
+    setYear(row.year);
+    setFile(row);
+    router.history.replace(`/archive?file=${encodeURIComponent(row.id)}`);
+  };
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <ArchiveMap
         year={year}
         onYear={setYear}
-        onOpen={setFile}
+        onOpen={show}
         autoPlay={intro}
         playMs={intro ? 48 : 72}
       />
       <FilePanel
         file={file ? archiveToDesk(file) : null}
         pool={pool}
-        onClose={() => setFile(null)}
+        onClose={() => {
+          setFile(null);
+          router.history.replace("/archive");
+        }}
         onOpen={(next) => {
           const found = ARCHIVE_CASES.find((item) => item.id === next.id) ?? null;
-          setFile(found);
+          if (found) {
+            show(found);
+            return;
+          }
+          const other = CATALOG_BY_ID.get(next.id);
+          if (other) router.history.push(hrefFor(other));
         }}
       />
     </div>
