@@ -34,10 +34,7 @@ export const Route = createRootRoute({
         href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Share+Tech+Mono&display=swap",
       },
       { rel: "preload", as: "image", href: "/logo-alien.png" },
-      { rel: "preload", as: "fetch", href: "/geo/countries-110m.json", crossOrigin: "anonymous" },
       { rel: "preload", as: "image", href: "/alien-hand.jpg?v=2" },
-      { rel: "preload", as: "audio", href: "/audio/scan.mp3" },
-      { rel: "preload", as: "audio", href: "/audio/access-granted.mp3" },
     ],
     styles: [
       {
