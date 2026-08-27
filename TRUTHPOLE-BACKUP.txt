@@ -1,6 +1,6 @@
-TRUTHPOLE full restore — 2026-08-27 01:44 BST (live, backup overwrite)
+TRUTHPOLE full restore — 2026-08-27 01:45 BST (live, backup overwrite)
 Snapshot: restore-20260827-live
-Commit: 64127f5f87443ece439fc3500ae5bf378e08e83b
+Commit: 037af3e3f287518ea83c6efe6541b5b3faa77288
 Repo: https://github.com/ichiadrac-beep/Truthpolearchive
 Zip path: restores/TRUTHPOLE-restore-20260827-live.zip
 

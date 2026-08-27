@@ -1,8 +1,8 @@
 # TRUTHPOLE — Full restore snapshot
 
 **Tag / label:** `restore-20260827-live`
-**Date:** 27 August 2026 (01:44 BST) — overwritten live snapshot
-**Commit:** `64127f5f87443ece439fc3500ae5bf378e08e83b`
+**Date:** 27 August 2026 (01:45 BST) — overwritten live snapshot
+**Commit:** `037af3e3f287518ea83c6efe6541b5b3faa77288`
 **What this is:** Complete restorable snapshot of the live TRUTHPOLE desk.
 
 Repo: [ichiadrac-beep/Truthpolearchive](https://github.com/ichiadrac-beep/Truthpolearchive)
