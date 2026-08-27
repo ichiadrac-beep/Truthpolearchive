@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { tickHumLevel } from "@/lib/desk-hum";
 
 type Star = { x: number; y: number; r: number; base: number; tw: number; spd: number; hue: string };
 
@@ -601,9 +602,11 @@ export function StarField({ paused, allowDuel = false }: { paused: boolean; allo
       lastT = now;
       const step = dt / 16.67;
 
+      const energy = reduce ? 0 : tickHumLevel();
       for (const star of stars) {
-        if (!freeze) star.tw += star.spd * Math.max(step, 0);
-        const a = star.base * (0.55 + 0.45 * (0.5 + 0.5 * Math.sin(star.tw)));
+        if (!freeze) star.tw += star.spd * (1 + energy * 0.65) * Math.max(step, 0);
+        const wave = 0.5 + 0.5 * Math.sin(star.tw);
+        const a = Math.min(1, star.base * (0.52 + 0.48 * wave) * (0.86 + 0.28 * energy));
         ctx.beginPath();
         ctx.fillStyle = `hsla(${star.hue}, ${a})`;
         ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);

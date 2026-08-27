@@ -40,6 +40,8 @@ export type ArchiveMapProps = {
 const DEFAULT_ROTATE: [number, number] = [-10, 0];
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 12;
+const MAX_OVERSHOOT = 0.72;
+const MIN_OVERSHOOT = 0.16;
 const GEO_URL = "/geo/countries-110m.json";
 
 type GeoCache = typeof globalThis & {
@@ -284,6 +286,8 @@ export function ArchiveMap({
     let cancelled = false;
     let resize: ResizeObserver | undefined;
 
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
     const clampPan = () => {
       const v = viewRef.current;
       const limit = (v.targetZoom - 1) * 280;
@@ -494,13 +498,37 @@ export function ArchiveMap({
       setPeek(null);
     };
 
-    const zoomAt = (clientX: number, clientY: number, nextZoom: number) => {
+    const rubberZoom = (requested: number) => {
+      if (requested > MAX_ZOOM) {
+        const extra = requested - MAX_ZOOM;
+        return Math.min(MAX_ZOOM + MAX_OVERSHOOT, MAX_ZOOM + extra / (1 + extra * 1.85));
+      }
+      if (requested < MIN_ZOOM) {
+        const extra = MIN_ZOOM - requested;
+        return Math.max(MIN_ZOOM - MIN_OVERSHOOT, MIN_ZOOM - extra / (1 + extra * 2.4));
+      }
+      return requested;
+    };
+
+    const settleZoom = () => {
+      const v = viewRef.current;
+      if (v.targetZoom > MAX_ZOOM) v.targetZoom = MAX_ZOOM;
+      if (v.targetZoom < MIN_ZOOM) v.targetZoom = MIN_ZOOM;
+      if (v.targetZoom <= 1.02) {
+        v.targetTx = 0;
+        v.targetTy = 0;
+      }
+      clampPan();
+      schedule();
+    };
+
+    const zoomAt = (clientX: number, clientY: number, nextZoom: number, rubber = false) => {
       const v = viewRef.current;
       const rect = canvas.getBoundingClientRect();
       const mx = clientX - rect.left - rect.width / 2;
       const my = clientY - rect.top - rect.height / 2;
-      const z0 = v.targetZoom;
-      const z1 = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, nextZoom));
+      const z0 = Math.max(0.08, v.targetZoom);
+      const z1 = rubber ? rubberZoom(nextZoom) : Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, nextZoom));
       const k = z1 / z0;
       v.targetTx = mx - (mx - v.targetTx) * k;
       v.targetTy = my - (my - v.targetTy) * k;
@@ -607,11 +635,14 @@ export function ArchiveMap({
         const d = touchDist(ev.touches[0], ev.touches[1]);
         const mid = touchMid(ev.touches[0], ev.touches[1]);
         const next = pinchRef.current.zoom * (d / pinchRef.current.dist);
-        zoomAt(mid.x, mid.y, next);
+        zoomAt(mid.x, mid.y, next, !reduceMotion);
       }
     };
     const onTouchEnd = (ev: TouchEvent) => {
-      if (ev.touches.length < 2) pinchRef.current = null;
+      if (ev.touches.length < 2 && pinchRef.current) {
+        pinchRef.current = null;
+        settleZoom();
+      }
     };
     const onGesture = (ev: Event) => ev.preventDefault();
 
@@ -623,6 +654,7 @@ export function ArchiveMap({
     host.addEventListener("touchstart", onTouchStart, { passive: false });
     host.addEventListener("touchmove", onTouchMove, { passive: false });
     host.addEventListener("touchend", onTouchEnd);
+    host.addEventListener("touchcancel", onTouchEnd);
     host.addEventListener("gesturestart", onGesture);
 
     (host as HTMLDivElement & { __redraw?: () => void; __zoomBy?: (d: number) => void; __reset?: () => void }).__redraw =
@@ -653,6 +685,7 @@ export function ArchiveMap({
       host.removeEventListener("touchstart", onTouchStart);
       host.removeEventListener("touchmove", onTouchMove);
       host.removeEventListener("touchend", onTouchEnd);
+      host.removeEventListener("touchcancel", onTouchEnd);
       host.removeEventListener("gesturestart", onGesture);
     };
   }, []);

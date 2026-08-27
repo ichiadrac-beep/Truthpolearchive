@@ -3,6 +3,7 @@ import { useRouter } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { AlienLogo } from "@/components/alien-logo";
 import { GlassButton } from "@/components/glass-button";
+import { HumToggle } from "@/components/hum-toggle";
 import { useClearanceTonight } from "@/hooks/use-clearance";
 import { accessNavigate } from "@/lib/access-nav";
 import { matchClearancePhrase, revealClearanceMemo } from "@/lib/clearance";
@@ -226,6 +227,9 @@ export function Landing() {
 
   return (
     <main className="landing relative z-10 flex min-h-dvh flex-col bg-transparent pointer-events-none">
+      <div className="pointer-events-auto absolute top-[max(0.7rem,env(safe-area-inset-top))] right-4 z-40">
+        <HumToggle />
+      </div>
       <LandingCosmos />
       <div className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col px-6 pt-[max(2.5rem,env(safe-area-inset-top))] pointer-events-none">
         <div className="stagger-in flex flex-1 flex-col items-center justify-center text-center pointer-events-none">

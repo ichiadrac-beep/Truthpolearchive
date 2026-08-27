@@ -3,6 +3,7 @@ import { Check, Share2, Square, Volume2, X } from "lucide-react";
 import { useRouter, useRouterState } from "@tanstack/react-router";
 import { Drawer } from "vaul";
 import { GlassButton } from "@/components/glass-button";
+import { ScratchText } from "@/components/scratch-text";
 import { LinkedCount } from "@/components/linked-count";
 import { StatusTag } from "@/components/status-tag";
 import { accessNavigate } from "@/lib/access-nav";
@@ -173,7 +174,14 @@ export function FilePanel({ file, onClose, onOpen, focusRelated = false }: FileP
               {summary ? (
                 <section className="pb-5">
                   <h3 className="font-display text-xs font-medium tracking-kicker text-muted">Desk summary</h3>
-                  <p className="mt-2 max-w-prose text-sm leading-normal text-fg/90">{summary}</p>
+                  <p className="mt-1 font-display text-[10px] tracking-[0.22em] text-fg/35">
+                    REDACTED · scratch bars to declassify
+                  </p>
+                  <ScratchText
+                    text={summary}
+                    fileId={`${file?.id ?? "file"}-sum`}
+                    className="mt-2 max-w-prose text-sm leading-normal text-fg/90"
+                  />
                 </section>
               ) : null}
 
@@ -197,9 +205,12 @@ export function FilePanel({ file, onClose, onOpen, focusRelated = false }: FileP
                   ) : null}
                   {record ? (
                     record.split("\n\n").map((para, i) => (
-                      <p key={i} className="mt-3 max-w-prose text-sm leading-normal text-fg/90 first:mt-0">
-                        {para}
-                      </p>
+                      <ScratchText
+                        key={i}
+                        text={para}
+                        fileId={`${file?.id ?? "file"}-rec-${i}`}
+                        className="mt-3 max-w-prose text-sm leading-normal text-fg/90 first:mt-0"
+                      />
                     ))
                   ) : (
                     <p className="text-sm text-fg/50">No further record on this desk.</p>

@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import { AlienLogo } from "@/components/alien-logo";
 import { DeskNav } from "@/components/desk-nav";
 import { GlassButton } from "@/components/glass-button";
+import { HumToggle } from "@/components/hum-toggle";
 import { MoreSheet } from "@/components/more-sheet";
 import { accessNavigate } from "@/lib/access-nav";
 import { startLogin } from "@/lib/enter-desk";
@@ -92,6 +93,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </span>
         </Link>
         <div className="relative z-40 flex shrink-0 items-center gap-2">
+          <HumToggle />
           <GlassButton variant="icon" className="size-10" aria-label="Search this desk" onClick={onSearch}>
             <Search className="size-4" strokeWidth={1.6} />
           </GlassButton>

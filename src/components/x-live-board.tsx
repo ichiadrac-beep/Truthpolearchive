@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { ExternalLink, Radio, RefreshCw } from "lucide-react";
 import { GlassButton } from "@/components/glass-button";
 import {
@@ -24,6 +25,7 @@ export function XLiveBoard({ posts, loading, source, lastRefresh, onRefresh }: X
           <p className="font-display text-[11px] tracking-[0.28em] text-fg/45">
             {source === "api" ? "LIVE · X API" : "LIVE SNAPSHOT"}
           </p>
+          <SignalBar scanning={loading} />
           <p className="mt-1 text-xs text-fg/50">
             {lastRefresh
               ? `Updated ${lastRefresh.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
@@ -159,6 +161,49 @@ export function XLiveBoard({ posts, loading, source, lastRefresh, onRefresh }: X
         <p className="py-8 text-center text-sm text-fg/50">No posts matched the keyword filter.</p>
       ) : null}
     </div>
+  );
+}
+
+function SignalBar({ scanning }: { scanning: boolean }) {
+  const [level, setLevel] = useState(4);
+  const [flicker, setFlicker] = useState(scanning);
+
+  useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      setFlicker(false);
+      setLevel(4);
+      return;
+    }
+    if (scanning) {
+      setFlicker(true);
+      const id = window.setInterval(() => {
+        setLevel(1 + Math.floor(Math.random() * 5));
+      }, 78);
+      return () => window.clearInterval(id);
+    }
+    const lock = window.setTimeout(() => {
+      setFlicker(false);
+      setLevel(4);
+    }, 420);
+    return () => window.clearTimeout(lock);
+  }, [scanning]);
+
+  const cells = [1, 2, 3, 4, 5].map((n) => (n <= level ? "▮" : "▯")).join("");
+
+  return (
+    <p
+      className="mt-1.5 font-mono text-[12px] tracking-[0.18em] text-fg/70"
+      role="status"
+      aria-live="polite"
+      aria-label={`Signal ${level} of 5${flicker ? ", locking" : ""}`}
+    >
+      <span className="text-fg/40">SIGNAL:</span>{" "}
+      <span className={flicker ? "text-fg" : "text-fg/80"}>{cells}</span>
+      <span className="ml-2 font-display text-[10px] tracking-[0.22em] text-fg/40">
+        {flicker ? "LOCKING" : "LOCKED"}
+      </span>
+    </p>
   );
 }
 
