@@ -1,8 +1,8 @@
 # TRUTHPOLE — Full restore snapshot
 
 **Tag / label:** `restore-20260827-live`
-**Date:** 27 August 2026 (05:49 BST) — overwritten live snapshot
-**Commit:** `63c25221d75e3b6865cb93188b8d47478046e129`
+**Date:** 27 August 2026 (06:00 BST) — overwritten live snapshot
+**Commit:** `af4dac3d0b24ed095794475cae904c447d0b8a2e`
 **What this is:** Complete restorable snapshot of the live TRUTHPOLE desk.
 
 Repo: [ichiadrac-beep/Truthpolearchive](https://github.com/ichiadrac-beep/Truthpolearchive)
@@ -17,7 +17,6 @@ Zip: `restores/TRUTHPOLE-restore-20260827-live.zip`
 | `scripts/` | Dev / preview / migrate helpers |
 | `server/` | Server routes |
 | `migrations/` | DB migrations |
-| `.grok/app-env.json` | App Builder env |
 | `package.json` + lock | Dependencies |
 | `vite.config.ts`, `tsconfig.json`, `startup.sh` | Build & revive |
 
