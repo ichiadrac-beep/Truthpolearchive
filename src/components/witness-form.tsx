@@ -162,7 +162,7 @@ export function WitnessForm({ onFiled, onCancel }: WitnessFormProps) {
           id="filing-body"
           className="glass-field min-h-28 resize-y"
           value={values.description}
-          onChange={(e) => setValues((e) => ({ ...values, description: e.target.value }))}
+          onChange={(e) => setValues((v) => ({ ...v, description: e.target.value }))}
           placeholder="What moved, how long, sound, sky, other witnesses."
           required
           maxLength={2000}
