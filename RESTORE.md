@@ -1,5 +1,23 @@
 # TRUTHPOLE — Restore guide
 
+## Live restore snapshot (overwrite target)
+
+**File:** `restores/TRUTHPOLE-restore-20260827-live.zip`  
+**Updated:** 2026-08-27 08:24 BST  
+**Snapshotted commit:** `dcf00796fb4a304c26de3901ea7a19da4aeb7312`  
+**Repo:** [ichiadrac-beep/Truthpolearchive](https://github.com/ichiadrac-beep/Truthpolearchive)
+
+### Restore steps
+
+```bash
+curl -L -o truthpole.zip \
+  https://github.com/ichiadrac-beep/Truthpolearchive/raw/main/restores/TRUTHPOLE-restore-20260827-live.zip
+unzip truthpole.zip -d truthpole && cd truthpole
+npm install
+npm run build
+sh startup.sh
+```
+
 ## Complete build (baseline — do not overwrite)
 
 **Label:** `Complete build`  
@@ -7,7 +25,7 @@
 **Commit:** `1d2a37efd417b5541317d23e08646fdd2479714f`  
 **Index:** [restores/INDEX.md](restores/INDEX.md) · [restores/COMPLETE-BUILD.md](restores/COMPLETE-BUILD.md)
 
-### Quick restore
+### Quick restore from Complete build branch
 
 ```bash
 curl -L -o complete-build.zip \
@@ -19,24 +37,16 @@ npm run build
 sh startup.sh
 ```
 
-Or use the stored full zip (already in the repo):
-
-```bash
-curl -L -o truthpole.zip \
-  https://github.com/ichiadrac-beep/Truthpolearchive/raw/main/restores/TRUTHPOLE-restore-20260827-live.zip
-unzip truthpole.zip -d truthpole && cd truthpole
-npm install && npm run build && sh startup.sh
-```
-
 ## Naming rule for future backups
 
 | Label | File |
 |-------|------|
 | Complete build | pinned branch + docs (this baseline) |
-| restore file(1) | `restores/restore-file-1.zip` (next backup only) |
+| Live restore | `restores/TRUTHPOLE-restore-20260827-live.zip` (canonical overwrite path) |
+| restore file(1) | `restores/restore-file-1.zip` (next numbered backup only) |
 | restore file(2) | `restores/restore-file-2.zip` |
 
-Push each new zip as a **new path**. Never replace older restore zips.
+Push numbered restore zips as **new paths**. The live path above is the single overwrite target for automated backups.
 
 ## What a full restore includes
 
