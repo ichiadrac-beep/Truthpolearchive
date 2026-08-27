@@ -1,8 +1,8 @@
 # TRUTHPOLE — Full restore snapshot
 
 **Tag / label:** `restore-20260827-live`
-**Date:** 27 August 2026 (02:01 BST) — overwritten live snapshot
-**Commit:** `06c49dbfdbc9ea9aa4505ea6b91f36d0792d88c1`
+**Date:** 27 August 2026 (05:49 BST) — overwritten live snapshot
+**Commit:** `63c25221d75e3b6865cb93188b8d47478046e129`
 **What this is:** Complete restorable snapshot of the live TRUTHPOLE desk.
 
 Repo: [ichiadrac-beep/Truthpolearchive](https://github.com/ichiadrac-beep/Truthpolearchive)
@@ -25,7 +25,7 @@ Zip: `restores/TRUTHPOLE-restore-20260827-live.zip`
 
 ## Key features in this snapshot
 
-1. Landing sky — rare craft, landing-only duels, Zeta Reticuli + Cygnus charts.
+1. Landing sky — rare craft, landing-only duels, Zeta Reticuli + Cygnus charts; star-field restored.
 2. Tonight’s File — anniversary windows; tap opens that archive file.
 3. File panels — CLASSIFIED stamp, desk summary, full record, real sources/related, share.
 4. Archive — extra non-US pins; opaque peek card; year slider still filters.
@@ -38,6 +38,7 @@ Zip: `restores/TRUTHPOLE-restore-20260827-live.zip`
 11. Witness files — server store with SQL and memory fallback; panel, likes, comments, media publish on submit.
 12. CRT scanlines overlay on the desk (non-blocking).
 13. Terminal fonts and CRT stylesheet loaded.
+14. Landing: Craig Reynolds UFO steering — wander / evade / investigate.
 
 ## Restore steps
 
