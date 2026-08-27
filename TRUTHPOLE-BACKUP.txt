@@ -1,6 +1,6 @@
-TRUTHPOLE full restore — 2026-08-27 01:51 BST (live, backup overwrite)
+TRUTHPOLE full restore — 2026-08-27 02:01 BST (live, backup overwrite)
 Snapshot: restore-20260827-live
-Commit: 6d14eb336f5c8d6baea1630403940ba41fff5633
+Commit: 06c49dbfdbc9ea9aa4505ea6b91f36d0792d88c1
 Repo: https://github.com/ichiadrac-beep/Truthpolearchive
 Zip path: restores/TRUTHPOLE-restore-20260827-live.zip
 
@@ -9,5 +9,5 @@ extra non-US archive pins, X-Files 48h + credibility, readable filing form,
 Pole keyboard keeps the channel visible, opaque peek/More sheets,
 custom 1200×630 og.jpg, offline mark in title, Witness files (server store,
 SQL/memory fallback, panel, likes, comments, media on submit), CRT scanlines,
-public, scripts, server, migrations, package lock.
+terminal fonts and CRT stylesheet, public, scripts, server, migrations, package lock.
 No node_modules — run npm install after unpack.
