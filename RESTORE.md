@@ -1,8 +1,8 @@
 # TRUTHPOLE — Full restore snapshot
 
 **Tag / label:** `restore-20260827-live`
-**Date:** 27 August 2026 (01:51 BST) — overwritten live snapshot
-**Commit:** `6d14eb336f5c8d6baea1630403940ba41fff5633`
+**Date:** 27 August 2026 (02:01 BST) — overwritten live snapshot
+**Commit:** `06c49dbfdbc9ea9aa4505ea6b91f36d0792d88c1`
 **What this is:** Complete restorable snapshot of the live TRUTHPOLE desk.
 
 Repo: [ichiadrac-beep/Truthpolearchive](https://github.com/ichiadrac-beep/Truthpolearchive)
@@ -37,6 +37,7 @@ Zip: `restores/TRUTHPOLE-restore-20260827-live.zip`
 10. Offline mark kept in the title (not over logo or buttons).
 11. Witness files — server store with SQL and memory fallback; panel, likes, comments, media publish on submit.
 12. CRT scanlines overlay on the desk (non-blocking).
+13. Terminal fonts and CRT stylesheet loaded.
 
 ## Restore steps
 
