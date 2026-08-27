@@ -3,7 +3,6 @@ import { useRouter } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { AlienLogo } from "@/components/alien-logo";
 import { GlassButton } from "@/components/glass-button";
-import { HumToggle } from "@/components/hum-toggle";
 import { useClearanceTonight } from "@/hooks/use-clearance";
 import { accessNavigate } from "@/lib/access-nav";
 import { matchClearancePhrase, revealClearanceMemo } from "@/lib/clearance";
@@ -212,7 +211,6 @@ export function Landing() {
   const exitHome = useDesk((s) => s.exitHome);
   const clearExitHome = useDesk((s) => s.clearExitHome);
   const armArchiveSweep = useDesk((s) => s.armArchiveSweep);
-  const [ready, setReady] = useState(false);
   const tonight = useClearanceTonight();
 
   const goDesk = (href: string) => accessNavigate(router.history, href);
@@ -221,15 +219,8 @@ export function Landing() {
     if (exitHome) clearExitHome();
   }, [exitHome, clearExitHome]);
 
-  useEffect(() => {
-    setReady(true);
-  }, []);
-
   return (
     <main className="landing relative z-10 flex min-h-dvh flex-col bg-transparent pointer-events-none">
-      <div className="pointer-events-auto absolute top-[max(0.7rem,env(safe-area-inset-top))] right-4 z-40">
-        <HumToggle />
-      </div>
       <LandingCosmos />
       <div className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col px-6 pt-[max(2.5rem,env(safe-area-inset-top))] pointer-events-none">
         <div className="stagger-in flex flex-1 flex-col items-center justify-center text-center pointer-events-none">
@@ -260,7 +251,7 @@ export function Landing() {
             />
           </label>
 
-          <AlienLogo className="mt-6 h-36 w-36" glitchOnTap />
+          <AlienLogo className="mt-6 h-36 w-36" />
 
           <h1 className="mt-7 font-display text-[1.65rem] font-semibold tracking-[0.34em] text-fg">
             TRUTHPOLE
@@ -285,44 +276,38 @@ export function Landing() {
             >
               Enter the archive
             </GlassButton>
-            {ready ? (
-              <>
-                {tonight.special ? (
-                  <GlassButton
-                    variant="ghost"
-                    className="h-[3.35rem] w-full flex-col rounded-full"
-                    aria-label={`Tonight’s file: ${tonight.title}`}
-                    onClick={() => revealClearanceMemo(tonight.special!)}
-                  >
-                    <span className="whitespace-nowrap font-display text-[10px] font-medium tracking-[0.28em] text-fg/55">
-                      TONIGHT’S FILE
-                    </span>
-                    <span className="font-serif text-[15px] font-normal text-fg">{tonight.title}</span>
-                  </GlassButton>
-                ) : (
-                  <GlassButton
-                    variant="ghost"
-                    className="h-[3.35rem] w-full flex-col rounded-full"
-                    aria-label={`Tonight’s file: ${tonight.title}`}
-                    onClick={() =>
-                      goDesk(tonight.caseId ? `/archive?file=${encodeURIComponent(tonight.caseId)}` : "/archive")
-                    }
-                  >
-                    <span className="whitespace-nowrap font-display text-[10px] font-medium tracking-[0.28em] text-fg/55">
-                      TONIGHT’S FILE
-                    </span>
-                    <span className="font-serif text-[15px] font-normal text-fg">{tonight.title}</span>
-                  </GlassButton>
-                )}
-                {tonight.anniversary ? (
-                  <p className="mt-2 font-display text-[10px] tracking-[0.28em] text-fg/40">
-                    Anniversary desk.
-                  </p>
-                ) : null}
-              </>
+            {tonight.special ? (
+              <GlassButton
+                variant="ghost"
+                className="h-[3.35rem] w-full flex-col rounded-full"
+                aria-label={`Tonight's file: ${tonight.title}`}
+                onClick={() => revealClearanceMemo(tonight.special!)}
+              >
+                <span className="whitespace-nowrap font-display text-[10px] font-medium tracking-[0.28em] text-fg/55">
+                  TONIGHT'S FILE
+                </span>
+                <span className="font-serif text-[15px] font-normal text-fg">{tonight.title}</span>
+              </GlassButton>
             ) : (
-              <div className="h-[3.35rem] w-full" aria-hidden="true" />
+              <GlassButton
+                variant="ghost"
+                className="h-[3.35rem] w-full flex-col rounded-full"
+                aria-label={`Tonight's file: ${tonight.title}`}
+                onClick={() =>
+                  goDesk(tonight.caseId ? `/archive?file=${encodeURIComponent(tonight.caseId)}` : "/archive")
+                }
+              >
+                <span className="whitespace-nowrap font-display text-[10px] font-medium tracking-[0.28em] text-fg/55">
+                  TONIGHT'S FILE
+                </span>
+                <span className="font-serif text-[15px] font-normal text-fg">{tonight.title}</span>
+              </GlassButton>
             )}
+            {tonight.anniversary ? (
+              <p className="mt-2 font-display text-[10px] tracking-[0.28em] text-fg/40">
+                Anniversary desk.
+              </p>
+            ) : null}
           </div>
 
           <div className="relative z-20 mt-8 flex w-full flex-col items-center gap-2.5 pointer-events-auto">
