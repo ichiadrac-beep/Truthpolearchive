@@ -110,10 +110,10 @@ export function WitnessForm({ onFiled, onCancel }: WitnessFormProps) {
   if (done) {
     return (
       <div className="glass-sheet flex flex-col rounded-2xl px-4 py-5" role="status" aria-live="polite">
-        <p className="font-display text-xs font-medium tracking-kicker text-signal">PENDING REVIEW</p>
-        <p className="mt-2 font-display text-lg font-semibold tracking-tight text-fg">Filed. Not published.</p>
+        <p className="font-display text-xs font-medium tracking-kicker text-signal">FILED</p>
+        <p className="mt-2 font-display text-lg font-semibold tracking-tight text-fg">On the witness desk.</p>
         <p className="mt-2 max-w-prose text-sm leading-normal text-muted">
-          Guest reports sit in a holding queue. Nothing goes on the live board until the desk clears it.
+          Guest or signed-in. A photo or video lands on Witness files for others to like and note.
         </p>
         <GlassButton className="mt-4 w-full" variant="ghost" onClick={() => setDone(false)}>
           File another
@@ -124,7 +124,7 @@ export function WitnessForm({ onFiled, onCancel }: WitnessFormProps) {
 
   return (
     <form className="filing-form flex flex-col gap-3" onSubmit={onSubmit} autoComplete="off">
-      <p className="font-display text-xs font-medium tracking-[0.22em] text-fg/75">GUEST FILING — NO LOGIN</p>
+      <p className="font-display text-xs font-medium tracking-[0.22em] text-fg/75">GUEST FILING — NO LOGIN REQUIRED</p>
       <Field label="Title" htmlFor="filing-title">
         <input
           id="filing-title"
@@ -162,7 +162,7 @@ export function WitnessForm({ onFiled, onCancel }: WitnessFormProps) {
           id="filing-body"
           className="glass-field min-h-28 resize-y"
           value={values.description}
-          onChange={(e) => setValues((v) => ({ ...v, description: e.target.value }))}
+          onChange={(e) => setValues((e) => ({ ...values, description: e.target.value }))}
           placeholder="What moved, how long, sound, sky, other witnesses."
           required
           maxLength={2000}
