@@ -1,8 +1,8 @@
 # TRUTHPOLE — Full restore snapshot
 
 **Tag / label:** `restore-20260827-live`
-**Date:** 27 August 2026 (01:14 BST) — overwritten live snapshot
-**Commit:** `29fd3fa`
+**Date:** 27 August 2026 (01:32 BST) — overwritten live snapshot
+**Commit:** `53974a4f76ecb23343f0a94955c01459a7abf948`
 **What this is:** Complete restorable snapshot of the live TRUTHPOLE desk.
 
 Repo: [ichiadrac-beep/Truthpolearchive](https://github.com/ichiadrac-beep/Truthpolearchive)
@@ -34,6 +34,7 @@ Zip: `restores/TRUTHPOLE-restore-20260827-live.zip`
 7. The Pole — message board stays visible while the keyboard is open.
 8. More sheet — opaque glass.
 9. Share card — custom `public/og.jpg` 1200×630.
+10. Offline mark kept in the title (not over logo or buttons).
 
 ## Restore steps
 

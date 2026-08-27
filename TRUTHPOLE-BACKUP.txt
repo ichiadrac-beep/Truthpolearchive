@@ -1,11 +1,12 @@
-TRUTHPOLE full restore — 2026-08-27 (live, backup overwrite)
+TRUTHPOLE full restore — 2026-08-27 01:32 BST (live, backup overwrite)
 Snapshot: restore-20260827-live
-Commit: 29fd3fa222231533ee6cf062b11a6fb5b9c8edc0
+Commit: 53974a4f76ecb23343f0a94955c01459a7abf948
 Repo: https://github.com/ichiadrac-beep/Truthpolearchive
 Zip path: restores/TRUTHPOLE-restore-20260827-live.zip
 
 Includes: landing charts + rare UFOs + duels, file panels, Tonight’s File,
 extra non-US archive pins, X-Files 48h + credibility, readable filing form,
 Pole keyboard keeps the channel visible, opaque peek/More sheets,
-custom 1200×630 og.jpg, public, scripts, server, migrations, package lock.
+custom 1200×630 og.jpg, offline mark in title, public, scripts, server,
+migrations, package lock.
 No node_modules — run npm install after unpack.
