@@ -12,6 +12,7 @@ import { getGuestId } from "@/lib/guest-id";
 import { stampScifVisit } from "@/lib/scif";
 import { useDesk } from "@/lib/store";
 import { DESK_HEADER } from "@/lib/tabs";
+import { useOffline } from "@/lib/use-offline";
 import { useVisualKeyboard } from "@/lib/use-visual-keyboard";
 import { cn } from "@/lib/utils";
 
@@ -24,6 +25,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const fill = pathname === "/archive" || pathname === "/the-pole";
   const meta = DESK_HEADER[pathname] ?? { name: "Archive" };
   const kb = useVisualKeyboard();
+  const offline = useOffline();
 
   useEffect(() => {
     const id = getGuestId();
@@ -82,10 +84,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="block font-display text-[13px] font-semibold tracking-[0.28em] text-fg">
               TRUTHPOLE
             </span>
-            <span className="block text-[12px] text-fg/50">{meta.name}</span>
+            <span className="block truncate text-[12px] text-fg/50">
+              {meta.name}
+              {offline ? <span className="text-fg/35"> · offline</span> : null}
+            </span>
           </span>
         </Link>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="relative z-40 flex shrink-0 items-center gap-2">
           <GlassButton variant="icon" className="size-10" aria-label="Search this desk" onClick={onSearch}>
             <Search className="size-4" strokeWidth={1.6} />
           </GlassButton>
