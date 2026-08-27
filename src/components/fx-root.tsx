@@ -24,6 +24,9 @@ export function FxRoot() {
         <div className="cosmos-sky" />
         <StarField paused={paused} allowDuel={onLanding} />
         <HandPreloader />
+        <div className="crt-vignette" />
+        <div className="crt-overlay" />
+        <div className="crt-glitch" />
       </div>
       <ClearanceHost />
     </>
