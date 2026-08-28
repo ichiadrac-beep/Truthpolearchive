@@ -37,17 +37,23 @@ Full restorable desk: Complete 3 + lottery-ticket scratch + SIGNAL HUD + rare SI
 **Zip:** [`restores/Truthpole-Complete-4.zip`](restores/Truthpole-Complete-4.zip)  
 **Docs:** [restores/TRUTHPOLE-COMPLETE-4.md](restores/TRUTHPOLE-COMPLETE-4.md)
 
-## Truthpole-Complete 5 (current — 28 Aug 2026)
+## Truthpole-Complete 5
 
-Full restorable desk: Complete 4 + instant desk hops + rare 4,281,006-document tally flicker. This is the working site.
-
+Full restorable desk: Complete 4 + instant desk hops + rare 4,281,006-document tally flicker.  
 **Zip:** [`restores/Truthpole-Complete-5.zip`](restores/Truthpole-Complete-5.zip)  
-**Docs:** [restores/TRUTHPOLE-COMPLETE-5.md](restores/TRUTHPOLE-COMPLETE-5.md) · [restores/INDEX.md](restores/INDEX.md)
+**Docs:** [restores/TRUTHPOLE-COMPLETE-5.md](restores/TRUTHPOLE-COMPLETE-5.md)
+
+## Beta 1.0 (current — 28 Aug 2026)
+
+The final Beta 1.0 of the working site. Restore this if something happens.
+
+**Zip:** [`restores/Truthpole-Beta-1.0.zip`](restores/Truthpole-Beta-1.0.zip)  
+**Docs:** [restores/TRUTHPOLE-BETA-1.0.md](restores/TRUTHPOLE-BETA-1.0.md) · [restores/INDEX.md](restores/INDEX.md)
 
 ```bash
-curl -L -o Truthpole-Complete-5.zip \
-  https://github.com/ichiadrac-beep/Truthpolearchive/raw/main/restores/Truthpole-Complete-5.zip
-unzip -o Truthpole-Complete-5.zip -d truthpole
+curl -L -o Truthpole-Beta-1.0.zip \
+  https://github.com/ichiadrac-beep/Truthpolearchive/raw/main/restores/Truthpole-Beta-1.0.zip
+unzip -o Truthpole-Beta-1.0.zip -d truthpole
 cd truthpole
 rm -f .node_modules.lock
 rm -rf node_modules
@@ -67,6 +73,6 @@ sh startup.sh
 | Truthpole-Complete 3 | `restores/Truthpole-Complete-3.zip` |
 | Truthpole-Complete 4 | `restores/Truthpole-Complete-4.zip` |
 | Truthpole-Complete 5 | `restores/Truthpole-Complete-5.zip` |
-| restore file(3) | `restores/restore-file-3.zip` (next incremental backup only) |
+| **Beta 1.0** | `restores/Truthpole-Beta-1.0.zip` |
 
 Never replace older restore zips.
