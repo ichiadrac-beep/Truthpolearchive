@@ -36,11 +36,11 @@ export function PoleInvitePanel({ open, onClose }: Props) {
   return (
     <>
       <style>{`
-        .pole-invite-scrim{position:fixed;inset:0;z-index:45;border:0;background:color-mix(in oklab,#000 55%,transparent);cursor:pointer}
-        .pole-invite-sheet{position:fixed;z-index:50;left:50%;bottom:calc(6.1rem + env(safe-area-inset-bottom,0px));width:min(22rem,calc(100% - 1.5rem));max-height:min(62dvh,28rem);overflow-y:auto;overscroll-behavior:contain;padding:0.85rem 0.75rem 0.95rem;border-radius:1.5rem;transform:translateX(-50%);-webkit-overflow-scrolling:touch;box-shadow:0 -8px 32px color-mix(in oklab,#000 45%,transparent)}
+        .pole-invite-scrim{position:fixed;inset:0;z-index:45;border:0;background:color-mix(in oklab,#050506 72%,transparent);cursor:pointer}
+        .pole-invite-sheet{position:fixed;z-index:50;left:50%;bottom:calc(6.1rem + env(safe-area-inset-bottom,0px));width:min(22rem,calc(100% - 1.5rem));max-height:min(62dvh,28rem);overflow-y:auto;overscroll-behavior:contain;padding:0.85rem 0.75rem 0.95rem;border-radius:1.5rem;transform:translateX(-50%);-webkit-overflow-scrolling:touch;background-color:#0a0a0c;box-shadow:0 -8px 32px color-mix(in oklab,#000 55%,transparent)}
       `}</style>
       <button type="button" aria-label="Close invite" className="pole-invite-scrim" onClick={onClose} />
-      <div role="dialog" aria-label="Issue clearance" className="pole-invite-sheet glass-strong">
+      <div role="dialog" aria-label="Issue clearance" className="pole-invite-sheet glass-sheet">
         <div className="flex items-start justify-between gap-2 px-1">
           <p className="font-display text-[10px] tracking-[0.28em] text-fg/55">ISSUE CLEARANCE</p>
           <GlassButton variant="icon" className="size-9 shrink-0" aria-label="Close" onClick={onClose}>
