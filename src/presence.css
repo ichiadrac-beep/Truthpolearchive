@@ -1,0 +1,44 @@
+/* Live presence — small REC chip. pointer-events none; kept off header controls. */
+.presence-hud {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 1.35rem;
+  padding: 0 0.42rem 0 0.32rem;
+  border-radius: 999px;
+  background: color-mix(in oklab, #050506 62%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-fg) 16%, transparent);
+  color: color-mix(in oklab, var(--color-fg) 78%, transparent);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  line-height: 1;
+}
+.presence-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-signal);
+  box-shadow: 0 0 6px color-mix(in oklab, var(--color-signal) 70%, transparent);
+  animation: presence-blink 1.15s steps(2, end) infinite;
+}
+.presence-rec {
+  opacity: 0.72;
+}
+.presence-count {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+  color: var(--color-fg);
+  min-width: 1.1em;
+}
+.presence-count.is-glitch {
+  color: var(--color-signal);
+  text-shadow: 1px 0 color-mix(in oklab, var(--color-fg) 50%, transparent), -1px 0 rgba(80, 220, 255, 0.45);
+}
+@keyframes presence-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.18; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .presence-dot { animation: none; }
+  .presence-count.is-glitch { text-shadow: none; }
+}

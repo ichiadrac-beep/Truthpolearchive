@@ -2,8 +2,10 @@ import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-r
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { FxRoot } from "@/components/fx-root";
+import { PresenceHud } from "@/components/presence-hud";
 import "../styles.css";
 import "../crt.css";
+import "../presence.css";
 import appCss from "../styles.css?url";
 
 const APP_NAME = "TRUTHPOLE";
@@ -68,6 +70,7 @@ function RootDocument() {
         <AuthProvider>
           <div className="phone-stage">
             <FxRoot />
+            <PresenceHud />
             <Outlet />
           </div>
         </AuthProvider>
