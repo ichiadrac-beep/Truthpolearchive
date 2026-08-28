@@ -5,8 +5,8 @@ import { getGuestId } from "@/lib/guest-id";
 import { cn } from "@/lib/utils";
 
 /**
- * Site-wide live count. Uses the existing Pole presence table so the number
- * is the actual unique guests who heartbeated in the last 45 seconds.
+ * Site-wide live count. Uses the Pole presence table so the number is unique
+ * guests who heartbeated in the last 45 seconds — landing included.
  */
 export function PresenceHud() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -53,19 +53,13 @@ export function PresenceHud() {
     };
   }, [pathname]);
 
-  if (pathname === "/scan") return null;
+  if (pathname !== "/") return null;
 
-  const onLanding = pathname === "/";
   const shown = flicker ?? String(online);
 
   return (
     <div
-      className={cn(
-        "presence-hud pointer-events-none fixed z-[45] font-display",
-        onLanding
-          ? "right-3 top-[max(0.55rem,env(safe-area-inset-top))]"
-          : "left-3 top-[max(3.35rem,calc(env(safe-area-inset-top)+2.7rem))]",
-      )}
+      className="presence-hud pointer-events-none fixed z-[45] font-display right-3 top-[max(0.55rem,env(safe-area-inset-top))]"
       aria-live="polite"
       aria-label={`${online} online`}
     >
