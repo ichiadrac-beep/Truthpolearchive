@@ -67,10 +67,10 @@ export function PresenceHud() {
           : "left-3 top-[max(3.35rem,calc(env(safe-area-inset-top)+2.7rem))]",
       )}
       aria-live="polite"
-      aria-label={`${online} on site`}
+      aria-label={`${online} online`}
     >
       <span className="presence-dot" aria-hidden="true" />
-      <span className="presence-rec">REC</span>
+      <span className="presence-rec">Online</span>
       <span className={cn("presence-count", flicker && "is-glitch")}>{shown}</span>
     </div>
   );
