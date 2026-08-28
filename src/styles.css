@@ -85,22 +85,7 @@
 
 @layer components {
   .alien-mark {
-    --ca: 1.5px;
-    filter:
-      drop-shadow(calc(var(--ca) * -1) 0 0 rgba(90, 220, 255, 0.55))
-      drop-shadow(var(--ca) 0 0 rgba(255, 70, 90, 0.48))
-      drop-shadow(0 0 18px rgba(90, 220, 255, 0.2));
-    transform: translateZ(0);
-    will-change: filter, transform;
-  }
-
-  .alien-mark-glitch {
-    --ca: 11px;
-    transform: translate3d(1px, -0.5px, 0);
-    filter:
-      drop-shadow(calc(var(--ca) * -1) 0 0 rgba(90, 220, 255, 0.85))
-      drop-shadow(var(--ca) 0.5px 0 rgba(255, 70, 90, 0.75))
-      drop-shadow(0 0 10px rgba(90, 220, 255, 0.12));
+    filter: drop-shadow(0 0 18px rgba(90, 220, 255, 0.28)) drop-shadow(0 0 10px rgba(255, 70, 90, 0.2));
   }
 
   .glass {
@@ -295,6 +280,107 @@
   .decrypt-line {
     font-variant-numeric: tabular-nums;
     white-space: pre-wrap;
+  }
+
+  .type-out-title {
+    display: inline-grid;
+    justify-items: start;
+    max-width: 100%;
+  }
+
+  .type-out-sizer,
+  .type-out-live {
+    grid-area: 1 / 1;
+  }
+
+  .type-out-sizer {
+    visibility: hidden;
+  }
+
+  .type-out-live {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .type-out-caret {
+    display: inline-block;
+    width: 0.5ch;
+    height: 0.85em;
+    margin-left: 1px;
+    vertical-align: -0.05em;
+    background: currentColor;
+    opacity: 0.72;
+    animation: type-out-caret 0.72s steps(1) infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .type-out-caret {
+      display: none;
+    }
+  }
+
+  @keyframes type-out-caret {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  .signal-meter {
+    min-width: 0;
+  }
+
+  .signal-glyphs {
+    display: inline-flex;
+    gap: 0.05em;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    line-height: 1;
+    letter-spacing: 0.02em;
+  }
+
+  .signal-glyphs span {
+    display: block;
+    min-width: 0.62em;
+    text-align: center;
+    transition: opacity 80ms linear, color 80ms linear;
+  }
+
+  .signal-glyphs .is-on {
+    color: var(--color-fg);
+    opacity: 1;
+  }
+
+  .signal-glyphs .is-off {
+    color: var(--color-fg);
+    opacity: 0.22;
+  }
+
+  .signal-meter-search .signal-glyphs .is-on {
+    color: var(--color-signal);
+    animation: signal-hunt-bar 160ms steps(2) infinite;
+  }
+
+  .signal-meter-search .signal-status {
+    color: var(--color-signal);
+  }
+
+  .signal-meter-lock .signal-glyphs .is-on {
+    color: var(--color-fg);
+  }
+
+  @keyframes signal-hunt-bar {
+    50% {
+      opacity: 0.28;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .signal-meter-search .signal-glyphs .is-on {
+      animation: none;
+    }
+    .signal-glyphs span {
+      transition: none;
+    }
   }
 
   .access-veil {
@@ -977,6 +1063,70 @@ html.kb-open body {
   animation-delay: 440ms;
 }
 
+/* Case of the day must paint immediately — no rise-in / blur delay. */
+.stagger-in > .landing-cta,
+.stagger-in > *:nth-child(6).landing-cta {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+}
+
+.landing-cta {
+  isolation: isolate;
+  z-index: 30;
+}
+
+.landing-tonight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+  width: 100%;
+  min-height: 3.5rem;
+  height: auto;
+  gap: 2px;
+  margin: 0;
+  padding: 0.45rem 1.25rem;
+  border: 0;
+  border-radius: 999px;
+  color: var(--color-fg);
+  cursor: pointer;
+  animation: none !important;
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+.landing-tonight-kicker,
+.landing-tonight-title {
+  position: relative;
+  z-index: 1;
+  animation: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.landing-tonight-kicker {
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  line-height: 1.2;
+  color: color-mix(in oklab, var(--color-fg) 82%, transparent);
+  white-space: nowrap;
+}
+
+.landing-tonight-title {
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--color-fg);
+}
+
 .fx-paused .glyph-layer,
 .fx-paused .star-layer,
 .fx-paused .star-layer span,
@@ -1139,36 +1289,47 @@ html.kb-open body {
   overflow: hidden;
 }
 
-  .scratch-word {
-    position: relative;
-    display: inline-block;
-    vertical-align: baseline;
-    padding: 0.05em 0.12em;
-    margin: 0 0.02em;
-    border-radius: 2px;
-    line-height: 1.15;
-    touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
-  }
+.scratch-word {
+  position: relative;
+  display: inline-block;
+  vertical-align: baseline;
+  padding: 0.05em 0.12em;
+  margin: 0 0.02em;
+  border-radius: 2px;
+  line-height: 1.15;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
 
-  .scratch-word-ink {
-    color: var(--color-fg);
-    transition: opacity 120ms var(--ease-out);
-  }
+.scratch-word-ink {
+  color: var(--color-fg);
+  transition: opacity 120ms var(--ease-out);
+}
 
+.scratch-word canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 2px;
+  touch-action: none;
+  cursor: grab;
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.45);
+  transition: opacity 160ms var(--ease-out);
+}
+
+.scratch-word canvas:active {
+  cursor: grabbing;
+}
+
+.scratch-word-open {
+  background: color-mix(in oklab, var(--color-fg) 8%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
   .scratch-word canvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 2px;
-    touch-action: none;
-    cursor: crosshair;
-    box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.08);
-    transition: opacity 120ms var(--ease-out);
+    cursor: pointer;
   }
+}
 
-  .scratch-word-open {
-    background: color-mix(in oklab, var(--color-fg) 8%, transparent);
-  }

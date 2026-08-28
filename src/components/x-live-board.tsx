@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ExternalLink, Radio, RefreshCw } from "lucide-react";
 import { GlassButton } from "@/components/glass-button";
+import { cn } from "@/lib/utils";
 import {
   credibilityOf,
   formatCount,
@@ -12,37 +13,35 @@ import {
 type XLiveBoardProps = {
   posts: XFeedPost[];
   loading: boolean;
+  hunting?: boolean;
   source: "api" | "seed";
   lastRefresh: Date | null;
   onRefresh: () => void;
 };
 
-export function XLiveBoard({ posts, loading, source, lastRefresh, onRefresh }: XLiveBoardProps) {
+export function XLiveBoard({
+  posts,
+  loading,
+  hunting = false,
+  source,
+  lastRefresh,
+  onRefresh,
+}: XLiveBoardProps) {
+  const acquiring = hunting || loading;
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="font-display text-[11px] tracking-[0.28em] text-fg/45">
-            {source === "api" ? "LIVE · X API" : "LIVE SNAPSHOT"}
-          </p>
-          <SignalBar scanning={loading} />
-          <p className="mt-1 text-xs text-fg/50">
-            {lastRefresh
-              ? `Updated ${lastRefresh.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
-              : "Waiting for first pull"}
-            {" · last 48h · newest first · auto every 3 min"}
-          </p>
-        </div>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <SignalMeter acquiring={acquiring} source={source} lastRefresh={lastRefresh} />
         <GlassButton
           type="button"
           variant="chip"
           className="h-9 gap-2 px-3"
-          disabled={loading}
+          disabled={acquiring}
           onClick={onRefresh}
           aria-label="Fetch latest posts"
         >
-          <RefreshCw className={`size-3.5 ${loading ? "animate-spin" : ""}`} strokeWidth={1.8} />
-          {loading ? "Fetching…" : "Fetch latest"}
+          <RefreshCw className={`size-3.5 ${acquiring ? "animate-spin" : ""}`} strokeWidth={1.8} />
+          {hunting && !loading ? "Locking…" : loading ? "Fetching…" : "Fetch latest"}
         </GlassButton>
       </div>
 
@@ -164,46 +163,144 @@ export function XLiveBoard({ posts, loading, source, lastRefresh, onRefresh }: X
   );
 }
 
-function SignalBar({ scanning }: { scanning: boolean }) {
-  const [level, setLevel] = useState(4);
-  const [flicker, setFlicker] = useState(scanning);
+function SignalMeter({
+  acquiring,
+  source,
+  lastRefresh,
+}: {
+  acquiring: boolean;
+  source: "api" | "seed";
+  lastRefresh: Date | null;
+}) {
+  const [bars, setBars] = useState(0);
+  const [dbm, setDbm] = useState(-78);
+  const [phase, setPhase] = useState<"search" | "lock" | "hold">("search");
+  const reduceRef = useRef(false);
 
   useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) {
-      setFlicker(false);
-      setLevel(4);
+    reduceRef.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    let timer = 0;
+    const later = (fn: () => void, ms: number) => {
+      timer = window.setTimeout(() => {
+        if (!cancelled) fn();
+      }, ms);
+    };
+
+    if (acquiring) {
+      setPhase("search");
+      if (reduceRef.current) {
+        setBars(1);
+        setDbm(-84);
+        return;
+      }
+      const hunt = () => {
+        setBars(1 + Math.floor(Math.random() * 5));
+        setDbm(-94 + Math.floor(Math.random() * 40));
+        later(hunt, 55 + Math.floor(Math.random() * 95));
+      };
+      hunt();
+      return () => {
+        cancelled = true;
+        window.clearTimeout(timer);
+      };
+    }
+
+    const lockedBars = source === "api" ? 4 : 3;
+    const lockedDb = source === "api" ? -47 - Math.floor(Math.random() * 10) : -61 - Math.floor(Math.random() * 9);
+
+    if (reduceRef.current) {
+      setPhase("hold");
+      setBars(lockedBars);
+      setDbm(lockedDb);
       return;
     }
-    if (scanning) {
-      setFlicker(true);
-      const id = window.setInterval(() => {
-        setLevel(1 + Math.floor(Math.random() * 5));
-      }, 78);
-      return () => window.clearInterval(id);
-    }
-    const lock = window.setTimeout(() => {
-      setFlicker(false);
-      setLevel(4);
-    }, 420);
-    return () => window.clearTimeout(lock);
-  }, [scanning]);
 
-  const cells = [1, 2, 3, 4, 5].map((n) => (n <= level ? "▮" : "▯")).join("");
+    setPhase("lock");
+    setBars(5);
+    setDbm(lockedDb + 4);
+
+    const idle = () => {
+      const roll = Math.random();
+      if (roll < 0.46) {
+        setBars(Math.max(2, lockedBars - 1));
+        setDbm(lockedDb - 6 - Math.floor(Math.random() * 7));
+        later(() => {
+          setBars(lockedBars);
+          setDbm(lockedDb + Math.floor(Math.random() * 3) - 1);
+          later(idle, 640 + Math.floor(Math.random() * 900));
+        }, 80 + Math.floor(Math.random() * 70));
+        return;
+      }
+      if (roll < 0.62 && lockedBars < 5) {
+        setBars(5);
+        setDbm(lockedDb + 3);
+        later(() => {
+          setBars(lockedBars);
+          setDbm(lockedDb);
+          later(idle, 720 + Math.floor(Math.random() * 900));
+        }, 100 + Math.floor(Math.random() * 80));
+        return;
+      }
+      later(idle, 700 + Math.floor(Math.random() * 1100));
+    };
+
+    later(() => {
+      setPhase("hold");
+      setBars(lockedBars);
+      setDbm(lockedDb);
+      later(idle, 800);
+    }, 150);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [acquiring, source]);
+
+  const status = acquiring
+    ? "SEARCH"
+    : phase === "lock"
+      ? "LOCK"
+      : bars <= 2
+        ? "WEAK"
+        : bars >= 5
+          ? "FULL"
+          : "LOCKED";
+  const line = lastRefresh
+    ? `${source === "api" ? "LIVE · X API" : "LIVE SNAPSHOT"} · ${lastRefresh.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · 48h · auto 3 min`
+    : "Waiting first lock · last 48h · auto 3 min";
 
   return (
-    <p
-      className="mt-1.5 font-mono text-[12px] tracking-[0.18em] text-fg/70"
-      role="status"
-      aria-live="polite"
-      aria-label={`Signal ${level} of 5${flicker ? ", locking" : ""}`}
+    <div
+      className={cn(
+        "signal-meter min-w-0 flex-1",
+        acquiring && "signal-meter-search",
+        phase === "lock" && "signal-meter-lock",
+      )}
+      aria-label={acquiring ? "Acquiring intercept" : `Signal ${status.toLowerCase()}, ${Math.max(bars, 0)} of 5`}
     >
-      <span className="text-fg/40">SIGNAL:</span>{" "}
-      <span className={flicker ? "text-fg" : "text-fg/80"}>{cells}</span>
-      <span className="ml-2 font-display text-[10px] tracking-[0.22em] text-fg/40">
-        {flicker ? "LOCKING" : "LOCKED"}
-      </span>
-    </p>
+      <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
+        <p className="font-display text-[11px] tracking-[0.28em] text-fg/45">SIGNAL:</p>
+        <p className="signal-glyphs" aria-hidden="true">
+          {Array.from({ length: 5 }, (_, i) => (
+            <span key={i} className={i < bars ? "is-on" : "is-off"}>
+              {i < bars ? "▮" : "▯"}
+            </span>
+          ))}
+        </p>
+        <p className="signal-status font-display text-[11px] tracking-[0.28em] text-fg/55">{status}</p>
+      </div>
+      <p className="mt-1 font-display text-[10px] tracking-[0.16em] text-fg/40">
+        {acquiring
+          ? `${dbm} dBm · no carrier · sweep`
+          : `${dbm} dBm · ${source === "api" ? "UHF intercept" : "cached snapshot"}`}
+      </p>
+      <p className="mt-1 text-xs text-fg/50">{line}</p>
+    </div>
   );
 }
 

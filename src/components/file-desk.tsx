@@ -3,6 +3,7 @@ import { useRouter } from "@tanstack/react-router";
 import { FilePanel } from "@/components/file-panel";
 import { LinkedCount } from "@/components/linked-count";
 import { StatusFilter, StatusTag } from "@/components/status-tag";
+import { TypeOutTitle } from "@/components/type-out-title";
 import { CASE_STATUS_META, deskFromPath, statusOf, type CaseStatus } from "@/lib/case-status";
 import { relatedCount } from "@/lib/desk-catalog";
 import { type DeskFile } from "@/lib/desk-file";
@@ -16,9 +17,10 @@ type FileDeskProps = {
   files: DeskFile[];
   deskPath: string;
   seedId?: string;
+  scratch?: boolean;
 };
 
-export function FileDesk({ section, title, intro, tag, files, deskPath, seedId }: FileDeskProps) {
+export function FileDesk({ section, title, intro, tag, files, deskPath, seedId, scratch = false }: FileDeskProps) {
   const router = useRouter();
   const desk = deskFromPath(deskPath);
   const [openFile, setOpenFile] = useState<DeskFile | null>(null);
@@ -100,7 +102,9 @@ export function FileDesk({ section, title, intro, tag, files, deskPath, seedId }
                     className="min-w-0 flex-1 text-left"
                   >
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-[17px] text-fg">{file.title}</p>
+                      <p className="text-[17px] text-fg">
+                        <TypeOutTitle id={file.id} text={file.title} />
+                      </p>
                       <StatusTag id={file.id} desk={desk} />
                     </div>
                     <p className="mt-1 text-sm text-fg/50">{file.subtitle}</p>
@@ -121,6 +125,7 @@ export function FileDesk({ section, title, intro, tag, files, deskPath, seedId }
       <FilePanel
         file={openFile}
         pool={files}
+        scratch={scratch}
         focusRelated={focusRelated}
         onClose={close}
         onOpen={(next) => open(next)}

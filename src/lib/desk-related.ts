@@ -3,7 +3,7 @@ const CLUSTERS: string[][] = [
   // Conspiracy
   ["majestic-12", "hangar-18", "dulce", "magenta-1933"],
   ["area-51", "s4-lazar", "egg-g", "hangar-18", "skunk-works-uap"],
-  ["bennewitz", "dulce"],
+  ["bennewitz", "dulce", "men-in-black"],
   ["blue-book", "project-sign", "project-grudge", "estimate-of-situation", "condon-committee", "robertson-panel", "hynek-cufos"],
   ["project-sign", "estimate-of-situation", "project-grudge"],
   ["aatip", "aawsap", "nyt-2017", "ttsa", "elizondo-title", "five-observables", "mellon-drop"],
@@ -23,6 +23,7 @@ const CLUSTERS: string[][] = [
   ["stargate-rv", "montauk"],
   ["adamski", "contactee-giant-rock"],
   ["cia-haines", "fbi-vault", "robertson-panel"],
+  ["men-in-black", "maury-island", "bennewitz", "fbi-vault", "nicap-keyhoe", "hopkins-intruders"],
   ["nj-drones-2024", "chinese-balloon"],
   // Ancient / contact
   ["giza", "sphinx", "bent-pyramid", "osirion", "serapeum", "osiris-shaft", "pyramid-texts-stars"],
@@ -53,7 +54,7 @@ const CLUSTERS: string[][] = [
   ["needles-2008", "moon-dust", "hangar-18"],
   ["holloman-landing", "area-51", "majestic-12"],
   ["kenneth-arnold", "project-sign", "nicap-keyhoe"],
-  ["maury-island", "project-sign", "cia-haines"],
+  ["maury-island", "project-sign", "cia-haines", "men-in-black"],
   ["mantell", "project-sign", "project-grudge", "blue-book"],
   ["foo-fighters", "project-sign"],
   ["ghost-rockets", "project-sign"],

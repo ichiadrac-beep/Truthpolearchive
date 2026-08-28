@@ -1,15 +1,21 @@
-TRUTHPOLE — restore file(4)
-Created 2026-08-27 (landing alien chromatic glitch)
+TRUTHPOLE — The Archive
+Truthpole-Complete 4
+Snapshot 20260828-0151 UTC (28 Aug 2026, 01:51 BST)
 
-This is NOT Complete build. Complete build stays on branch complete-build
-and restores/TRUTHPOLE-restore-20260827-live.zip.
-Earlier restores stay at restore-file-1.zip, restore-file-2.zip, restore-file-3.zip.
+Full restorable copy of the live desk:
+- Truthpole-Complete 3 baseline (Tonight’s file, MIB file, title type-out)
+- Scratch-to-declassify on Archive and Conspiracy case files (3–5 bars, lottery-ticket drag, one-shot)
+- X-Files SIGNAL HUD
+- Rare idle SIGNAL LOST / RESTORED static burst
 
-This package is restores/restore-file-4.zip.
+Zip: restores/Truthpole-Complete-4.zip
+Does not overwrite Complete build, restore file(1), restore file(2), Truthpole-Complete 2, or Truthpole-Complete 3.
 
 Restore:
-  unzip restore-file-4.zip -d truthpole
+  unzip -o Truthpole-Complete-4.zip -d truthpole
   cd truthpole
+  rm -f .node_modules.lock
+  rm -rf node_modules
   npm install
-  npm run build
+  chmod +x startup.sh
   sh startup.sh

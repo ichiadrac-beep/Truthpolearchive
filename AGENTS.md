@@ -17,15 +17,16 @@ its `references/`) **before** you build or polish. Routing the triggers miss:
 DOM / overlay UI **including game chrome** → **`design-ui`**; game / canvas / 3D
 → **`building-games`**, both for a game with UI chrome; **`controls`** before
 any WASD / vehicle / flight movement (inverted A/D is the top ship-blocker);
-the viewer's real data from Google/Microsoft/Notion/etc. (calendar, mail,
-files, docs) → **`app-data`** — mandatory before writing **or refusing** any
-such integration; **`neon`** / **`auth`** only per §0.5.
+the viewer's real Google/Microsoft/Notion/etc. data (calendar, mail, files,
+docs) → **`app-data`** — mandatory before writing **or refusing** such
+integration, and when you think "can't access user data", "needs OAuth",
+"Grok Dashboard instead": it serves viewer connector data via the gate;
+**`neon`** / **`auth`** only per §0.5.
 
 **Only call `imagine_*` tools when they appear in your available tools list** —
-on free-tier Build they are **not** provided, so never invent tool calls.
-Without them ship art with **CSS, SVG, emoji, canvas code-draw or
-geometric/WebGL**: the correct path, not a failure. Gen-assuming skills still
-apply as design guidance.
+never invent tool calls. Without them ship art with **CSS, SVG, emoji, canvas
+code-draw or geometric/WebGL**: the correct path, not a failure. Gen-assuming
+skills still apply as design guidance.
 
 Gen-tool art: **`generate2dsprite`** (sprites), **`generate2dmap`** (maps),
 **`game-asset-core`** + specialists (doctrine/QC) — but **abstract / geometric
@@ -268,7 +269,8 @@ changes. Revive, reboot-wipe and the `startup.sh` worked example:
    path. **No `wait_tasks`, never `get_task_output` on it** — consuming a
    task's output suppresses its completion notification, so the result,
    failure included, would reach nobody; answer without it, one sentence more
-   when it wakes you. Meanwhile it keeps `/workspace/.grok/og-pending` fresh
+   when it wakes you — publish again if they already did, or the live app keeps
+   the placeholder card. Meanwhile it keeps `/workspace/.grok/og-pending` fresh
    (stale after 10 minutes), so a mid-task brand warning is no cue to redo its
    work. Unless your own prompt says you *are* the pass — then make the
    assets.
@@ -278,35 +280,35 @@ changes. Revive, reboot-wipe and the `startup.sh` worked example:
    prints a JSON verdict. Confirm BOTH:
    - the app root has **visible content** (real text/elements on screen) —
      **visually inspect both screenshots in one batched read, every time**
-     (the JSON can't catch white-on-white text, overlap, or broken spacing),
-     and
+     (the JSON can't catch white-on-white text, overlap or broken spacing), and
    - the **browser console has no uncaught errors** (runtime error, failed
      module/asset load, hydration mismatch).
-   If blank or any console error, fix and re-check. Never stop at "HTTP 200".
+   If blank or any console error, fix and re-check.
+   **Anything interactive** (click, type, keys, state) — use the preinstalled
+   **`agent-browser`** CLI, not a hand-written Playwright script; read
+   `.grok/references/browser-qa.md` first.
    **Games with movement:** a still frame is not enough — confirm **A = left /
-   D = right** while moving forward (see `controls` skill self-test). Flip one
-   steer/roll sign if inverted; retest.
+   D = right** while moving forward (`controls` §5c). Flip one steer/roll sign
+   if inverted; retest.
 8. **Verify the PRODUCTION build, not just dev.** Dev (Vite) can render while
    the deployed Vercel build is blank. Once `npm run build` (step 5) succeeds,
    serve the built output with `npm run preview:restart` (loopback
    `127.0.0.1:8081`) and re-run the smoke script with the dev verdict as
-   `--baseline`. Watch specifically for
+   `--baseline`. Watch for
    `Failed to load module script … MIME type "text/html"`.
    **If you edited source after kicking off the build, re-run `npm run build`
-   first, then `npm run preview:restart`** — it frees `:8081` before serving, so
-   you never smoke the previous build's output. A clean, non-diverging JSON is
-   enough — re-read the built screenshots only if it flags a failure or
-   divergence. Mobile (~390×844) is already covered by the combined smoke pass.
+   first, then `npm run preview:restart`** — it frees `:8081` first, so you
+   never smoke the previous build's output. A clean, non-diverging JSON is
+   enough. Mobile (~390×844) is already covered by the combined smoke pass.
 9. Give a brief, **user-facing** summary — what you built and what to try in the
    preview. **Never** "please open localhost and tell me if it works" or "run this
    on your machine."
 
-### Browser QA (agent-driven only; the user is not your QA)
+### Browser QA (the user is not your QA)
 
 You drive the browser yourself, in the sandbox, against
 `http://127.0.0.1:8080`. **Always write QA screenshots under
-`/workspace/screenshots/`, never `/tmp`**. Menu and QA depth:
-`.grok/references/browser-qa.md`.
+`/workspace/screenshots/`, never `/tmp`**. Interactive checks: step 7.
 
 ### Communication rules (avoid confusing the user)
 

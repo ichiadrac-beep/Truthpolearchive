@@ -3,11 +3,13 @@ import { Check, Share2, Square, Volume2, X } from "lucide-react";
 import { useRouter, useRouterState } from "@tanstack/react-router";
 import { Drawer } from "vaul";
 import { GlassButton } from "@/components/glass-button";
-import { ScratchText } from "@/components/scratch-text";
 import { LinkedCount } from "@/components/linked-count";
+import { ScratchText } from "@/components/scratch-text";
 import { StatusTag } from "@/components/status-tag";
+import { TypeOutTitle } from "@/components/type-out-title";
 import { accessNavigate } from "@/lib/access-nav";
 import { deskFromPath } from "@/lib/case-status";
+import { fileHasScratch, isFileDeclassified, markRedactions } from "@/lib/redact";
 import { DESK_META, hrefFor, relatedFromCatalog } from "@/lib/desk-catalog";
 import {
   deskSummary,
@@ -25,19 +27,32 @@ type FilePanelProps = {
   onClose: () => void;
   onOpen?: (file: DeskFile) => void;
   focusRelated?: boolean;
+  /** Redaction bars you scratch to declassify. Archive case files only. */
+  scratch?: boolean;
 };
 
-export function FilePanel({ file, onClose, onOpen, focusRelated = false }: FilePanelProps) {
+export function FilePanel({
+  file,
+  onClose,
+  onOpen,
+  focusRelated = false,
+  scratch = false,
+}: FilePanelProps) {
   const router = useRouter();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const setPanelOpen = useDesk((s) => s.setPanelOpen);
   const open = file !== null;
   const [speaking, setSpeaking] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [ticketDone, setTicketDone] = useState(false);
   const relatedRef = useRef<HTMLElement>(null);
 
   const summary = file ? deskSummary(file.summary || file.lede) : "";
   const record = file ? fullRecord(file) : "";
+  const hasBars = Boolean(
+    scratch && file && fileHasScratch(file.id) && markRedactions(summary, file.id).some((part) => part.type === "redact"),
+  );
+  const ticket = Boolean(hasBars && file && !isFileDeclassified(file.id) && !ticketDone);
   const links = useMemo(() => (file ? linkSources(file.sources) : []), [file]);
   const related = useMemo(() => (file ? relatedFromCatalog(file) : []), [file]);
 
@@ -50,6 +65,7 @@ export function FilePanel({ file, onClose, onOpen, focusRelated = false }: FileP
     window.speechSynthesis?.cancel();
     setSpeaking(false);
     setCopied(false);
+    setTicketDone(false);
     return () => window.speechSynthesis?.cancel();
   }, [file?.id]);
 
@@ -174,14 +190,28 @@ export function FilePanel({ file, onClose, onOpen, focusRelated = false }: FileP
               {summary ? (
                 <section className="pb-5">
                   <h3 className="font-display text-xs font-medium tracking-kicker text-muted">Desk summary</h3>
-                  <p className="mt-1 font-display text-[10px] tracking-[0.22em] text-fg/35">
-                    REDACTED · scratch bars to declassify
-                  </p>
-                  <ScratchText
-                    text={summary}
-                    fileId={`${file?.id ?? "file"}-sum`}
-                    className="mt-2 max-w-prose text-sm leading-normal text-fg/90"
-                  />
+                  {ticket ? (
+                    <>
+                      <p className="mt-1 font-display text-[10px] tracking-[0.22em] text-fg/35">
+                        REDACTED · scratch the bars to declassify
+                      </p>
+                      <ScratchText
+                        text={summary}
+                        fileId={file?.id ?? "file"}
+                        className="mt-2 max-w-prose text-sm leading-normal text-fg/90"
+                        onComplete={() => setTicketDone(true)}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      {scratch && file && (isFileDeclassified(file.id) || ticketDone) ? (
+                        <p className="mt-1 font-display text-[10px] tracking-[0.22em] text-fg/45">
+                          DECLASSIFIED
+                        </p>
+                      ) : null}
+                      <p className="mt-2 max-w-prose text-sm leading-normal text-fg/90">{summary}</p>
+                    </>
+                  )}
                 </section>
               ) : null}
 
@@ -205,12 +235,9 @@ export function FilePanel({ file, onClose, onOpen, focusRelated = false }: FileP
                   ) : null}
                   {record ? (
                     record.split("\n\n").map((para, i) => (
-                      <ScratchText
-                        key={i}
-                        text={para}
-                        fileId={`${file?.id ?? "file"}-rec-${i}`}
-                        className="mt-3 max-w-prose text-sm leading-normal text-fg/90 first:mt-0"
-                      />
+                      <p key={i} className="mt-3 max-w-prose text-sm leading-normal text-fg/90 first:mt-0">
+                        {para}
+                      </p>
                     ))
                   ) : (
                     <p className="text-sm text-fg/50">No further record on this desk.</p>
@@ -252,7 +279,7 @@ export function FilePanel({ file, onClose, onOpen, focusRelated = false }: FileP
                           onClick={() => openRelated(item)}
                         >
                           <span className="block text-sm text-fg underline decoration-fg/35 underline-offset-2">
-                            {item.title}
+                            <TypeOutTitle id={item.id} text={item.title} />
                           </span>
                           <span className="mt-1 flex flex-wrap items-center gap-2">
                             <StatusTag id={item.id} desk={item.desk} />

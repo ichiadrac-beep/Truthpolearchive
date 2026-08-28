@@ -42,7 +42,7 @@ export const Route = createRootRoute({
     styles: [
       {
         children:
-          "html,body{background:#050506;color:#f3f3f1;min-height:100dvh;margin:0;font-family:\"IBM Plex Mono\",\"Share Tech Mono\",\"Courier New\",ui-monospace,monospace;}.landing-cta{display:flex;flex-direction:column;width:100%;gap:0.75rem}.landing-cta a{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;max-width:100%;box-sizing:border-box}",
+          "html,body{background:#050506;color:#f3f3f1;min-height:100dvh;margin:0;font-family:\"IBM Plex Mono\",\"Share Tech Mono\",\"Courier New\",ui-monospace,monospace;}.landing-cta{display:flex;flex-direction:column;width:100%;gap:0.75rem;isolation:isolate;position:relative;z-index:30;opacity:1!important;filter:none!important;transform:none!important;animation:none!important}.landing-cta a,.landing-cta button{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;max-width:100%;box-sizing:border-box;opacity:1;filter:none;animation:none}.landing-tonight{display:flex;flex-direction:column;align-items:center;justify-content:center;isolation:isolate;width:100%;min-height:3.5rem;gap:2px;border:0;border-radius:999px;background:color-mix(in oklab,#f3f3f1 10%,#101012);color:#f3f3f1;box-shadow:inset 0 1px 0 rgba(255,255,255,.42),0 0 0 1px rgba(255,255,255,.28);opacity:1!important;filter:none!important;animation:none!important}.landing-tonight-kicker{font-size:11px;letter-spacing:.22em;color:rgba(243,243,241,.88)}.landing-tonight-title{font-size:15px;font-weight:500;color:#f3f3f1}",
       },
     ],
   }),

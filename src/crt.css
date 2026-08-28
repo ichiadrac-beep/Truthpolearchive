@@ -160,3 +160,68 @@ h1 {
 .phone-stage .landing-glyphs {
   position: absolute;
 }
+
+.signal-drop {
+  position: absolute;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0;
+  background: #050506;
+}
+
+.signal-drop.is-on {
+  opacity: 1;
+}
+
+.signal-drop-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+.signal-drop.is-snow .signal-drop-canvas {
+  opacity: 1;
+}
+
+.signal-drop-copy {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+}
+
+.signal-drop-copy.is-lost {
+  color: var(--color-signal, #c45c5c);
+  text-shadow:
+    1px 0 0 rgba(255, 70, 90, 0.55),
+    -1px 0 0 rgba(80, 220, 180, 0.35);
+}
+
+.signal-drop-copy.is-restored {
+  color: var(--color-fg, #f3f3f1);
+  text-shadow:
+    1px 0 0 rgba(255, 70, 90, 0.18),
+    -1px 0 0 rgba(80, 220, 180, 0.22);
+}
+
+.signal-drop-bars {
+  letter-spacing: 0.12em;
+  font-size: 0.95rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signal-drop {
+    display: none;
+  }
+}

@@ -20,30 +20,45 @@ export const Route = createFileRoute("/_desk/x-files")({
 function XFilesPage() {
   const [posts, setPosts] = useState<XFeedPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hunting, setHunting] = useState(false);
   const [source, setSource] = useState<"api" | "seed">("seed");
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [boardOpen, setBoardOpen] = useState(false);
   const [pending, setPending] = useState<FilingRow[]>([]);
   const timer = useRef<number | null>(null);
+  const busy = useRef(false);
   const formAnchor = useRef<HTMLDivElement>(null);
 
-  const pull = useCallback(async () => {
-    setLoading(true);
+  const pull = useCallback(async (opts?: { hunt?: boolean }) => {
+    if (busy.current) return;
+    busy.current = true;
     try {
+      if (opts?.hunt) {
+        setHunting(true);
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (!reduce) {
+          await new Promise((resolve) => {
+            window.setTimeout(resolve, 520 + Math.floor(Math.random() * 240));
+          });
+        }
+      }
+      setLoading(true);
       const result = await fetchXFeed();
       setPosts(recentXPosts(result.posts));
       setSource(result.source);
       setLastRefresh(new Date());
     } finally {
       setLoading(false);
+      setHunting(false);
+      busy.current = false;
     }
   }, []);
 
   useEffect(() => {
     void pull();
     timer.current = window.setInterval(() => {
-      void pull();
+      void pull({ hunt: true });
     }, X_FEED_REFRESH_MS);
     return () => {
       if (timer.current != null) window.clearInterval(timer.current);
@@ -177,9 +192,10 @@ function XFilesPage() {
       <XLiveBoard
         posts={posts}
         loading={loading}
+        hunting={hunting}
         source={source}
         lastRefresh={lastRefresh}
-        onRefresh={() => void pull()}
+        onRefresh={() => void pull({ hunt: true })}
       />
     </section>
   );

@@ -6,6 +6,7 @@ import { geoMollweide } from "d3-geo-projection";
 import { GlassButton } from "@/components/glass-button";
 import { LinkedCount } from "@/components/linked-count";
 import { StatusFilter, StatusTag } from "@/components/status-tag";
+import { TypeOutTitle } from "@/components/type-out-title";
 import { statusOf, type CaseStatus } from "@/lib/case-status";
 import { relatedCount } from "@/lib/desk-catalog";
 import { archiveToDesk } from "@/lib/desk-file";
@@ -40,8 +41,6 @@ export type ArchiveMapProps = {
 const DEFAULT_ROTATE: [number, number] = [-10, 0];
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 12;
-const MAX_OVERSHOOT = 0.72;
-const MIN_OVERSHOOT = 0.16;
 const GEO_URL = "/geo/countries-110m.json";
 
 type GeoCache = typeof globalThis & {
@@ -286,8 +285,6 @@ export function ArchiveMap({
     let cancelled = false;
     let resize: ResizeObserver | undefined;
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
     const clampPan = () => {
       const v = viewRef.current;
       const limit = (v.targetZoom - 1) * 280;
@@ -498,37 +495,13 @@ export function ArchiveMap({
       setPeek(null);
     };
 
-    const rubberZoom = (requested: number) => {
-      if (requested > MAX_ZOOM) {
-        const extra = requested - MAX_ZOOM;
-        return Math.min(MAX_ZOOM + MAX_OVERSHOOT, MAX_ZOOM + extra / (1 + extra * 1.85));
-      }
-      if (requested < MIN_ZOOM) {
-        const extra = MIN_ZOOM - requested;
-        return Math.max(MIN_ZOOM - MIN_OVERSHOOT, MIN_ZOOM - extra / (1 + extra * 2.4));
-      }
-      return requested;
-    };
-
-    const settleZoom = () => {
-      const v = viewRef.current;
-      if (v.targetZoom > MAX_ZOOM) v.targetZoom = MAX_ZOOM;
-      if (v.targetZoom < MIN_ZOOM) v.targetZoom = MIN_ZOOM;
-      if (v.targetZoom <= 1.02) {
-        v.targetTx = 0;
-        v.targetTy = 0;
-      }
-      clampPan();
-      schedule();
-    };
-
-    const zoomAt = (clientX: number, clientY: number, nextZoom: number, rubber = false) => {
+    const zoomAt = (clientX: number, clientY: number, nextZoom: number) => {
       const v = viewRef.current;
       const rect = canvas.getBoundingClientRect();
       const mx = clientX - rect.left - rect.width / 2;
       const my = clientY - rect.top - rect.height / 2;
-      const z0 = Math.max(0.08, v.targetZoom);
-      const z1 = rubber ? rubberZoom(nextZoom) : Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, nextZoom));
+      const z0 = v.targetZoom;
+      const z1 = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, nextZoom));
       const k = z1 / z0;
       v.targetTx = mx - (mx - v.targetTx) * k;
       v.targetTy = my - (my - v.targetTy) * k;
@@ -635,14 +608,11 @@ export function ArchiveMap({
         const d = touchDist(ev.touches[0], ev.touches[1]);
         const mid = touchMid(ev.touches[0], ev.touches[1]);
         const next = pinchRef.current.zoom * (d / pinchRef.current.dist);
-        zoomAt(mid.x, mid.y, next, !reduceMotion);
+        zoomAt(mid.x, mid.y, next);
       }
     };
     const onTouchEnd = (ev: TouchEvent) => {
-      if (ev.touches.length < 2 && pinchRef.current) {
-        pinchRef.current = null;
-        settleZoom();
-      }
+      if (ev.touches.length < 2) pinchRef.current = null;
     };
     const onGesture = (ev: Event) => ev.preventDefault();
 
@@ -654,7 +624,6 @@ export function ArchiveMap({
     host.addEventListener("touchstart", onTouchStart, { passive: false });
     host.addEventListener("touchmove", onTouchMove, { passive: false });
     host.addEventListener("touchend", onTouchEnd);
-    host.addEventListener("touchcancel", onTouchEnd);
     host.addEventListener("gesturestart", onGesture);
 
     (host as HTMLDivElement & { __redraw?: () => void; __zoomBy?: (d: number) => void; __reset?: () => void }).__redraw =
@@ -685,7 +654,6 @@ export function ArchiveMap({
       host.removeEventListener("touchstart", onTouchStart);
       host.removeEventListener("touchmove", onTouchMove);
       host.removeEventListener("touchend", onTouchEnd);
-      host.removeEventListener("touchcancel", onTouchEnd);
       host.removeEventListener("gesturestart", onGesture);
     };
   }, []);
@@ -962,7 +930,9 @@ function StackCard({
                 className="min-w-0 flex-1 text-left"
                 onClick={() => onOpen(file)}
               >
-                <span className="block font-serif text-[1.15rem] leading-none text-fg">{file.title}</span>
+                <span className="block font-serif text-[1.15rem] leading-none text-fg">
+                  <TypeOutTitle id={file.id} text={file.title} />
+                </span>
                 <span className="mt-1 block text-[12px] text-fg/50">
                   {file.place} · {formatYearLabel(file.year)}
                 </span>
@@ -1009,7 +979,9 @@ function PeekCard({
           <X className="size-4" strokeWidth={1.7} />
         </GlassButton>
       </div>
-      <h2 className="mt-1 font-serif text-[1.65rem] leading-none text-fg">{peek.file.title}</h2>
+      <h2 className="mt-1 font-serif text-[1.65rem] leading-none text-fg">
+        <TypeOutTitle id={peek.file.id} text={peek.file.title} />
+      </h2>
       <p className="mt-2 text-sm leading-snug text-fg/55">
         {peek.file.place} · {formatYearLabel(peek.file.year)}
       </p>

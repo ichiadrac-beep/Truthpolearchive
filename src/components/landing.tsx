@@ -3,7 +3,6 @@ import { useRouter } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { AlienLogo } from "@/components/alien-logo";
 import { GlassButton } from "@/components/glass-button";
-import { HumToggle } from "@/components/hum-toggle";
 import { useClearanceTonight } from "@/hooks/use-clearance";
 import { accessNavigate } from "@/lib/access-nav";
 import { matchClearancePhrase, revealClearanceMemo } from "@/lib/clearance";
@@ -212,7 +211,6 @@ export function Landing() {
   const exitHome = useDesk((s) => s.exitHome);
   const clearExitHome = useDesk((s) => s.clearExitHome);
   const armArchiveSweep = useDesk((s) => s.armArchiveSweep);
-  const [ready, setReady] = useState(false);
   const tonight = useClearanceTonight();
 
   const goDesk = (href: string) => accessNavigate(router.history, href);
@@ -221,60 +219,55 @@ export function Landing() {
     if (exitHome) clearExitHome();
   }, [exitHome, clearExitHome]);
 
-  useEffect(() => {
-    setReady(true);
-  }, []);
-
   return (
     <main className="landing relative z-10 flex min-h-dvh flex-col bg-transparent pointer-events-none">
-      <div className="pointer-events-auto absolute top-[max(0.7rem,env(safe-area-inset-top))] right-4 z-40">
-        <HumToggle />
-      </div>
       <LandingCosmos />
       <div className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col px-6 pt-[max(2.5rem,env(safe-area-inset-top))] pointer-events-none">
-        <div className="stagger-in flex flex-1 flex-col items-center justify-center text-center pointer-events-none">
-          <label className="relative mt-0 block w-full max-w-[18rem] pointer-events-auto">
-            <span className="pointer-events-none block text-center font-display text-[11px] font-medium tracking-[0.42em] text-fg/55">
-              CLASSIFIED DESK
-            </span>
-            <input
-              type="text"
-              name="sky_mark"
-              autoComplete="off"
-              autoCorrect="off"
-              autoCapitalize="characters"
-              spellCheck={false}
-              inputMode="text"
-              enterKeyHint="done"
-              data-lpignore="true"
-              data-1p-ignore="true"
-              data-form-type="other"
-              aria-label="Classified desk"
-              suppressHydrationWarning
-              className="absolute inset-0 w-full border-0 bg-transparent text-center text-[11px] text-transparent caret-transparent outline-none"
-              onChange={(event) => {
-                if (!matchClearancePhrase(event.target.value)) return;
-                event.target.value = "";
-                event.target.blur();
-              }}
-            />
-          </label>
+        <div className="flex flex-1 flex-col items-center justify-center text-center">
+          <div className="stagger-in flex w-full flex-col items-center pointer-events-none">
+            <label className="relative mt-0 block w-full max-w-[18rem] pointer-events-auto">
+              <span className="pointer-events-none block text-center font-display text-[11px] font-medium tracking-[0.42em] text-fg/55">
+                CLASSIFIED DESK
+              </span>
+              <input
+                type="text"
+                name="sky_mark"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="characters"
+                spellCheck={false}
+                inputMode="text"
+                enterKeyHint="done"
+                data-lpignore="true"
+                data-1p-ignore="true"
+                data-form-type="other"
+                aria-label="Classified desk"
+                suppressHydrationWarning
+                className="absolute inset-0 w-full border-0 bg-transparent text-center text-[11px] text-transparent caret-transparent outline-none"
+                onChange={(event) => {
+                  if (!matchClearancePhrase(event.target.value)) return;
+                  event.target.value = "";
+                  event.target.blur();
+                }}
+              />
+            </label>
 
-          <AlienLogo className="mt-6 h-36 w-36" glitchOnTap />
+            <AlienLogo className="mt-6 h-36 w-36" />
 
-          <h1 className="mt-7 font-display text-[1.65rem] font-semibold tracking-[0.34em] text-fg">
-            TRUTHPOLE
-          </h1>
-          <p className="mt-3 font-display text-[11px] font-medium tracking-[0.46em] text-fg/70">
-            · THE ARCHIVE ·
-          </p>
+            <h1 className="mt-7 font-display text-[1.65rem] font-semibold tracking-[0.34em] text-fg">
+              TRUTHPOLE
+            </h1>
+            <p className="mt-3 font-display text-[11px] font-medium tracking-[0.46em] text-fg/70">
+              · THE ARCHIVE ·
+            </p>
 
-          <p className="mt-7 max-w-[34ch] text-[15px] leading-relaxed text-fg/80">
-            Sightings on a world map, conspiracy files, ancient contact, live X-Files, and The Pole.
-            A black record of what the sky keeps returning.
-          </p>
+            <p className="mt-7 max-w-[34ch] text-[15px] leading-relaxed text-fg/80">
+              Sightings on a world map, conspiracy files, ancient contact, live X-Files, and The Pole.
+              A black record of what the sky keeps returning.
+            </p>
+          </div>
 
-          <div className="landing-cta relative z-20 mt-9 w-full max-w-sm pointer-events-auto">
+          <div className="landing-cta relative z-30 mt-9 w-full max-w-sm pointer-events-auto">
             <GlassButton
               variant="primary"
               className="h-12 w-full rounded-full"
@@ -285,47 +278,29 @@ export function Landing() {
             >
               Enter the archive
             </GlassButton>
-            {ready ? (
-              <>
-                {tonight.special ? (
-                  <GlassButton
-                    variant="ghost"
-                    className="h-[3.35rem] w-full flex-col rounded-full"
-                    aria-label={`Tonight’s file: ${tonight.title}`}
-                    onClick={() => revealClearanceMemo(tonight.special!)}
-                  >
-                    <span className="whitespace-nowrap font-display text-[10px] font-medium tracking-[0.28em] text-fg/55">
-                      TONIGHT’S FILE
-                    </span>
-                    <span className="font-serif text-[15px] font-normal text-fg">{tonight.title}</span>
-                  </GlassButton>
-                ) : (
-                  <GlassButton
-                    variant="ghost"
-                    className="h-[3.35rem] w-full flex-col rounded-full"
-                    aria-label={`Tonight’s file: ${tonight.title}`}
-                    onClick={() =>
-                      goDesk(tonight.caseId ? `/archive?file=${encodeURIComponent(tonight.caseId)}` : "/archive")
-                    }
-                  >
-                    <span className="whitespace-nowrap font-display text-[10px] font-medium tracking-[0.28em] text-fg/55">
-                      TONIGHT’S FILE
-                    </span>
-                    <span className="font-serif text-[15px] font-normal text-fg">{tonight.title}</span>
-                  </GlassButton>
-                )}
-                {tonight.anniversary ? (
-                  <p className="mt-2 font-display text-[10px] tracking-[0.28em] text-fg/40">
-                    Anniversary desk.
-                  </p>
-                ) : null}
-              </>
-            ) : (
-              <div className="h-[3.35rem] w-full" aria-hidden="true" />
-            )}
+            <GlassButton
+              variant="ghost"
+              className="landing-tonight h-14 w-full flex-col gap-0.5 rounded-full"
+              aria-label={`Tonight’s file: ${tonight.title}`}
+              onClick={() => {
+                if (tonight.special) {
+                  revealClearanceMemo(tonight.special);
+                  return;
+                }
+                goDesk(tonight.caseId ? `/archive?file=${encodeURIComponent(tonight.caseId)}` : "/archive");
+              }}
+            >
+              <span className="landing-tonight-kicker">TONIGHT’S FILE</span>
+              <span className="landing-tonight-title">{tonight.title}</span>
+            </GlassButton>
+            {tonight.anniversary ? (
+              <p className="mt-2 font-display text-[10px] tracking-[0.28em] text-fg/40">
+                Anniversary desk.
+              </p>
+            ) : null}
           </div>
 
-          <div className="relative z-20 mt-8 flex w-full flex-col items-center gap-2.5 pointer-events-auto">
+          <div className="relative z-30 mt-8 flex w-full flex-col items-center gap-2.5 pointer-events-auto">
             {LANDING_TAB_ROWS.map((row, i) => (
               <div key={i} className="flex flex-wrap justify-center gap-2">
                 {row.map((tab) => (

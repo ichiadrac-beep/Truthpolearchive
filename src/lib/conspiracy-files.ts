@@ -249,6 +249,31 @@ export const CONSPIRACY_FILES: DeskFile[] = [
     year: 1979,
   },
   {
+    id: "men-in-black",
+    title: "Men in Black",
+    kicker: "1947–",
+    subtitle: "Bender, Barker, Keel · the silencing myth",
+    lede: "Dark suits at the door after a sighting. The phrase is folklore; the visits began as a named 1953 shutdown.",
+    summary:
+      "Men in Black, in ufology, are the dark-suited visitors who arrive after a sighting to warn, confiscate, or unmake the witness. The American file has three layers that later culture flattened into one joke. First, a 1947 precursor at Maury Island, where Harold Dahl said a man in black told him to keep quiet. Second, the 1953 Bender case: Albert K. Bender closed the International Flying Saucer Bureau in Bridgeport after he said three men in black suits had called. Third, the mythology Gray Barker and John Keel built from those reports — vintage cars, pale skin, off-key speech — which Hollywood later turned into a franchise. Real agencies did visit civilian saucer clubs. That fact is not the same as a non-human silencer.",
+    body: "Bender founded the IFSB in 1952 and published Space Review. In late 1953 he shut the bureau and told members he could say no more. Gray Barker’s They Knew Too Much About Flying Saucers (1956) made the three men a movement story: government, or something wearing government. Bender’s own Flying Saucers and the Three Men (1962) went occult — ‘Kazik,’ Antarctic bases, an astral warning — which split the file between intimidation and a nervous breakdown dressed as contact. Keel, in the 1960s–70s, argued the visitors were not Air Force OSI but ultraterrestrial operators using the costume of mid-century authority. AFOSI’s later handling of Paul Bennewitz is the documented earthly analogue: a civilian fed a story until he broke. FBI and CIA files on NICAP, contactees, and saucer clubs prove the ordinary suit did knock. They do not prove the knock was always human, and they do not prove it was not.",
+    evidence:
+      "Confirmed: IFSB and Space Review; Bender’s 1953 shutdown; Barker 1956 and Bender 1962 as published books; FBI Vault holdings on UFO groups; Maury Island as a 1947 claim in the early literature; AFOSI interest in Bennewitz. Unconfirmed: a recovered visitor, a standing MIB unit, Kazik, and any case in which a named special-access officer has been matched to a classic ‘three men’ call. The 1997 film is entertainment, not a source.",
+    sources: [
+      "Albert K. Bender, Flying Saucers and the Three Men (1962)",
+      "Gray Barker, They Knew Too Much About Flying Saucers (1956)",
+      "John A. Keel, UFOs: Operation Trojan Horse (1970); The Mothman Prophecies (1975)",
+      "IFSB Space Review, Bridgeport, 1952–1953",
+      "FBI Vault, UFO subject files https://vault.fbi.gov/UFO",
+      "Greg Bishop, Project Beta (2005) — AFOSI / Bennewitz as a documented silencing",
+    ],
+    lat: 41.179,
+    lng: -73.189,
+    place: "Bridgeport, Connecticut",
+    country: "USA",
+    year: 1953,
+  },
+  {
     id: "immaculate-constellation",
     title: "Immaculate Constellation",
     kicker: "2024",

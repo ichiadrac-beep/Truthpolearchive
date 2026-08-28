@@ -25,6 +25,7 @@ function ConspiracyPage() {
       files={CONSPIRACY_FILES}
       deskPath="/conspiracy"
       seedId={file}
+      scratch
     />
   );
 }

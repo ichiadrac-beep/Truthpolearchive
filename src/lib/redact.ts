@@ -27,6 +27,8 @@ const PHRASES = [
 const HOT =
   /^(classified|radar|craft|uap|ufo|witness|object|program|facility|hangar|saucer|triangle|retrieval|biological|metamaterial|transmedium|orb|disk|capsule|wreckage|airman|pilot|sensor|infrared|radar|flir|gimbal|nimitz|roswell|lazar|grusch|aawsap|aatip|osap|nids|baass|nonhuman|extraterrestrial|occupant|being|entity|craft|vehicle)$/i;
 
+const STORE = "truthpole-scratch";
+
 function hash(input: string) {
   let h = 2166136261;
   for (let i = 0; i < input.length; i += 1) {
@@ -44,6 +46,11 @@ function rng(seed: number) {
 }
 
 export type RedactPart = { type: "text" | "redact"; value: string };
+
+/** Every case file on a scratch desk gets a ticket. Which words are random. */
+export function fileHasScratch(fileId: string) {
+  return Boolean(fileId);
+}
 
 export function markRedactions(text: string, seedKey: string): RedactPart[] {
   if (!text) return [];
@@ -67,7 +74,7 @@ export function markRedactions(text: string, seedKey: string): RedactPart[] {
     while (from < lower.length) {
       const at = lower.indexOf(phrase, from);
       if (at < 0) break;
-      if (rand() < 0.82) tryAdd(at, at + phrase.length);
+      if (rand() < 0.9) tryAdd(at, at + phrase.length);
       from = at + phrase.length;
     }
   }
@@ -85,12 +92,15 @@ export function markRedactions(text: string, seedKey: string): RedactPart[] {
   }
 
   candidates.sort((a, b) => b.score - a.score || a.start - b.start);
-  const budget = Math.max(2, Math.min(7, Math.round(text.split(/\s+/).length / 22)));
+  const want = 3 + Math.floor(rand() * 3);
   for (const c of candidates) {
-    if (spans.length >= budget) break;
-    if (rand() > 0.72 && c.score < 2) continue;
+    if (spans.length >= want) break;
+    if (rand() > 0.78 && c.score < 2) continue;
     tryAdd(c.start, c.end);
   }
+
+  if (spans.length > 5) spans.length = 5;
+  if (spans.length < 3) return [{ type: "text", value: text }];
 
   spans.sort((a, b) => a.start - b.start);
   const parts: RedactPart[] = [];
@@ -101,5 +111,49 @@ export function markRedactions(text: string, seedKey: string): RedactPart[] {
     cursor = s.end;
   }
   if (cursor < text.length) parts.push({ type: "text", value: text.slice(cursor) });
-  return parts.length ? parts : [{ type: "text", value: text }];
+  return parts;
+}
+
+function readOpened() {
+  try {
+    const raw = sessionStorage.getItem(STORE);
+    if (!raw) return {} as Record<string, string[]>;
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object") return {};
+    return parsed as Record<string, string[]>;
+  } catch {
+    return {};
+  }
+}
+
+function writeOpened(map: Record<string, string[]>) {
+  try {
+    sessionStorage.setItem(STORE, JSON.stringify(map));
+  } catch {
+    /* private mode */
+  }
+}
+
+export function isWordOpened(fileId: string, wordKey: string) {
+  return (readOpened()[fileId] ?? []).includes(wordKey);
+}
+
+export function markWordOpened(fileId: string, wordKey: string) {
+  const map = readOpened();
+  const list = map[fileId] ?? [];
+  if (list.includes(wordKey)) return;
+  map[fileId] = [...list, wordKey];
+  writeOpened(map);
+}
+
+export function isFileDeclassified(fileId: string) {
+  return (readOpened()[fileId] ?? []).includes("*");
+}
+
+export function markFileDeclassified(fileId: string) {
+  const map = readOpened();
+  const list = map[fileId] ?? [];
+  if (list.includes("*")) return;
+  map[fileId] = [...list, "*"];
+  writeOpened(map);
 }

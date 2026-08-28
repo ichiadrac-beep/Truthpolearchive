@@ -93,6 +93,7 @@ function ArchivePage() {
       <FilePanel
         file={file ? archiveToDesk(file) : null}
         pool={pool}
+        scratch
         focusRelated={focusRelated}
         onClose={() => {
           setFile(null);
