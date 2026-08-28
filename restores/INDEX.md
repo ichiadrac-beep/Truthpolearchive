@@ -9,7 +9,8 @@ Ordered backups. **Never overwrite** an existing restore file; always add the ne
 | 2 | **restore file(2)** | [`restore-file-2.zip`](./restore-file-2.zip) · [`RESTORE-FILE-2.md`](./RESTORE-FILE-2.md) — linked counts, status tags, ticking count, desk decrypt |
 | 3 | **Truthpole-Complete 2** | [`Truthpole-Complete-2.zip`](./Truthpole-Complete-2.zip) · [`TRUTHPOLE-COMPLETE-2.md`](./TRUTHPOLE-COMPLETE-2.md) — full desk, Tonight’s file first-paint |
 | 4 | **Truthpole-Complete 3** | [`Truthpole-Complete-3.zip`](./Truthpole-Complete-3.zip) · [`TRUTHPOLE-COMPLETE-3.md`](./TRUTHPOLE-COMPLETE-3.md) — Complete 2 + archive scratch + Men in Black + title type-out |
-| 5 | **Truthpole-Complete 4** | [`Truthpole-Complete-4.zip`](./Truthpole-Complete-4.zip) · [`TRUTHPOLE-COMPLETE-4.md`](./TRUTHPOLE-COMPLETE-4.md) — Complete 3 + lottery-ticket scratch on Archive & Conspiracy + SIGNAL HUD + rare SIGNAL LOST burst |
+| 5 | **Truthpole-Complete 4** | [`Truthpole-Complete-4.zip`](./Truthpole-Complete-4.zip) · [`TRUTHPOLE-COMPLETE-4.md`](./TRUTHPOLE-COMPLETE-4.md) — Complete 3 + lottery-ticket scratch + SIGNAL HUD + SIGNAL LOST burst |
+| 6 | **Truthpole-Complete 5** | [`Truthpole-Complete-5.zip`](./Truthpole-Complete-5.zip) · [`TRUTHPOLE-COMPLETE-5.md`](./TRUTHPOLE-COMPLETE-5.md) — Complete 4 + instant desk hops + rare 4,281,006-document tally flicker |
 
 ## Download
 
@@ -20,3 +21,4 @@ Ordered backups. **Never overwrite** an existing restore file; always add the ne
 - Truthpole-Complete 2: https://github.com/ichiadrac-beep/Truthpolearchive/raw/main/restores/Truthpole-Complete-2.zip
 - Truthpole-Complete 3: https://github.com/ichiadrac-beep/Truthpolearchive/raw/main/restores/Truthpole-Complete-3.zip
 - Truthpole-Complete 4: https://github.com/ichiadrac-beep/Truthpolearchive/raw/main/restores/Truthpole-Complete-4.zip
+- Truthpole-Complete 5: https://github.com/ichiadrac-beep/Truthpolearchive/raw/main/restores/Truthpole-Complete-5.zip

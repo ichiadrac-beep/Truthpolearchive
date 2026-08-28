@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "@tanstack/react-router";
+import { ArchiveTally } from "@/components/archive-tally";
 import { FilePanel } from "@/components/file-panel";
 import { LinkedCount } from "@/components/linked-count";
 import { StatusFilter, StatusTag } from "@/components/status-tag";
@@ -74,7 +75,7 @@ export function FileDesk({ section, title, intro, tag, files, deskPath, seedId, 
         <p className="font-display text-[11px] font-medium tracking-[0.38em] text-fg/45">{section}</p>
         <h1 className="mt-3 font-serif text-[2.35rem] leading-none text-fg">{title}</h1>
         <p className="mt-4 max-w-prose text-[15px] leading-relaxed text-fg/75">{intro}</p>
-        <p className="mt-4 text-sm text-fg/45">{visible.length} files</p>
+        <ArchiveTally count={visible.length} label="files" className="mt-4 text-sm text-fg/45" />
         <StatusFilter value={statusFilter} onChange={setStatusFilter} className="mt-3" />
 
         <label className="sr-only" htmlFor="desk-search">

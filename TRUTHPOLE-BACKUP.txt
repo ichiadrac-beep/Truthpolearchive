@@ -1,18 +1,18 @@
 TRUTHPOLE — The Archive
-Truthpole-Complete 4
-Snapshot 20260828-0151 UTC (28 Aug 2026, 01:51 BST)
+Truthpole-Complete 5
+Snapshot 20260828-0216 UTC (28 Aug 2026, 02:16 BST)
 
 Full restorable copy of the live desk:
-- Truthpole-Complete 3 baseline (Tonight’s file, MIB file, title type-out)
-- Scratch-to-declassify on Archive and Conspiracy case files (3–5 bars, lottery-ticket drag, one-shot)
-- X-Files SIGNAL HUD
-- Rare idle SIGNAL LOST / RESTORED static burst
+- Truthpole-Complete 4 baseline
+- Instant in-desk navigation
+- Rare ANALYZING… 1 OF 4,281,006 DOCUMENTS tally flicker
+- Lottery-ticket scratch, SIGNAL HUD, SIGNAL LOST burst, MIB file, title type-out
 
-Zip: restores/Truthpole-Complete-4.zip
-Does not overwrite Complete build, restore file(1), restore file(2), Truthpole-Complete 2, or Truthpole-Complete 3.
+Zip: restores/Truthpole-Complete-5.zip
+Does not overwrite Complete build, restore file(1), restore file(2), Truthpole-Complete 2, 3, or 4.
 
 Restore:
-  unzip -o Truthpole-Complete-4.zip -d truthpole
+  unzip -o Truthpole-Complete-5.zip -d truthpole
   cd truthpole
   rm -f .node_modules.lock
   rm -rf node_modules

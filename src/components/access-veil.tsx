@@ -17,13 +17,10 @@ export function AccessVeil() {
       return;
     }
     setLeaving(false);
-    const nav = window.setTimeout(() => {
-      router.history.push(veil.href);
-    }, 240);
-    const fade = window.setTimeout(() => setLeaving(true), ACCESS_MS - 140);
+    router.history.push(veil.href);
+    const fade = window.setTimeout(() => setLeaving(true), ACCESS_MS - 120);
     const done = window.setTimeout(() => clearAccess(), ACCESS_MS + 40);
     return () => {
-      window.clearTimeout(nav);
       window.clearTimeout(fade);
       window.clearTimeout(done);
     };

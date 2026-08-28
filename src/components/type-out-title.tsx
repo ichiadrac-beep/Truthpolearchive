@@ -153,13 +153,19 @@ export function TypeOutTitle({ id, text, className }: TypeOutTitleProps) {
       className={cn("type-out-title", done && "type-out-title-done", className)}
       aria-label={text}
     >
-      <span className="type-out-sizer" aria-hidden="true">
-        {text}
-      </span>
-      <span className="type-out-live" aria-hidden="true">
-        {shown}
-        {shown.length > 0 && !done ? <span className="type-out-caret" /> : null}
-      </span>
+      {done ? (
+        text
+      ) : (
+        <>
+          <span className="type-out-sizer" aria-hidden="true">
+            {text}
+          </span>
+          <span className="type-out-live" aria-hidden="true">
+            {shown}
+            {shown.length > 0 ? <span className="type-out-caret" /> : null}
+          </span>
+        </>
+      )}
     </span>
   );
 }

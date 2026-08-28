@@ -10,15 +10,16 @@ type DecryptTextProps = {
 };
 
 export function DecryptText({ text, duration = ACCESS_MS, className, onDone }: DecryptTextProps) {
-  const [out, setOut] = useState(text);
   const [done, setDone] = useState(false);
+  const liveRef = useRef<HTMLSpanElement>(null);
   const onDoneRef = useRef(onDone);
   onDoneRef.current = onDone;
 
   useEffect(() => {
+    const node = liveRef.current;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce || text.length === 0) {
-      setOut(text);
+    if (!node || reduce || text.length === 0) {
+      if (node) node.textContent = text;
       setDone(true);
       onDoneRef.current?.();
       return;
@@ -32,20 +33,15 @@ export function DecryptText({ text, duration = ACCESS_MS, className, onDone }: D
       let next = "";
       for (let i = 0; i < text.length; i += 1) {
         const ch = text[i] ?? "";
-        if (ch === " " || ch === "…" || ch === "." || ch === "·") {
-          next += ch;
-        } else if (i < lock) {
-          next += ch;
-        } else {
-          next += scrambleGlyph();
-        }
+        if (ch === " " || ch === "…" || ch === "." || ch === "·" || i < lock) next += ch;
+        else next += scrambleGlyph();
       }
-      setOut(next);
+      node.textContent = next;
       if (t < 1) {
         raf = requestAnimationFrame(tick);
         return;
       }
-      setOut(text);
+      node.textContent = text;
       setDone(true);
       onDoneRef.current?.();
     };
@@ -55,7 +51,7 @@ export function DecryptText({ text, duration = ACCESS_MS, className, onDone }: D
 
   return (
     <span className={cn("decrypt-line", done && "decrypt-line-done", className)} aria-label={text}>
-      {out}
+      <span ref={liveRef}>{text}</span>
     </span>
   );
 }

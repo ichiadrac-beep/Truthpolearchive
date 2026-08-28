@@ -472,11 +472,37 @@ export function StarField({ paused, allowDuel = false }: { paused: boolean; allo
       canvas.style.width = `${w}px`;
       canvas.style.height = `${h}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      stars = seedStars(w, h, w < 500 ? 240 : 380);
+      stars = seedStars(w, h, w < 500 ? 120 : 200);
     };
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
+
+    const starLayer = document.createElement("canvas");
+    const starCtx = starLayer.getContext("2d");
+    let starGen = 0;
+    let waiting = false;
+
+    const paintStars = () => {
+      if (!starCtx) return;
+      starLayer.width = canvas.width;
+      starLayer.height = canvas.height;
+      starCtx.setTransform(dprFor(), 0, 0, dprFor(), 0, 0);
+      starCtx.clearRect(0, 0, w, h);
+      for (const star of stars) {
+        const a = star.base * (0.55 + 0.45 * (0.5 + 0.5 * Math.sin(star.tw)));
+        starCtx.fillStyle = `hsla(${star.hue}, ${a})`;
+        if (star.r < 1) {
+          starCtx.fillRect(star.x, star.y, 1.2, 1.2);
+        } else {
+          starCtx.beginPath();
+          starCtx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
+          starCtx.fill();
+        }
+      }
+    };
+
+    const dprFor = () => Math.min(1.5, window.devicePixelRatio || 1);
 
     const spawnCraft = () => {
       const kind =
@@ -595,30 +621,33 @@ export function StarField({ paused, allowDuel = false }: { paused: boolean; allo
     };
 
     const draw = (now: number) => {
+      if (document.hidden || pausedRef.current || reduce) {
+        waiting = true;
+        ctx.clearRect(0, 0, w, h);
+        if (starLayer.width) ctx.drawImage(starLayer, 0, 0, w, h);
+        raf = requestAnimationFrame(draw);
+        return;
+      }
+      waiting = false;
       ctx.clearRect(0, 0, w, h);
-      const freeze = pausedRef.current || reduce;
-      const dt = freeze ? 0 : Math.min(48, now - lastT);
+      const dt = Math.min(48, now - lastT);
       lastT = now;
       const step = dt / 16.67;
 
-      for (const star of stars) {
-        if (!freeze) star.tw += star.spd * Math.max(step, 0);
-        const a = star.base * (0.55 + 0.45 * (0.5 + 0.5 * Math.sin(star.tw)));
-        ctx.beginPath();
-        ctx.fillStyle = `hsla(${star.hue}, ${a})`;
-        ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
-        ctx.fill();
+      starGen += 1;
+      if (starGen % 3 === 1) {
+        for (const star of stars) star.tw += star.spd * Math.max(step * 3, 0);
+        paintStars();
+      }
+      if (starLayer.width) ctx.drawImage(starLayer, 0, 0, w, h);
+
+      craftWait -= dt;
+      if (craftWait <= 0 && crafts.length < 2) {
+        spawnCraft();
+        craftWait = crafts.length === 1 ? 4500 + Math.random() * 5500 : 11000 + Math.random() * 5000;
       }
 
-      if (!freeze) {
-        craftWait -= dt;
-        if (craftWait <= 0 && crafts.length < 2) {
-          spawnCraft();
-          craftWait = crafts.length === 1 ? 4500 + Math.random() * 5500 : 11000 + Math.random() * 5000;
-        }
-      }
-
-      if (!freeze && duelRef.current && !reduce && crafts.length >= 2) {
+      if (duelRef.current && crafts.length >= 2) {
         for (let i = 0; i < crafts.length; i++) {
           for (let j = i + 1; j < crafts.length; j++) {
             const a = crafts[i]!;
@@ -646,7 +675,7 @@ export function StarField({ paused, allowDuel = false }: { paused: boolean; allo
         }
       }
 
-      if (!freeze) {
+      if (duels.length) {
         for (let d = duels.length - 1; d >= 0; d--) {
           const duel = duels[d]!;
           duel.t += dt;
@@ -686,25 +715,23 @@ export function StarField({ paused, allowDuel = false }: { paused: boolean; allo
 
       for (let i = crafts.length - 1; i >= 0; i--) {
         const c = crafts[i];
-        if (!freeze) {
-          if (!c.locked) {
-            c.turn += (Math.random() - 0.5) * 0.00018 * step - c.turn * 0.04 * step;
-            c.heading += c.turn * step;
-          }
-          c.vx = Math.cos(c.heading) * c.speed;
-          c.vy = Math.sin(c.heading) * c.speed;
-          c.x += c.vx * step;
-          c.y += c.vy * step;
-          c.life += step;
-          if (c.kind === "triangle" || c.kind === "chevron" || c.kind === "boomerang") {
-            c.rot = c.heading + Math.PI / 2;
-          } else if (c.kind === "cigar" || c.kind === "tic" || c.kind === "rectangle") {
-            c.rot = c.heading;
-          } else if (c.kind === "disk" || c.kind === "dome") {
-            c.rot = 0;
-          } else {
-            c.rot += c.spin * step;
-          }
+        if (!c.locked) {
+          c.turn += (Math.random() - 0.5) * 0.00018 * step - c.turn * 0.04 * step;
+          c.heading += c.turn * step;
+        }
+        c.vx = Math.cos(c.heading) * c.speed;
+        c.vy = Math.sin(c.heading) * c.speed;
+        c.x += c.vx * step;
+        c.y += c.vy * step;
+        c.life += step;
+        if (c.kind === "triangle" || c.kind === "chevron" || c.kind === "boomerang") {
+          c.rot = c.heading + Math.PI / 2;
+        } else if (c.kind === "cigar" || c.kind === "tic" || c.kind === "rectangle") {
+          c.rot = c.heading;
+        } else if (c.kind === "disk" || c.kind === "dome") {
+          c.rot = 0;
+        } else {
+          c.rot += c.spin * step;
         }
         const fade = Math.min(1, c.life / 36, (c.max - c.life) / 64);
         drawCraft(ctx, c, fade);
@@ -715,8 +742,8 @@ export function StarField({ paused, allowDuel = false }: { paused: boolean; allo
 
       for (let i = bursts.length - 1; i >= 0; i--) {
         const b = bursts[i]!;
-        if (!freeze) b.life += step;
-        drawBurst(ctx, b, freeze ? 0 : step);
+        b.life += step;
+        drawBurst(ctx, b, step);
         if (b.life > b.max) bursts.splice(i, 1);
       }
 

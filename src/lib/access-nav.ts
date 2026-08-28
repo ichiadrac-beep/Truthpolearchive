@@ -25,7 +25,10 @@ export function accessNavigate(history: HistoryLike, href: string) {
   }
   const reduce =
     typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduce) {
+  const granted = useDesk.getState().accessGranted;
+  const alreadyInside = typeof window !== "undefined" && window.location.pathname !== "/";
+  // First entry from landing still decrypts. Desk-to-desk hops stay instant.
+  if (reduce || (granted && alreadyInside)) {
     history.push(href);
     return;
   }

@@ -3,6 +3,7 @@ import { Minus, Plus, RotateCcw, Pause, Play, X } from "lucide-react";
 import * as Slider from "@radix-ui/react-slider";
 import { geoGraticule10, geoPath } from "d3-geo";
 import { geoMollweide } from "d3-geo-projection";
+import { ArchiveTally } from "@/components/archive-tally";
 import { GlassButton } from "@/components/glass-button";
 import { LinkedCount } from "@/components/linked-count";
 import { StatusFilter, StatusTag } from "@/components/status-tag";
@@ -197,6 +198,7 @@ export function ArchiveMap({
   const holdStartRef = useRef({ x: 0, y: 0 });
   const peekingRef = useRef(false);
   const animRef = useRef(0);
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const markedReady = useRef(false);
   const pinKeyRef = useRef("");
   /** Once a pin appears this pass, keep it until the playhead restarts. */
@@ -294,8 +296,9 @@ export function ArchiveMap({
 
     const draw = () => {
       const geo = geoRef.current;
-      const ctx = canvas.getContext("2d", { alpha: false });
+      const ctx = ctxRef.current ?? canvas.getContext("2d", { alpha: false });
       if (!ctx || cancelled) return;
+      ctxRef.current = ctx;
       const w = host.clientWidth;
       const h = host.clientHeight;
       if (w < 40 || h < 80) {
@@ -831,9 +834,12 @@ export function ArchiveMap({
           <StatusFilter value={statusFilter} onChange={setStatusFilter} className="mt-2" />
           <div className="mt-1 flex items-end justify-between gap-3">
             <p className="font-serif text-[2rem] leading-none text-fg">{formatYearLabel(year)}</p>
-            <p className="pb-1 text-sm tabular-nums text-fg/45">
-              {count} {countLabel}
-            </p>
+            <ArchiveTally
+              count={count}
+              label={countLabel}
+              hold={playing}
+              className="pb-1 text-right text-sm tabular-nums text-fg/45"
+            />
           </div>
           <div className="mt-3 flex items-center gap-3">
             <GlassButton

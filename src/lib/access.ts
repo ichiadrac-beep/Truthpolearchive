@@ -7,7 +7,7 @@ export type AccessVeil = {
   nonce: number;
 };
 
-export const ACCESS_MS = 760;
+export const ACCESS_MS = 520;
 
 const GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$*<>/|";
 
