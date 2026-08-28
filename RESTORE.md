@@ -14,30 +14,28 @@ Archive ↔ Conspiracy ↔ Ancient Related cross-links.
 ## restore file(2)
 
 Linked counts, case status tags, ticking archive count, desk-only decrypt.  
-**Zip:** [`restores/restore-file-2.zip`](restores/restore-file-2.zip)
+Does **not** replace Complete build or restore file(1).
 
-## restore file(3)
+**Zip:** [`restores/restore-file-2.zip`](restores/restore-file-2.zip)  
+**Docs:** [restores/RESTORE-FILE-2.md](restores/RESTORE-FILE-2.md) · [restores/INDEX.md](restores/INDEX.md)
 
-X-Files signal bar, map zoom bounce, sky hum, scratch-to-declassify.  
-**Zip:** [`restores/restore-file-3.zip`](restores/restore-file-3.zip)
+## Truthpole-Complete 2
 
-## restore file(4)
-
-Landing alien chromatic-aberration glitch on tap.  
-**Zip:** [`restores/restore-file-4.zip`](restores/restore-file-4.zip)
-
-## Truthpole-Complete 2 (current complete snapshot — 27 Aug 2026)
-
-Full restorable copy of the live desk: restore file(2) + Tonight’s file first-paint (Cussac).  
-Does **not** replace Complete build or restore files 1–4.
-
+Full desk snapshot, 27 Aug 2026.  
 **Zip:** [`restores/Truthpole-Complete-2.zip`](restores/Truthpole-Complete-2.zip)  
-**Docs:** [restores/TRUTHPOLE-COMPLETE-2.md](restores/TRUTHPOLE-COMPLETE-2.md) · [restores/INDEX.md](restores/INDEX.md)
+**Docs:** [restores/TRUTHPOLE-COMPLETE-2.md](restores/TRUTHPOLE-COMPLETE-2.md)
+
+## Truthpole-Complete 3 (current — 28 Aug 2026)
+
+Full restorable desk: Complete 2 + archive scratch-to-declassify + Men in Black file + one-shot title type-out.
+
+**Zip:** [`restores/Truthpole-Complete-3.zip`](restores/Truthpole-Complete-3.zip)  
+**Docs:** [restores/TRUTHPOLE-COMPLETE-3.md](restores/TRUTHPOLE-COMPLETE-3.md) · [restores/INDEX.md](restores/INDEX.md)
 
 ```bash
-curl -L -o Truthpole-Complete-2.zip \
-  https://github.com/ichiadrac-beep/Truthpolearchive/raw/main/restores/Truthpole-Complete-2.zip
-unzip -o Truthpole-Complete-2.zip -d truthpole
+curl -L -o Truthpole-Complete-3.zip \
+  https://github.com/ichiadrac-beep/Truthpolearchive/raw/main/restores/Truthpole-Complete-3.zip
+unzip -o Truthpole-Complete-3.zip -d truthpole
 cd truthpole
 rm -f .node_modules.lock
 rm -rf node_modules
@@ -53,9 +51,8 @@ sh startup.sh
 | Complete build | pinned branch + `TRUTHPOLE-restore-20260827-live.zip` |
 | restore file(1) | `restores/restore-file-1.zip` |
 | restore file(2) | `restores/restore-file-2.zip` |
-| restore file(3) | `restores/restore-file-3.zip` |
-| restore file(4) | `restores/restore-file-4.zip` |
 | Truthpole-Complete 2 | `restores/Truthpole-Complete-2.zip` |
-| restore file(5) | `restores/restore-file-5.zip` (next numbered restore only) |
+| Truthpole-Complete 3 | `restores/Truthpole-Complete-3.zip` |
+| restore file(3) | `restores/restore-file-3.zip` (next incremental backup only) |
 
 Never replace older restore zips.
