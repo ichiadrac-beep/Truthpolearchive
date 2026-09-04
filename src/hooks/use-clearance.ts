@@ -1,23 +1,18 @@
 import { useEffect, useState } from "react";
-import { subscribeClearance } from "@/lib/clearance";
-import { anniversaryFor, pickTonightFile, type TonightPick } from "@/lib/tonight";
+import { pickTonightFile, subscribeDayChange, type TonightPick } from "@/lib/tonight";
 
 function sameTonight(a: TonightPick, b: TonightPick) {
   return (
     a.title === b.title &&
     a.caseId === b.caseId &&
-    a.special === b.special &&
-    a.anniversary === b.anniversary
+    a.anniversary === b.anniversary &&
+    a.href === b.href
   );
 }
 
-/** First paint only — Date, no sessionStorage, so SSR and the client match. */
+/** First paint uses the same daily picker as the client, so SSR and hydrate match. */
 function firstPaintTonight(): TonightPick {
-  const match = anniversaryFor();
-  if (match) {
-    return { title: match.title, anniversary: true, special: null, caseId: match.id };
-  }
-  return { title: "Cussac", anniversary: false, special: null, caseId: "cussac" };
+  return pickTonightFile();
 }
 
 export function useClearanceTonight(): TonightPick {
@@ -28,7 +23,7 @@ export function useClearanceTonight(): TonightPick {
       setTonight((prev) => (sameTonight(prev, next) ? prev : next));
     };
     sync();
-    return subscribeClearance(sync);
+    return subscribeDayChange(sync);
   }, []);
   return tonight;
 }

@@ -94,7 +94,7 @@ export const authConfigured =
 const explicitBaseURL = env("BETTER_AUTH_URL");
 // Explicit `string[]` (not a readonly tuple) — Better Auth's DynamicBaseURLConfig
 // requires a mutable `allowedHosts: string[]`.
-const previewAllowedHosts: string[] = [...PREVIEW_ALLOWED_HOSTS, "*.grok.me"];
+const previewAllowedHosts: string[] = [...PREVIEW_ALLOWED_HOSTS];
 // Local `npm run dev` (port 8080 contract). Browsers may send Origin as any of
 // these for the same server — trusting only `localhost` rejects `127.0.0.1` and
 // breaks email/password with "Invalid origin".
@@ -116,7 +116,7 @@ const baseURL = explicitBaseURL ?? {
 // Origins Better Auth accepts on credentialed POSTs (sign-up/sign-in, etc.).
 // Missing entries here surface as FORBIDDEN "Invalid origin".
 const trustedOrigins: string[] = explicitBaseURL
-  ? [explicitBaseURL, "https://*.grok.me", ...LOCAL_DEV_ORIGINS]
+  ? [explicitBaseURL, ...LOCAL_DEV_ORIGINS]
   : [
       // Host wildcards (matched against Origin's host)
       ...previewAllowedHosts,
@@ -162,10 +162,12 @@ const grokOAuthPlugin = authConfigured
         tokenUrl: grokTokenUrl,
         userInfoUrl: grokUserInfoUrl,
         scopes: ["openid", "profile", "email"],
-        pkce: true,
-        // X rejects unknown authorize params such as prompt=login when they leak
-        // upstream. Google still gets the account picker via the broker.
-        authorizationUrlParams: (idp === "twitter" ? { idp } : { idp, prompt: "login" }) as Record<string, string>,
+        // `prompt: "login"` forces the broker to re-authenticate against the
+        // upstream on every sign-in instead of silently reusing an existing
+        // broker session. Combined with the broker sending Google
+        // `prompt=select_account`, the user always gets the account chooser
+        // and can pick (or switch) which account to sign in with.
+        authorizationUrlParams: { idp, prompt: "login" },
       })),
     })
   : null;

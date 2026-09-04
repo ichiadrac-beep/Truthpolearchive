@@ -41,7 +41,10 @@ function pgliteBootstrapPlugin(): Plugin {
           ensureDbReady?: () => Promise<void>;
         };
         if (typeof mod.ensureDbReady === "function") {
-          await mod.ensureDbReady();
+          // Do not block first paint on WASM Postgres.
+          void mod.ensureDbReady().catch((err) => {
+            console.error("[app-builder] DB bootstrap failed:", err);
+          });
         }
       } catch (err) {
         console.error("[app-builder] DB bootstrap failed:", err);
@@ -150,6 +153,42 @@ export default defineConfig(({ command, isPreview }) => ({
     host: "0.0.0.0",
     port: 8080,
     strictPort: true,
+    warmup: {
+      clientFiles: [
+        "./src/routes/index.tsx",
+        "./src/components/landing.tsx",
+        "./src/components/fx-root.tsx",
+        "./src/components/glass-button.tsx",
+        "./src/components/alien-logo.tsx",
+        "./src/components/star-field.tsx",
+        "./src/components/sport-saucer.tsx",
+        "./src/lib/sky-bogeys.ts",
+        "./src/components/app-shell.tsx",
+        "./src/routes/_desk.tsx",
+        "./src/routes/_desk/archive.tsx",
+      ],
+    },
+  },
+  optimizeDeps: {
+    include: [
+      "react",
+      "react-dom",
+      "react-dom/client",
+      "@tanstack/react-router",
+      "@tanstack/react-store",
+      "@tanstack/router-core",
+      "@tanstack/router-utils",
+      "@tanstack/history",
+      "lucide-react",
+      "zustand",
+      "clsx",
+      "tailwind-merge",
+      "@radix-ui/react-slot",
+      "seroval",
+      "cookie-es",
+      "use-sync-external-store",
+      "@tanstack/store",
+    ],
   },
   preview: {
     host: "127.0.0.1",
@@ -166,7 +205,11 @@ export default defineConfig(({ command, isPreview }) => ({
     // PWA head + ?install=1 tutorial page; runs before Start/Nitro.
     grokPwaPlugin(),
     tailwindcss(),
-    tanstackStart(),
+    tanstackStart({
+      router: {
+        autoCodeSplitting: true,
+      },
+    }),
     ...(command === "build" || isPreview
       ? [
           nitro({

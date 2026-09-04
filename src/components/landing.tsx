@@ -1,11 +1,11 @@
-import { useEffect, useState, type CSSProperties } from "react";
-import { useRouter } from "@tanstack/react-router";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useRouter, Link } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { AlienLogo } from "@/components/alien-logo";
 import { GlassButton } from "@/components/glass-button";
 import { useClearanceTonight } from "@/hooks/use-clearance";
 import { accessNavigate } from "@/lib/access-nav";
-import { matchClearancePhrase, revealClearanceMemo } from "@/lib/clearance";
+import { matchClearancePhrase } from "@/lib/clearance";
 import { LANDING_TAB_ROWS } from "@/lib/tabs";
 import { useDesk } from "@/lib/store";
 import { APP_VERSION_LABEL } from "@/lib/version";
@@ -39,6 +39,11 @@ function placeNote(rect: DOMRect): NoteAnchor {
   let top = rect.top + rect.height / 2 - 48;
   top = Math.max(12, Math.min(top, vh - 140));
   return { left, top, width };
+}
+
+function possessive(title: string) {
+  const t = title.trim();
+  return /s$/i.test(t) ? `${t}'` : `${t}'s`;
 }
 
 const STAR_CHARTS: ChartDef[] = [
@@ -206,6 +211,46 @@ function LandingCosmos() {
   );
 }
 
+function LandingHead() {
+  const hold = useRef<number | undefined>(undefined);
+  const clearHold = () => {
+    if (hold.current !== undefined) window.clearTimeout(hold.current);
+    hold.current = undefined;
+  };
+
+  useEffect(() => () => clearHold(), []);
+
+  return (
+    <div
+      className="landing-head relative mt-0 select-none pointer-events-auto touch-none"
+      onPointerDown={(event) => {
+        if (event.pointerType !== "mouse" || event.button === 0) {
+          try {
+            event.currentTarget.setPointerCapture(event.pointerId);
+          } catch {
+            /* ignore */
+          }
+          clearHold();
+          hold.current = window.setTimeout(() => {
+            window.dispatchEvent(new Event("truthpole:summon-saucer"));
+            try {
+              navigator.vibrate?.(18);
+            } catch {
+              /* ignore */
+            }
+          }, 5000);
+        }
+      }}
+      onPointerUp={clearHold}
+      onPointerCancel={clearHold}
+      onLostPointerCapture={clearHold}
+      onContextMenu={(event) => event.preventDefault()}
+    >
+      <AlienLogo className="h-36 w-36 md:h-44 md:w-44" />
+    </div>
+  );
+}
+
 export function Landing() {
   const router = useRouter();
   const exitHome = useDesk((s) => s.exitHome);
@@ -219,12 +264,33 @@ export function Landing() {
     if (exitHome) clearExitHome();
   }, [exitHome, clearExitHome]);
 
+  useEffect(() => {
+    const block = (event: Event) => {
+      const target = event.target;
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return;
+      event.preventDefault();
+    };
+    document.addEventListener("contextmenu", block);
+    document.addEventListener("selectstart", block);
+    return () => {
+      document.removeEventListener("contextmenu", block);
+      document.removeEventListener("selectstart", block);
+    };
+  }, []);
+
+  const tonightKicker = tonight.anniversary ? "TODAY IS" : "TODAY’S CASE";
+  const tonightTitle = tonight.anniversary ? `${possessive(tonight.title)} anniversary` : tonight.title;
+  const tonightLabel = tonight.anniversary
+    ? `Today is ${possessive(tonight.title)} anniversary`
+    : `Today’s case: ${tonight.title}`;
+  const tonightHref = tonight.href || "/archive";
+
   return (
-    <main className="landing relative z-10 flex min-h-dvh flex-col bg-transparent pointer-events-none">
+    <main className="landing relative z-10 flex h-svh max-h-svh flex-col overflow-hidden bg-transparent pointer-events-none">
       <LandingCosmos />
-      <div className="relative z-10 mx-auto flex w-full max-w-md flex-1 flex-col px-6 pt-[max(2.5rem,env(safe-area-inset-top))] pointer-events-none">
-        <div className="flex flex-1 flex-col items-center justify-center text-center">
-          <div className="stagger-in flex w-full flex-col items-center pointer-events-none">
+      <div className="landing-board relative z-10 mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col px-6 pt-[max(0.55rem,env(safe-area-inset-top))] pointer-events-none md:max-w-lg lg:max-w-xl">
+        <div className="landing-stage relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center text-center">
+          <div className="stagger-in landing-copy flex w-full flex-col items-center pointer-events-none">
             <label className="relative mt-0 block w-full max-w-[18rem] pointer-events-auto">
               <span className="pointer-events-none block text-center font-display text-[11px] font-medium tracking-[0.42em] text-fg/55">
                 CLASSIFIED DESK
@@ -252,65 +318,57 @@ export function Landing() {
               />
             </label>
 
-            <AlienLogo className="mt-6 h-36 w-36" />
+            <LandingHead />
 
-            <h1 className="mt-7 font-display text-[1.65rem] font-semibold tracking-[0.34em] text-fg">
+            <h1 className="landing-word mt-0 font-display text-[1.65rem] font-semibold tracking-[0.34em] text-fg md:text-[2rem]">
               TRUTHPOLE
             </h1>
-            <p className="mt-3 font-display text-[11px] font-medium tracking-[0.46em] text-fg/70">
+            <p className="landing-kicker mt-0 font-display text-[11px] font-medium tracking-[0.46em] text-fg/70">
               · THE ARCHIVE ·
             </p>
 
-            <p className="mt-7 max-w-[34ch] text-[15px] leading-relaxed text-fg/80">
+            <p className="landing-lede mt-0 max-w-[34ch] text-[15px] leading-relaxed text-fg/80">
               Sightings on a world map, conspiracy files, ancient contact, live X-Files, and The Pole.
               A black record of what the sky keeps returning.
             </p>
           </div>
 
-          <div className="landing-cta relative z-30 mt-9 w-full max-w-sm pointer-events-auto">
-            <GlassButton
-              variant="primary"
-              className="h-12 w-full rounded-full"
-              onClick={() => {
-                armArchiveSweep();
-                goDesk("/archive");
-              }}
-            >
-              Enter the archive
+          <div className="landing-cta relative z-30 mt-0 w-full max-w-sm pointer-events-auto md:max-w-md">
+            <GlassButton variant="primary" asChild className="h-12 w-full rounded-full">
+              <Link
+                to="/archive"
+                onClick={() => {
+                  armArchiveSweep();
+                  goDesk("/archive");
+                }}
+              >
+                Enter the archive
+              </Link>
             </GlassButton>
             <GlassButton
               variant="ghost"
               className="landing-tonight h-14 w-full flex-col gap-0.5 rounded-full"
-              aria-label={`Tonight’s file: ${tonight.title}`}
-              onClick={() => {
-                if (tonight.special) {
-                  revealClearanceMemo(tonight.special);
-                  return;
-                }
-                goDesk(tonight.caseId ? `/archive?file=${encodeURIComponent(tonight.caseId)}` : "/archive");
-              }}
+              aria-label={tonightLabel}
+              onClick={() => goDesk(tonightHref)}
             >
-              <span className="landing-tonight-kicker">TONIGHT’S FILE</span>
-              <span className="landing-tonight-title">{tonight.title}</span>
+              <span className="landing-tonight-kicker">{tonightKicker}</span>
+              <span className="landing-tonight-title">{tonightTitle}</span>
             </GlassButton>
-            {tonight.anniversary ? (
-              <p className="mt-2 font-display text-[10px] tracking-[0.28em] text-fg/40">
-                Anniversary desk.
-              </p>
-            ) : null}
           </div>
 
-          <div className="relative z-30 mt-8 flex w-full flex-col items-center gap-2.5 pointer-events-auto">
+          <div className="landing-tabs relative z-30 mt-0 flex w-full flex-col items-center gap-2.5 pointer-events-auto md:flex-row md:flex-wrap md:justify-center">
             {LANDING_TAB_ROWS.map((row, i) => (
               <div key={i} className="flex flex-wrap justify-center gap-2">
                 {row.map((tab) => (
-                  <GlassButton
-                    key={tab.href}
-                    variant="chip"
-                    className="h-11 rounded-full px-5"
-                    onClick={() => goDesk(tab.href)}
-                  >
-                    {tab.label}
+                  <GlassButton key={tab.href} variant="chip" asChild className="h-10 rounded-full px-3.5">
+                    <Link
+                      to={tab.href}
+                      onClick={() => {
+                        goDesk(tab.href);
+                      }}
+                    >
+                      {tab.label}
+                    </Link>
                   </GlassButton>
                 ))}
               </div>
@@ -318,7 +376,7 @@ export function Landing() {
           </div>
         </div>
 
-        <p className="pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-4 text-center font-display text-[11px] tracking-[0.28em] text-fg/40">
+        <p className="landing-version pb-[max(0.55rem,env(safe-area-inset-bottom))] pt-2 text-center font-display text-[11px] tracking-[0.28em] text-fg/40">
           1900 — now · {APP_VERSION_LABEL}
         </p>
       </div>

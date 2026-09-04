@@ -1,4 +1,5 @@
 import { Eye, Globe, Landmark, MoreHorizontal, Radio } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { PRIMARY_NAV } from "@/lib/tabs";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +22,8 @@ export function DeskNav({ activeHref, moreOpen, onSelect, onMore }: DeskNavProps
     moreOpen ||
     activeHref === "/the-pole" ||
     activeHref === "/support" ||
-    activeHref === "/articles";
+    activeHref === "/articles" ||
+    activeHref === "/anniversaries";
 
   return (
     <nav
@@ -32,10 +34,12 @@ export function DeskNav({ activeHref, moreOpen, onSelect, onMore }: DeskNavProps
         const Icon = ICONS[tab.icon];
         const active = tab.href === activeHref && !moreOpen;
         return (
-          <button
+          <Link
             key={tab.href}
-            type="button"
-            onClick={() => onSelect(tab.href)}
+            to={tab.href}
+            onClick={() => {
+              onSelect(tab.href);
+            }}
             className="flex min-h-12 flex-col items-center justify-center gap-0.5"
             aria-current={active ? "page" : undefined}
           >
@@ -50,7 +54,7 @@ export function DeskNav({ activeHref, moreOpen, onSelect, onMore }: DeskNavProps
             <span className={cn("font-sans text-[10px]", active ? "text-fg" : "text-fg/45")}>
               {tab.label}
             </span>
-          </button>
+          </Link>
         );
       })}
       <button

@@ -6,7 +6,7 @@ import { LinkedCount } from "@/components/linked-count";
 import { StatusFilter, StatusTag } from "@/components/status-tag";
 import { TypeOutTitle } from "@/components/type-out-title";
 import { CASE_STATUS_META, deskFromPath, statusOf, type CaseStatus } from "@/lib/case-status";
-import { relatedCount } from "@/lib/desk-catalog";
+import { relatedCount, deskOf } from "@/lib/desk-catalog";
 import { type DeskFile } from "@/lib/desk-file";
 import { cn } from "@/lib/utils";
 
@@ -43,15 +43,17 @@ export function FileDesk({ section, title, intro, tag, files, deskPath, seedId, 
   }, [seedId, files]);
 
   const visible = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = query.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     return files.filter((file) => {
-      const status = statusOf(file.id, desk);
+      const status = statusOf(file.id, deskOf(file.id, desk));
       if (statusFilter !== "all" && status !== statusFilter) return false;
       if (!q) return true;
-      return [file.title, file.subtitle, file.lede, file.kicker, file.place, file.country, CASE_STATUS_META[status].label]
+      return [file.title, file.subtitle, file.lede, file.kicker, file.place, file.country, file.folklore, CASE_STATUS_META[status].label]
         .filter(Boolean)
         .join(" ")
         .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
         .includes(q);
     });
   }, [files, query, statusFilter, desk]);
@@ -76,7 +78,7 @@ export function FileDesk({ section, title, intro, tag, files, deskPath, seedId, 
         <h1 className="mt-3 font-serif text-[2.35rem] leading-none text-fg">{title}</h1>
         <p className="mt-4 max-w-prose text-[15px] leading-relaxed text-fg/75">{intro}</p>
         <ArchiveTally count={visible.length} label="files" className="mt-4 text-sm text-fg/45" />
-        <StatusFilter value={statusFilter} onChange={setStatusFilter} className="mt-3" />
+        <StatusFilter value={statusFilter} onChange={setStatusFilter} className="mt-2" />
 
         <label className="sr-only" htmlFor="desk-search">
           Search this desk
@@ -106,7 +108,7 @@ export function FileDesk({ section, title, intro, tag, files, deskPath, seedId, 
                       <p className="text-[17px] text-fg">
                         <TypeOutTitle id={file.id} text={file.title} />
                       </p>
-                      <StatusTag id={file.id} desk={desk} />
+                      <StatusTag id={file.id} desk={deskOf(file.id, desk)} />
                     </div>
                     <p className="mt-1 text-sm text-fg/50">{file.subtitle}</p>
                     <p className="mt-2 font-display text-[11px] tracking-[0.32em] text-fg/40">{tag}</p>

@@ -14,6 +14,7 @@ import { Route as DeskRouteImport } from './routes/_desk'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ScanRouteImport } from './routes/scan'
 import { Route as DeskAncientRouteImport } from './routes/_desk/ancient'
+import { Route as DeskAnniversariesRouteImport } from './routes/_desk/anniversaries'
 import { Route as DeskArchiveRouteImport } from './routes/_desk/archive'
 import { Route as DeskArticlesRouteImport } from './routes/_desk/articles'
 import { Route as DeskConspiracyRouteImport } from './routes/_desk/conspiracy'
@@ -22,6 +23,7 @@ import { Route as DeskThePoleRouteImport } from './routes/_desk/the-pole'
 import { Route as DeskXFilesRouteImport } from './routes/_desk/x-files'
 import { Route as ApiArticlesRouteImport } from './routes/api/articles'
 import { Route as ApiPoleRouteImport } from './routes/api/pole'
+import { Route as ApiReadAloudRouteImport } from './routes/api/read-aloud'
 import { Route as ApiSightingsRouteImport } from './routes/api/sightings'
 import { Route as ApiXFeedRouteImport } from './routes/api/x-feed'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -48,6 +50,11 @@ const ScanRoute = ScanRouteImport.update({
 const DeskAncientRoute = DeskAncientRouteImport.update({
   id: '/ancient',
   path: '/ancient',
+  getParentRoute: () => DeskRoute,
+} as any)
+const DeskAnniversariesRoute = DeskAnniversariesRouteImport.update({
+  id: '/anniversaries',
+  path: '/anniversaries',
   getParentRoute: () => DeskRoute,
 } as any)
 const DeskArchiveRoute = DeskArchiveRouteImport.update({
@@ -90,6 +97,11 @@ const ApiPoleRoute = ApiPoleRouteImport.update({
   path: '/api/pole',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiReadAloudRoute = ApiReadAloudRouteImport.update({
+  id: '/api/read-aloud',
+  path: '/api/read-aloud',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSightingsRoute = ApiSightingsRouteImport.update({
   id: '/api/sightings',
   path: '/api/sightings',
@@ -111,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/scan': typeof ScanRoute
   '/ancient': typeof DeskAncientRoute
+  '/anniversaries': typeof DeskAnniversariesRoute
   '/archive': typeof DeskArchiveRoute
   '/articles': typeof DeskArticlesRoute
   '/conspiracy': typeof DeskConspiracyRoute
@@ -119,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/x-files': typeof DeskXFilesRoute
   '/api/articles': typeof ApiArticlesRoute
   '/api/pole': typeof ApiPoleRoute
+  '/api/read-aloud': typeof ApiReadAloudRoute
   '/api/sightings': typeof ApiSightingsRoute
   '/api/x-feed': typeof ApiXFeedRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -128,6 +142,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/scan': typeof ScanRoute
   '/ancient': typeof DeskAncientRoute
+  '/anniversaries': typeof DeskAnniversariesRoute
   '/archive': typeof DeskArchiveRoute
   '/articles': typeof DeskArticlesRoute
   '/conspiracy': typeof DeskConspiracyRoute
@@ -136,6 +151,7 @@ export interface FileRoutesByTo {
   '/x-files': typeof DeskXFilesRoute
   '/api/articles': typeof ApiArticlesRoute
   '/api/pole': typeof ApiPoleRoute
+  '/api/read-aloud': typeof ApiReadAloudRoute
   '/api/sightings': typeof ApiSightingsRoute
   '/api/x-feed': typeof ApiXFeedRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -147,6 +163,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/scan': typeof ScanRoute
   '/_desk/ancient': typeof DeskAncientRoute
+  '/_desk/anniversaries': typeof DeskAnniversariesRoute
   '/_desk/archive': typeof DeskArchiveRoute
   '/_desk/articles': typeof DeskArticlesRoute
   '/_desk/conspiracy': typeof DeskConspiracyRoute
@@ -155,6 +172,7 @@ export interface FileRoutesById {
   '/_desk/x-files': typeof DeskXFilesRoute
   '/api/articles': typeof ApiArticlesRoute
   '/api/pole': typeof ApiPoleRoute
+  '/api/read-aloud': typeof ApiReadAloudRoute
   '/api/sightings': typeof ApiSightingsRoute
   '/api/x-feed': typeof ApiXFeedRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -166,6 +184,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/scan'
     | '/ancient'
+    | '/anniversaries'
     | '/archive'
     | '/articles'
     | '/conspiracy'
@@ -174,6 +193,7 @@ export interface FileRouteTypes {
     | '/x-files'
     | '/api/articles'
     | '/api/pole'
+    | '/api/read-aloud'
     | '/api/sightings'
     | '/api/x-feed'
     | '/api/auth/$'
@@ -183,6 +203,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/scan'
     | '/ancient'
+    | '/anniversaries'
     | '/archive'
     | '/articles'
     | '/conspiracy'
@@ -191,6 +212,7 @@ export interface FileRouteTypes {
     | '/x-files'
     | '/api/articles'
     | '/api/pole'
+    | '/api/read-aloud'
     | '/api/sightings'
     | '/api/x-feed'
     | '/api/auth/$'
@@ -201,6 +223,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/scan'
     | '/_desk/ancient'
+    | '/_desk/anniversaries'
     | '/_desk/archive'
     | '/_desk/articles'
     | '/_desk/conspiracy'
@@ -209,6 +232,7 @@ export interface FileRouteTypes {
     | '/_desk/x-files'
     | '/api/articles'
     | '/api/pole'
+    | '/api/read-aloud'
     | '/api/sightings'
     | '/api/x-feed'
     | '/api/auth/$'
@@ -221,6 +245,7 @@ export interface RootRouteChildren {
   ScanRoute: typeof ScanRoute
   ApiArticlesRoute: typeof ApiArticlesRoute
   ApiPoleRoute: typeof ApiPoleRoute
+  ApiReadAloudRoute: typeof ApiReadAloudRoute
   ApiSightingsRoute: typeof ApiSightingsRoute
   ApiXFeedRoute: typeof ApiXFeedRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -261,6 +286,13 @@ declare module '@tanstack/react-router' {
       path: '/ancient'
       fullPath: '/ancient'
       preLoaderRoute: typeof DeskAncientRouteImport
+      parentRoute: typeof DeskRoute
+    }
+    '/_desk/anniversaries': {
+      id: '/_desk/anniversaries'
+      path: '/anniversaries'
+      fullPath: '/anniversaries'
+      preLoaderRoute: typeof DeskAnniversariesRouteImport
       parentRoute: typeof DeskRoute
     }
     '/_desk/archive': {
@@ -319,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPoleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/read-aloud': {
+      id: '/api/read-aloud'
+      path: '/api/read-aloud'
+      fullPath: '/api/read-aloud'
+      preLoaderRoute: typeof ApiReadAloudRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/sightings': {
       id: '/api/sightings'
       path: '/api/sightings'
@@ -345,6 +384,7 @@ declare module '@tanstack/react-router' {
 
 interface DeskRouteChildren {
   DeskAncientRoute: typeof DeskAncientRoute
+  DeskAnniversariesRoute: typeof DeskAnniversariesRoute
   DeskArchiveRoute: typeof DeskArchiveRoute
   DeskArticlesRoute: typeof DeskArticlesRoute
   DeskConspiracyRoute: typeof DeskConspiracyRoute
@@ -355,6 +395,7 @@ interface DeskRouteChildren {
 
 const DeskRouteChildren: DeskRouteChildren = {
   DeskAncientRoute: DeskAncientRoute,
+  DeskAnniversariesRoute: DeskAnniversariesRoute,
   DeskArchiveRoute: DeskArchiveRoute,
   DeskArticlesRoute: DeskArticlesRoute,
   DeskConspiracyRoute: DeskConspiracyRoute,
@@ -372,6 +413,7 @@ const rootRouteChildren: RootRouteChildren = {
   ScanRoute: ScanRoute,
   ApiArticlesRoute: ApiArticlesRoute,
   ApiPoleRoute: ApiPoleRoute,
+  ApiReadAloudRoute: ApiReadAloudRoute,
   ApiSightingsRoute: ApiSightingsRoute,
   ApiXFeedRoute: ApiXFeedRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

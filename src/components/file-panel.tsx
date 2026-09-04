@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, Share2, Square, Volume2, X } from "lucide-react";
+import { Check, Loader2, Share2, Square, Volume2, X } from "lucide-react";
 import { useRouter, useRouterState } from "@tanstack/react-router";
 import { Drawer } from "vaul";
 import { GlassButton } from "@/components/glass-button";
@@ -10,7 +10,7 @@ import { TypeOutTitle } from "@/components/type-out-title";
 import { accessNavigate } from "@/lib/access-nav";
 import { deskFromPath } from "@/lib/case-status";
 import { fileHasScratch, isFileDeclassified, markRedactions } from "@/lib/redact";
-import { DESK_META, hrefFor, relatedFromCatalog } from "@/lib/desk-catalog";
+import { DESK_META, deskOf, hrefFor, relatedFromCatalog } from "@/lib/desk-catalog";
 import {
   deskSummary,
   fullRecord,
@@ -19,6 +19,7 @@ import {
   speechForFile,
   type DeskFile,
 } from "@/lib/desk-file";
+import { fetchNarration, speakBrowser } from "@/lib/narrate";
 import { useDesk } from "@/lib/store";
 
 type FilePanelProps = {
@@ -43,9 +44,14 @@ export function FilePanel({
   const setPanelOpen = useDesk((s) => s.setPanelOpen);
   const open = file !== null;
   const [speaking, setSpeaking] = useState(false);
+  const [speakBusy, setSpeakBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [ticketDone, setTicketDone] = useState(false);
   const relatedRef = useRef<HTMLElement>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
+  const speakAbort = useRef<AbortController | null>(null);
+  const stopBrowser = useRef<(() => void) | null>(null);
 
   const summary = file ? deskSummary(file.summary || file.lede) : "";
   const record = file ? fullRecord(file) : "";
@@ -56,17 +62,35 @@ export function FilePanel({
   const links = useMemo(() => (file ? linkSources(file.sources) : []), [file]);
   const related = useMemo(() => (file ? relatedFromCatalog(file) : []), [file]);
 
+  const stopSpeak = () => {
+    speakAbort.current?.abort();
+    speakAbort.current = null;
+    stopBrowser.current?.();
+    stopBrowser.current = null;
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current = null;
+    }
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+    window.speechSynthesis?.cancel();
+    setSpeaking(false);
+    setSpeakBusy(false);
+  };
+
   useEffect(() => {
     setPanelOpen(open);
     return () => setPanelOpen(false);
   }, [open, setPanelOpen]);
 
   useEffect(() => {
-    window.speechSynthesis?.cancel();
-    setSpeaking(false);
+    stopSpeak();
     setCopied(false);
     setTicketDone(false);
-    return () => window.speechSynthesis?.cancel();
+    return () => stopSpeak();
   }, [file?.id]);
 
   useEffect(() => {
@@ -82,25 +106,61 @@ export function FilePanel({
   };
 
   const toggleSpeak = () => {
-    const synth = window.speechSynthesis;
-    if (!file || !synth) return;
-    if (speaking) {
-      synth.cancel();
-      setSpeaking(false);
+    if (!file) return;
+    if (speaking || speakBusy) {
+      stopSpeak();
       return;
     }
-    const utterance = new SpeechSynthesisUtterance(speechForFile(file));
-    utterance.rate = 0.95;
-    utterance.onend = () => setSpeaking(false);
-    utterance.onerror = () => setSpeaking(false);
-    synth.cancel();
-    synth.speak(utterance);
-    setSpeaking(true);
+    const text = speechForFile(file);
+    if (!text.trim()) return;
+    const ctrl = new AbortController();
+    speakAbort.current = ctrl;
+    setSpeakBusy(true);
+    void (async () => {
+      const blob = await fetchNarration(text, ctrl.signal);
+      if (ctrl.signal.aborted) return;
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        objectUrlRef.current = url;
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.onended = () => {
+          setSpeaking(false);
+          setSpeakBusy(false);
+        };
+        audio.onerror = () => {
+          setSpeaking(false);
+          setSpeakBusy(false);
+        };
+        try {
+          await audio.play();
+          if (ctrl.signal.aborted) {
+            audio.pause();
+            return;
+          }
+          setSpeakBusy(false);
+          setSpeaking(true);
+          return;
+        } catch {
+          /* fall through to browser voice */
+        }
+      }
+      if (ctrl.signal.aborted) return;
+      setSpeakBusy(false);
+      setSpeaking(true);
+      const stop = await speakBrowser(text, () => {
+        setSpeaking(false);
+      });
+      if (ctrl.signal.aborted) {
+        stop();
+        return;
+      }
+      stopBrowser.current = stop;
+    })();
   };
 
   const close = () => {
-    window.speechSynthesis?.cancel();
-    setSpeaking(false);
+    stopSpeak();
     onClose();
   };
 
@@ -162,19 +222,21 @@ export function FilePanel({
                 </Drawer.Title>
                 {file?.subtitle ? <p className="mt-2 text-sm leading-snug text-fg/55">{file.subtitle}</p> : null}
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  {file ? <StatusTag id={file.id} desk={deskFromPath(pathname)} /> : null}
+                  {file ? <StatusTag id={file.id} desk={deskOf(file.id, deskFromPath(pathname))} /> : null}
                   <LinkedCount count={related.length} onClick={jumpRelated} className="-ml-0.5" />
                 </div>
               </div>
               <div className="flex shrink-0 items-center gap-2 pt-0.5">
                 <GlassButton
                   variant="icon"
-                  aria-label={speaking ? "Stop reading" : "Read aloud"}
-                  aria-pressed={speaking}
+                  aria-label={speaking || speakBusy ? "Stop reading" : "Read aloud"}
+                  aria-pressed={speaking || speakBusy}
                   onClick={toggleSpeak}
                   className="size-11"
                 >
-                  {speaking ? (
+                  {speakBusy ? (
+                    <Loader2 className="size-4 animate-spin" strokeWidth={1.8} />
+                  ) : speaking ? (
                     <Square className="size-4" strokeWidth={1.8} />
                   ) : (
                     <Volume2 className="size-5" strokeWidth={1.6} />
@@ -212,6 +274,19 @@ export function FilePanel({
                       <p className="mt-2 max-w-prose text-sm leading-normal text-fg/90">{summary}</p>
                     </>
                   )}
+                </section>
+              ) : null}
+
+              {file?.folklore ? (
+                <section className="pb-5">
+                  <h3 className="font-display text-xs font-medium tracking-kicker text-muted">
+                    Folklore / legend
+                  </h3>
+                  {file.folklore.split("\n\n").map((para, i) => (
+                    <p key={i} className="mt-2 max-w-prose text-sm leading-normal text-fg/90">
+                      {para}
+                    </p>
+                  ))}
                 </section>
               ) : null}
 

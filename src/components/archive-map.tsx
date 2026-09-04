@@ -829,9 +829,9 @@ export function ArchiveMap({
       </div>
 
       {showTimeline ? (
-        <div className="z-20 shrink-0 px-4 pb-3 pt-1">
-          <p className="font-display text-[11px] tracking-[0.38em] text-fg/45">TIMELINE</p>
-          <StatusFilter value={statusFilter} onChange={setStatusFilter} className="mt-2" />
+        <div className="z-20 shrink-0 px-4 pb-2.5 pt-0.5">
+          <p className="font-display text-[10px] tracking-[0.32em] text-fg/40">TIMELINE</p>
+          <StatusFilter value={statusFilter} onChange={setStatusFilter} className="mt-1.5" />
           <div className="mt-1 flex items-end justify-between gap-3">
             <p className="font-serif text-[2rem] leading-none text-fg">{formatYearLabel(year)}</p>
             <ArchiveTally

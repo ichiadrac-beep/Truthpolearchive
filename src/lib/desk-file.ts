@@ -11,6 +11,7 @@ export type DeskFile = {
   body: string;
   evidence: string;
   sources: string[];
+  folklore?: string;
   related?: string[];
   image?: {
     src: string;
@@ -27,9 +28,9 @@ export type DeskFile = {
 export type DeskLink = { href: string; label: string };
 
 export function speechForFile(file: DeskFile) {
-  return [file.title, file.subtitle, file.summary, file.body, file.evidence]
+  return [file.title, file.subtitle, file.summary, file.folklore, file.body, file.evidence]
+    .filter((part): part is string => typeof part === "string" && part.trim().length > 0)
     .map((part) => part.trim())
-    .filter(Boolean)
     .join("\n\n");
 }
 

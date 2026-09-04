@@ -21,6 +21,7 @@ export const LANDING_TAB_ROWS = [
   [
     { href: "/x-files", label: "X-Files" },
     { href: "/the-pole", label: "The Pole" },
+    { href: "/anniversaries", label: "Anniversaries" },
   ],
 ] as const;
 
@@ -32,6 +33,12 @@ export const PRIMARY_NAV = [
 ] as const;
 
 export const MORE_LINKS = [
+  {
+    href: "/anniversaries",
+    label: "Anniversaries",
+    blurb: "The year, starting today",
+    icon: "calendar" as const,
+  },
   {
     href: "/the-pole",
     label: "The Pole",
@@ -60,4 +67,5 @@ export const DESK_HEADER: Record<string, { name: string }> = {
   "/the-pole": { name: "The Pole" },
   "/support": { name: "Support" },
   "/articles": { name: "Articles" },
+  "/anniversaries": { name: "Anniversaries" },
 };

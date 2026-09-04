@@ -1,4 +1,5 @@
 import type { DeskFile } from "@/lib/desk-file";
+import { CONSPIRACY_FILES_CRYPTIDS } from "@/lib/conspiracy-files-cryptids";
 import { CONSPIRACY_FILES_EXTRA } from "@/lib/conspiracy-files-extra";
 
 export const CONSPIRACY_FILES: DeskFile[] = [
@@ -361,4 +362,5 @@ export const CONSPIRACY_FILES: DeskFile[] = [
     year: 1943,
   },
   ...CONSPIRACY_FILES_EXTRA,
+  ...CONSPIRACY_FILES_CRYPTIDS,
 ];

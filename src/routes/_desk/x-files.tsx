@@ -30,7 +30,7 @@ function XFilesPage() {
   const busy = useRef(false);
   const formAnchor = useRef<HTMLDivElement>(null);
 
-  const pull = useCallback(async (opts?: { hunt?: boolean }) => {
+  const pull = useCallback(async (opts?: { hunt?: boolean; silent?: boolean }) => {
     if (busy.current) return;
     busy.current = true;
     try {
@@ -43,7 +43,7 @@ function XFilesPage() {
           });
         }
       }
-      setLoading(true);
+      if (!opts?.silent) setLoading(true);
       const result = await fetchXFeed();
       setPosts(recentXPosts(result.posts));
       setSource(result.source);
@@ -57,11 +57,20 @@ function XFilesPage() {
 
   useEffect(() => {
     void pull();
-    timer.current = window.setInterval(() => {
-      void pull({ hunt: true });
-    }, X_FEED_REFRESH_MS);
+    const tick = () => {
+      if (document.hidden) return;
+      void pull({ silent: true });
+    };
+    timer.current = window.setInterval(tick, X_FEED_REFRESH_MS);
+    const onVis = () => {
+      if (!document.hidden) void pull({ silent: true });
+    };
+    window.addEventListener("focus", onVis);
+    document.addEventListener("visibilitychange", onVis);
     return () => {
       if (timer.current != null) window.clearInterval(timer.current);
+      window.removeEventListener("focus", onVis);
+      document.removeEventListener("visibilitychange", onVis);
     };
   }, [pull]);
 
@@ -93,8 +102,8 @@ function XFilesPage() {
         Live X feed
       </h1>
       <p className="max-w-prose text-sm leading-normal text-muted">
-        Live posts from UAP accounts on X from the last 48 hours, newest first. File an encounter
-        with a photo or video, then open Witness files to read the community desk.
+        Live posts from the last 36 hours, newest first. Watched UAP, disclosure, and
+        psionic accounts refresh every few seconds while this desk is open.
       </p>
 
       <div className="flex flex-wrap gap-2">

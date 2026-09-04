@@ -29,6 +29,10 @@ export function hrefFor(entry: CatalogEntry) {
   return `${DESK_META[entry.desk].path}?file=${encodeURIComponent(entry.id)}`;
 }
 
+export function deskOf(id: string, fallback: DeskKey = "archive"): DeskKey {
+  return CATALOG_BY_ID.get(id)?.desk ?? fallback;
+}
+
 export function relatedFromCatalog(file: DeskFile): CatalogEntry[] {
   const out: CatalogEntry[] = [];
   const seen = new Set<string>();

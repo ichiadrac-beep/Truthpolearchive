@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { GlyphField } from "@/components/glyph-field";
-import { HandPreloader } from "@/components/hand-scan";
+import { HandPreloader } from "@/components/hand-preloader";
 import { StarField } from "@/components/star-field";
 import { useDesk } from "@/lib/store";
 import { cn } from "@/lib/utils";

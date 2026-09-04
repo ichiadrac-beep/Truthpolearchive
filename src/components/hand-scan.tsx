@@ -13,49 +13,12 @@ import {
   unlockAudio,
 } from "@/lib/scan-audio";
 
-export const HAND_SRC = "/alien-hand.jpg?v=2";
+import { HAND_SRC } from "@/components/hand-preloader";
+export { HandPreloader, HAND_SRC } from "@/components/hand-preloader";
 const SCAN_MS = 2800;
 const PROVIDERS = [...GROK_PROVIDERS].sort((a, b) => (a.label === "X" ? -1 : b.label === "X" ? 1 : 0));
 
 type Phase = "scan" | "auth";
-
-export function HandPreloader() {
-  const setHandReady = useDesk((s) => s.setHandReady);
-  const handReady = useDesk((s) => s.handReady);
-
-  useEffect(() => {
-    if (handReady) return;
-    let cancelled = false;
-    const img = new Image();
-    img.decoding = "async";
-    img.src = HAND_SRC;
-    preloadScanAudio();
-    const mark = () => {
-      if (!cancelled) setHandReady(true);
-    };
-    if (img.complete && img.naturalWidth > 0) {
-      mark();
-    } else {
-      img.onload = mark;
-      img.onerror = mark;
-      void img.decode?.().then(mark).catch(mark);
-    }
-    return () => {
-      cancelled = true;
-    };
-  }, [handReady, setHandReady]);
-
-  return (
-    <img
-      src={HAND_SRC}
-      alt=""
-      width={1}
-      height={1}
-      className="pointer-events-none fixed -left-px -top-px size-px opacity-0"
-      aria-hidden="true"
-    />
-  );
-}
 
 function statusLabel(progress: number, granted: boolean, holding: boolean) {
   if (granted || progress >= 99) return "VERIFIED";
@@ -152,6 +115,7 @@ export function HandScan() {
   };
 
   useEffect(() => {
+    preloadScanAudio();
     return () => {
       stopLoop();
       if (typeof speechSynthesis !== "undefined") speechSynthesis.cancel();

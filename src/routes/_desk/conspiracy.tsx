@@ -20,7 +20,7 @@ function ConspiracyPage() {
     <FileDesk
       section="CONSPIRACY"
       title="Case files"
-      intro="Secrecy programs, named committees, and the paper that survived them. Open a file for the record, the gaps, and the sources."
+      intro="Secrecy programs, named committees, cryptid files — Bigfoot, Mothman, Flatwoods, and the rest of the Fortean drawer — and the paper that survived them. Open a file for the record, the gaps, and the sources."
       tag="CASE FILE"
       files={CONSPIRACY_FILES}
       deskPath="/conspiracy"

@@ -29,8 +29,12 @@ export function PresenceHud() {
         .catch(() => {});
     };
 
-    beat();
-    const pulse = window.setInterval(beat, 20000);
+    let pulse = 0;
+    const start = window.setTimeout(() => {
+      if (stop) return;
+      beat();
+      pulse = window.setInterval(beat, 20000);
+    }, 1800);
     const glitch = window.setInterval(() => {
       if (document.hidden || Math.random() > 0.22) return;
       const fake = onlineRef.current + 2 + Math.floor(Math.random() * 17);
@@ -47,7 +51,8 @@ export function PresenceHud() {
 
     return () => {
       stop = true;
-      window.clearInterval(pulse);
+      window.clearTimeout(start);
+      if (pulse) window.clearInterval(pulse);
       window.clearInterval(glitch);
       document.removeEventListener("visibilitychange", onVis);
     };

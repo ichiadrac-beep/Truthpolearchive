@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { consumeKills, publishBogeys } from "@/lib/sky-bogeys";
 
 type Star = { x: number; y: number; r: number; base: number; tw: number; spd: number; hue: string };
 
@@ -213,7 +214,6 @@ function drawCraft(ctx: CanvasRenderingContext2D, c: Craft, fade: number) {
 
   switch (c.kind) {
     case "triangle": {
-      // TR-3B / red triangle — solid dark hull, three corner lights
       ctx.beginPath();
       ctx.moveTo(0, -18 * s);
       ctx.lineTo(20 * s, 14 * s);
@@ -455,8 +455,8 @@ export function StarField({ paused, allowDuel = false }: { paused: boolean; allo
     let bursts: Burst[] = [];
     let nextCraftId = 1;
     const pairTried = new Set<string>();
-    // First craft after a short beat-in; then ~4–5 appearances per minute
-    let craftWait = 3500 + Math.random() * 4500;
+    // First craft almost immediately so the sky feels live on open.
+    let craftWait = 80 + Math.random() * 220;
     let lastT = performance.now();
     let kindCursor = Math.floor(Math.random() * CRAFT_KINDS.length);
 
@@ -481,7 +481,8 @@ export function StarField({ paused, allowDuel = false }: { paused: boolean; allo
     const starLayer = document.createElement("canvas");
     const starCtx = starLayer.getContext("2d");
     let starGen = 0;
-    let waiting = false;
+
+    const dprFor = () => Math.min(1.5, window.devicePixelRatio || 1);
 
     const paintStars = () => {
       if (!starCtx) return;
@@ -501,8 +502,6 @@ export function StarField({ paused, allowDuel = false }: { paused: boolean; allo
         }
       }
     };
-
-    const dprFor = () => Math.min(1.5, window.devicePixelRatio || 1);
 
     const spawnCraft = () => {
       const kind =
@@ -621,14 +620,14 @@ export function StarField({ paused, allowDuel = false }: { paused: boolean; allo
     };
 
     const draw = (now: number) => {
-      if (document.hidden || pausedRef.current || reduce) {
-        waiting = true;
+      // Keep painting in the Grok iframe even if document.hidden is true.
+      if (pausedRef.current || reduce || document.documentElement.classList.contains("kb-open")) {
         ctx.clearRect(0, 0, w, h);
         if (starLayer.width) ctx.drawImage(starLayer, 0, 0, w, h);
+        publishBogeys([]);
         raf = requestAnimationFrame(draw);
         return;
       }
-      waiting = false;
       ctx.clearRect(0, 0, w, h);
       const dt = Math.min(48, now - lastT);
       lastT = now;
@@ -641,10 +640,18 @@ export function StarField({ paused, allowDuel = false }: { paused: boolean; allo
       }
       if (starLayer.width) ctx.drawImage(starLayer, 0, 0, w, h);
 
+      for (const id of consumeKills()) {
+        const idx = crafts.findIndex((c) => c.id === id && !c.locked);
+        if (idx < 0) continue;
+        const dead = crafts[idx]!;
+        bursts.push(spawnBurst(dead.x, dead.y, dead.light));
+        crafts.splice(idx, 1);
+      }
+
       craftWait -= dt;
       if (craftWait <= 0 && crafts.length < 2) {
         spawnCraft();
-        craftWait = crafts.length === 1 ? 4500 + Math.random() * 5500 : 11000 + Math.random() * 5000;
+        craftWait = crafts.length === 1 ? 1600 + Math.random() * 1400 : 7000 + Math.random() * 4000;
       }
 
       if (duelRef.current && crafts.length >= 2) {
@@ -740,6 +747,8 @@ export function StarField({ paused, allowDuel = false }: { paused: boolean; allo
         }
       }
 
+      publishBogeys(crafts.filter((c) => !c.locked).map((c) => ({ id: c.id, x: c.x, y: c.y, life: c.life })));
+
       for (let i = bursts.length - 1; i >= 0; i--) {
         const b = bursts[i]!;
         b.life += step;
@@ -753,6 +762,7 @@ export function StarField({ paused, allowDuel = false }: { paused: boolean; allo
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      publishBogeys([]);
     };
   }, []);
 

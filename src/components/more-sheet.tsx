@@ -1,10 +1,11 @@
-import { FileText, Heart, MessageCircle } from "lucide-react";
+import { CalendarDays, FileText, Heart, MessageCircle } from "lucide-react";
 import { MORE_LINKS } from "@/lib/tabs";
 
 const ICONS = {
   file: FileText,
   message: MessageCircle,
   heart: Heart,
+  calendar: CalendarDays,
 };
 
 type MoreSheetProps = {

@@ -12,12 +12,18 @@ export const Route = createFileRoute("/api/x-feed")({
         try {
           const live = recentXPosts(withoutDesk(await gatherXFeed()));
           if (live.length > 0) {
-            return Response.json({ posts: live, source: "api" });
+            return Response.json(
+              { posts: live, source: "api" },
+              { headers: { "Cache-Control": "no-store, max-age=0" } },
+            );
           }
         } catch {
           /* fall through to seed */
         }
-        return Response.json({ posts: recentXPosts(withoutDesk(X_FEED_SEED)), source: "seed" });
+        return Response.json(
+          { posts: recentXPosts(withoutDesk(X_FEED_SEED)), source: "seed" },
+          { headers: { "Cache-Control": "no-store, max-age=0" } },
+        );
       },
     },
   },

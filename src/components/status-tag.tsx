@@ -33,10 +33,10 @@ type StatusFilterProps = {
 
 export function StatusFilter({ value, onChange, className }: StatusFilterProps) {
   return (
-    <div className={cn("flex flex-wrap gap-1.5", className)} role="group" aria-label="Case status">
+    <div className={cn("status-filter", className)} role="group" aria-label="Case status">
       <button
         type="button"
-        className={cn("status-tag status-tag-all", value === "all" && "status-tag-active")}
+        className={cn("status-filter-btn", value === "all" && "is-active")}
         aria-pressed={value === "all"}
         onClick={() => onChange("all")}
       >
@@ -46,8 +46,13 @@ export function StatusFilter({ value, onChange, className }: StatusFilterProps) 
         <button
           type="button"
           key={status}
-          className={cn("status-tag", `status-tag-${status}`, value === status && "status-tag-active")}
+          className={cn(
+            "status-filter-btn",
+            `status-filter-${status}`,
+            value === status && "is-active",
+          )}
           aria-pressed={value === status}
+          title={CASE_STATUS_META[status].hint}
           onClick={() => onChange(status)}
         >
           {CASE_STATUS_META[status].label}

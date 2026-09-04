@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { ExternalLink, Radio, RefreshCw } from "lucide-react";
+import { useEffect, useId, useRef, useState } from "react";
+import { ChevronDown, ExternalLink, Eye, Radio, RefreshCw } from "lucide-react";
 import { GlassButton } from "@/components/glass-button";
 import { cn } from "@/lib/utils";
 import {
@@ -8,6 +8,7 @@ import {
   type XFeedPost,
   X_FEED_ACCOUNTS,
   X_FEED_KEYWORDS,
+  X_FEED_REFRESH_MS,
 } from "@/lib/x-feed";
 
 type XLiveBoardProps = {
@@ -28,10 +29,27 @@ export function XLiveBoard({
   onRefresh,
 }: XLiveBoardProps) {
   const acquiring = hunting || loading;
+  const [watchOpen, setWatchOpen] = useState(false);
+  const watchPanelId = useId();
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <SignalMeter acquiring={acquiring} source={source} lastRefresh={lastRefresh} />
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <GlassButton
+          type="button"
+          variant="chip"
+          className="h-9 gap-2 px-3"
+          onClick={() => setWatchOpen((open) => !open)}
+          aria-expanded={watchOpen}
+          aria-controls={watchPanelId}
+        >
+          <Eye className="size-3.5" strokeWidth={1.8} />
+          Watch list
+          <ChevronDown
+            className={cn("size-3.5 transition-transform duration-150", watchOpen && "rotate-180")}
+            strokeWidth={1.8}
+          />
+        </GlassButton>
         <GlassButton
           type="button"
           variant="chip"
@@ -45,20 +63,29 @@ export function XLiveBoard({
         </GlassButton>
       </div>
 
-      <div className="glass-plain rounded-2xl px-3 py-2.5">
-        <p className="font-display text-[10px] tracking-[0.22em] text-fg/40">WATCHING</p>
-        <p className="mt-1.5 text-[11px] leading-relaxed text-fg/55">
-          {X_FEED_ACCOUNTS.map((h) => `@${h}`).join(" · ")}
-        </p>
-        <p className="mt-2 font-display text-[10px] tracking-[0.22em] text-fg/40">KEYWORDS</p>
-        <p className="mt-1.5 text-[11px] leading-relaxed text-fg/55">
-          {X_FEED_KEYWORDS.join(" · ")}
-        </p>
-        <p className="mt-2.5 text-[11px] leading-snug text-fg/45">
-          Credibility scores are a desk heuristic from available engagement, links, and media — not
-          official truth ratings.
-        </p>
-      </div>
+      {watchOpen ? (
+        <div id={watchPanelId} className="glass-plain rounded-2xl px-3 py-2.5">
+          <p className="font-display text-[10px] tracking-[0.22em] text-fg/40">WATCHING</p>
+          <p className="mt-1.5 text-[11px] leading-relaxed text-fg/55">
+            {X_FEED_ACCOUNTS.map((h) => `@${h}`).join(" · ")}
+          </p>
+          <p className="mt-2 font-display text-[10px] tracking-[0.22em] text-fg/40">KEYWORDS</p>
+          <p className="mt-1.5 text-[11px] leading-relaxed text-fg/55">
+            {X_FEED_KEYWORDS.join(" · ")}
+          </p>
+          <p className="mt-2.5 text-[11px] leading-snug text-fg/45">
+            Credibility scores are a desk heuristic from available engagement, links, and media — not
+            official truth ratings.
+          </p>
+        </div>
+      ) : null}
+
+      <SignalMeter
+        acquiring={acquiring}
+        source={source}
+        lastRefresh={lastRefresh}
+        newest={posts[0]?.when}
+      />
 
       <ul className="flex flex-col gap-3">
         {posts.map((post) => {
@@ -92,12 +119,7 @@ export function XLiveBoard({
                 <p className="mt-3 text-sm leading-relaxed text-fg/90">{post.text}</p>
 
                 <div className="mt-3 rounded-2xl bg-fg/6 px-3 py-2.5">
-                  <Meter
-                    label="OVERALL"
-                    value={cred.overall}
-                    hint={cred.label}
-                    emphasize
-                  />
+                  <Meter label="OVERALL" value={cred.overall} hint={cred.label} emphasize />
                   <div className="mt-2 grid grid-cols-3 gap-2">
                     <Meter
                       label="VIRALITY"
@@ -111,11 +133,7 @@ export function XLiveBoard({
                     <Meter
                       label="COMMENTS"
                       value={cred.comments}
-                      hint={
-                        missingCounts
-                          ? "Signal pending"
-                          : `${formatCount(post.replies)} replies`
-                      }
+                      hint={missingCounts ? "Signal pending" : `${formatCount(post.replies)} replies`}
                     />
                     <Meter
                       label="EVIDENCE"
@@ -167,10 +185,12 @@ function SignalMeter({
   acquiring,
   source,
   lastRefresh,
+  newest,
 }: {
   acquiring: boolean;
   source: "api" | "seed";
   lastRefresh: Date | null;
+  newest?: string;
 }) {
   const [bars, setBars] = useState(0);
   const [dbm, setDbm] = useState(-78);
@@ -270,21 +290,27 @@ function SignalMeter({
         : bars >= 5
           ? "FULL"
           : "LOCKED";
-  const line = lastRefresh
-    ? `${source === "api" ? "LIVE · X API" : "LIVE SNAPSHOT"} · ${lastRefresh.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · 48h · auto 3 min`
-    : "Waiting first lock · last 48h · auto 3 min";
+  const secs = Math.max(1, Math.round(X_FEED_REFRESH_MS / 1000));
+  const locked = lastRefresh
+    ? lastRefresh.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    : null;
+  const meta = acquiring
+    ? `${dbm} dBm · no carrier · sweep`
+    : [`${dbm} dBm`, source === "api" ? "live" : "snapshot", newest ? `newest ${newest}` : null, locked, `auto ${secs}s`]
+        .filter(Boolean)
+        .join(" · ");
 
   return (
     <div
       className={cn(
-        "signal-meter min-w-0 flex-1",
+        "signal-meter",
         acquiring && "signal-meter-search",
         phase === "lock" && "signal-meter-lock",
       )}
       aria-label={acquiring ? "Acquiring intercept" : `Signal ${status.toLowerCase()}, ${Math.max(bars, 0)} of 5`}
     >
-      <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
-        <p className="font-display text-[11px] tracking-[0.28em] text-fg/45">SIGNAL:</p>
+      <div className="signal-meter-head">
+        <p className="signal-meter-label">SIGNAL</p>
         <p className="signal-glyphs" aria-hidden="true">
           {Array.from({ length: 5 }, (_, i) => (
             <span key={i} className={i < bars ? "is-on" : "is-off"}>
@@ -292,14 +318,9 @@ function SignalMeter({
             </span>
           ))}
         </p>
-        <p className="signal-status font-display text-[11px] tracking-[0.28em] text-fg/55">{status}</p>
+        <p className="signal-status">{status}</p>
       </div>
-      <p className="mt-1 font-display text-[10px] tracking-[0.16em] text-fg/40">
-        {acquiring
-          ? `${dbm} dBm · no carrier · sweep`
-          : `${dbm} dBm · ${source === "api" ? "UHF intercept" : "cached snapshot"}`}
-      </p>
-      <p className="mt-1 text-xs text-fg/50">{line}</p>
+      <p className="signal-meter-meta">{meta}</p>
     </div>
   );
 }

@@ -1,5 +1,27 @@
 # TRUTHPOLE — Restore guide
 
+## Truthpole archive beta 3 (current — 4 Sep 2026)
+
+The live classified desk. Restore this. Animations, sport-model saucer, desks, folklore — the lot.
+
+**Zip:** [`restores/Truthpole-archive-beta-3.zip`](restores/Truthpole-archive-beta-3.zip)  
+**Full backup:** [`restores/TRUTHPOLE-backup-beta-3.zip`](restores/TRUTHPOLE-backup-beta-3.zip)  
+**Grok steps:** [`GROK-RESTORE.md`](GROK-RESTORE.md) · [`restores/TRUTHPOLE-ARCHIVE-BETA-3.md`](restores/TRUTHPOLE-ARCHIVE-BETA-3.md)
+
+**Always `npm install` after unzip.** Never start with `vite` / `npx vite` — only `RESTORE-THIS.sh` or `npm run dev` via `startup.sh`.
+
+```bash
+curl -L -o Truthpole-archive-beta-3.zip \
+  https://github.com/ichiadrac-beep/Truthpolearchive/raw/main/restores/Truthpole-archive-beta-3.zip
+unzip -o Truthpole-archive-beta-3.zip -d /workspace
+cd /workspace
+rm -f .node_modules.lock
+rm -rf node_modules
+npm install
+chmod +x RESTORE-THIS.sh startup.sh
+sh /workspace/RESTORE-THIS.sh
+```
+
 ## Complete build (baseline — do not overwrite)
 
 **Branch:** [`complete-build`](https://github.com/ichiadrac-beep/Truthpolearchive/tree/complete-build)  
@@ -43,24 +65,10 @@ Full restorable desk: Complete 4 + instant desk hops + rare 4,281,006-document t
 **Zip:** [`restores/Truthpole-Complete-5.zip`](restores/Truthpole-Complete-5.zip)  
 **Docs:** [restores/TRUTHPOLE-COMPLETE-5.md](restores/TRUTHPOLE-COMPLETE-5.md)
 
-## Beta 1.0 (current — 28 Aug 2026)
-
-The final Beta 1.0 of the working site. Restore this if something happens.
+## Beta 1.0 (28 Aug 2026)
 
 **Zip:** [`restores/Truthpole-Beta-1.0.zip`](restores/Truthpole-Beta-1.0.zip)  
-**Docs:** [restores/TRUTHPOLE-BETA-1.0.md](restores/TRUTHPOLE-BETA-1.0.md) · [restores/INDEX.md](restores/INDEX.md)
-
-```bash
-curl -L -o Truthpole-Beta-1.0.zip \
-  https://github.com/ichiadrac-beep/Truthpolearchive/raw/main/restores/Truthpole-Beta-1.0.zip
-unzip -o Truthpole-Beta-1.0.zip -d truthpole
-cd truthpole
-rm -f .node_modules.lock
-rm -rf node_modules
-npm install
-chmod +x startup.sh
-sh startup.sh
-```
+**Docs:** [restores/TRUTHPOLE-BETA-1.0.md](restores/TRUTHPOLE-BETA-1.0.md)
 
 ## Naming rule
 
@@ -73,6 +81,8 @@ sh startup.sh
 | Truthpole-Complete 3 | `restores/Truthpole-Complete-3.zip` |
 | Truthpole-Complete 4 | `restores/Truthpole-Complete-4.zip` |
 | Truthpole-Complete 5 | `restores/Truthpole-Complete-5.zip` |
-| **Beta 1.0** | `restores/Truthpole-Beta-1.0.zip` |
+| Beta 1.0 | `restores/Truthpole-Beta-1.0.zip` |
+| **Truthpole archive beta 3** | `restores/Truthpole-archive-beta-3.zip` |
+| **Full backup beta 3** | `restores/TRUTHPOLE-backup-beta-3.zip` |
 
 Never replace older restore zips.

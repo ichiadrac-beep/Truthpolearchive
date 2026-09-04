@@ -1,5 +1,38 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Rajdhani";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/rajdhani-500.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Rajdhani";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/rajdhani-600.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/plex-sans.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Playfair Display";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/playfair-500.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 @theme {
   --color-bg: #050506;
   --color-bg-elevated: #101012;
@@ -273,8 +306,72 @@
 
   button.status-tag {
     cursor: pointer;
-    min-height: 2.75rem;
-    padding-inline: 0.75rem;
+    min-height: 1.85rem;
+    padding-inline: 0.65rem;
+  }
+
+  .status-filter {
+    display: grid;
+    width: 100%;
+    max-width: 22rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(2px, 0.5vw, 4px);
+    padding: 2px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--color-fg) 6%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-fg) 8%, transparent);
+  }
+
+  .status-filter-btn {
+    height: clamp(1.45rem, 4.6vw, 1.85rem);
+    padding: 0 0.2rem;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: color-mix(in oklab, var(--color-fg) 55%, transparent);
+    font-family: var(--font-display);
+    font-size: clamp(0.5rem, 2.35vw, 0.6875rem);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .status-filter-btn.is-active {
+    background: color-mix(in oklab, var(--color-fg) 12%, transparent);
+    color: var(--color-fg);
+  }
+
+  .status-filter-unresolved.is-active {
+    color: var(--color-muted);
+  }
+
+  .status-filter-disputed.is-active {
+    color: var(--color-signal);
+  }
+
+  .status-filter-btn:focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--color-fg) 45%, transparent);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 340px) {
+    .status-filter {
+      max-width: none;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      border-radius: 1rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .status-filter {
+      max-width: 28rem;
+    }
+    .status-filter-btn {
+      height: 1.85rem;
+      font-size: 0.6875rem;
+    }
   }
 
   .decrypt-line {
@@ -333,7 +430,53 @@
   }
 
   .signal-meter {
+    display: flex;
+    width: 100%;
     min-width: 0;
+    flex-direction: column;
+    gap: 0.4rem;
+    border-radius: 1rem;
+    padding: 0.7rem 0.9rem;
+    background: color-mix(in oklab, var(--color-fg) 5.5%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-fg) 8%, transparent);
+  }
+
+  .signal-meter-head {
+    display: flex;
+    min-width: 0;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .signal-meter-label,
+  .signal-status {
+    flex-shrink: 0;
+    font-family: var(--font-display);
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .signal-meter-label {
+    color: color-mix(in oklab, var(--color-fg) 42%, transparent);
+  }
+
+  .signal-status {
+    margin-left: auto;
+    color: color-mix(in oklab, var(--color-fg) 58%, transparent);
+  }
+
+  .signal-meter-meta {
+    min-width: 0;
+    font-family: var(--font-display);
+    font-size: 0.625rem;
+    letter-spacing: 0.14em;
+    line-height: 1.45;
+    color: color-mix(in oklab, var(--color-fg) 46%, transparent);
+    font-variant-numeric: tabular-nums;
   }
 
   .signal-glyphs {
@@ -558,13 +701,11 @@
 @keyframes rise-in {
   from {
     opacity: 0;
-    transform: translateY(12px);
-    filter: blur(4px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
-    filter: blur(0);
   }
 }
 
@@ -1049,25 +1190,25 @@ html.kb-open body {
 }
 
 .stagger-in > * {
-  animation: rise-in 500ms var(--ease-smooth-out) both;
+  animation: rise-in 140ms var(--ease-smooth-out) both;
 }
 .stagger-in > *:nth-child(1) {
-  animation-delay: 40ms;
+  animation-delay: 0ms;
 }
 .stagger-in > *:nth-child(2) {
-  animation-delay: 120ms;
+  animation-delay: 40ms;
 }
 .stagger-in > *:nth-child(3) {
-  animation-delay: 200ms;
+  animation-delay: 80ms;
 }
 .stagger-in > *:nth-child(4) {
-  animation-delay: 280ms;
+  animation-delay: 120ms;
 }
 .stagger-in > *:nth-child(5) {
-  animation-delay: 360ms;
+  animation-delay: 160ms;
 }
 .stagger-in > *:nth-child(6) {
-  animation-delay: 440ms;
+  animation-delay: 200ms;
 }
 
 /* Case of the day must paint immediately — no rise-in / blur delay. */
@@ -1082,6 +1223,44 @@ html.kb-open body {
 .landing-cta {
   isolation: isolate;
   z-index: 30;
+  margin-top: clamp(0.45rem, 1.8svh, 1.35rem);
+}
+
+.phone-stage:has(.landing) {
+  height: 100svh;
+  min-height: 100svh;
+  max-height: 100svh;
+}
+
+.landing-copy {
+  gap: clamp(0.15rem, 0.9svh, 0.7rem);
+}
+
+.landing-head .alien-mark {
+  width: clamp(5.25rem, 16svh, 9rem);
+  height: clamp(5.25rem, 16svh, 9rem);
+}
+
+.landing-tabs {
+  margin-top: clamp(0.4rem, 1.5svh, 1.15rem);
+}
+
+.landing-version {
+  flex-shrink: 0;
+}
+
+@media (min-height: 860px) {
+  .landing-head .alien-mark {
+    width: 9rem;
+    height: 9rem;
+  }
+}
+
+@media (min-width: 768px) and (min-height: 900px) {
+  .landing-head .alien-mark {
+    width: 11rem;
+    height: 11rem;
+  }
 }
 
 .landing-tonight {

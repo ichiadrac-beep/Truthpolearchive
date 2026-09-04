@@ -1,21 +1,17 @@
 TRUTHPOLE — The Archive
-Truthpole-Complete 5
-Snapshot 20260828-0216 UTC (28 Aug 2026, 02:16 BST)
+Archive Beta 3  ·  4 September 2026
 
-Full restorable copy of the live desk:
-- Truthpole-Complete 4 baseline
-- Instant in-desk navigation
-- Rare ANALYZING… 1 OF 4,281,006 DOCUMENTS tally flicker
-- Lottery-ticket scratch, SIGNAL HUD, SIGNAL LOST burst, MIB file, title type-out
+This tree is the live classified desk.
 
-Zip: restores/Truthpole-Complete-5.zip
-Does not overwrite Complete build, restore file(1), restore file(2), Truthpole-Complete 2, 3, or 4.
+Restore (any Grok Build chat or local):
+  1. Unzip Truthpole-archive-beta-3.zip over the project root
+  2. rm -f .node_modules.lock && rm -rf node_modules
+  3. npm install
+  4. chmod +x RESTORE-THIS.sh startup.sh
+  5. sh RESTORE-THIS.sh     # npm install (again if needed) + npm run dev
+                            # on 0.0.0.0:8080 — never vite directly
 
-Restore:
-  unzip -o Truthpole-Complete-5.zip -d truthpole
-  cd truthpole
-  rm -f .node_modules.lock
-  rm -rf node_modules
-  npm install
-  chmod +x startup.sh
-  sh startup.sh
+Do not scaffold a new app. Keep fx-root, star-field, sport-saucer (Bob Lazar sport model).
+Read GROK-RESTORE.md.
+
+Full backup copy: restores/TRUTHPOLE-backup-beta-3.zip

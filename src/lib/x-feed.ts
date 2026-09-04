@@ -23,7 +23,7 @@ export type CredibilityBreakdown = {
   label: string;
 };
 
-/** Prominent UAP / disclosure accounts */
+/** Prominent UAP / disclosure / psionic accounts that post frequently */
 export const X_FEED_ACCOUNTS = [
   "Truthpole",
   "rosscoulthart",
@@ -40,6 +40,28 @@ export const X_FEED_ACCOUNTS = [
   "theblackvault",
   "UAPJames",
   "NewsNation",
+  "tomdelonge",
+  "DrStevenGreer",
+  "SkywatcherHQ",
+  "TheUfoJoe",
+  "TelepathyTapes",
+  "UAPSAC",
+  "I_D_Official",
+  "chrisbledsoeufo",
+  "InterstellarUAP",
+  "UAPFilesPodcast",
+  "jaystratton",
+  "WeaponizedPod",
+  "TheSolFoundation",
+  "VinnieAdams87",
+  "ChrisLehtoF15",
+  "DeanRadin",
+  "ky_dickens",
+  "TheWhyFiles",
+  "UAPWatchers",
+  "JohnRamirezCIA",
+  "GoodTroubleShow",
+  "dpasulka",
 ] as const;
 
 export const X_FEED_KEYWORDS = [
@@ -52,17 +74,21 @@ export const X_FEED_KEYWORDS = [
   "AARO",
   "PURSUE",
   "extraterrestrial",
-  "alien",
   "crash retrieval",
   "whistleblower",
+  "psionic",
+  "CE-5",
+  "telepathy",
+  "remote viewing",
+  "Skywatcher",
+  "consciousness",
 ] as const;
 
-/** Auto-refresh interval (ms). */
-export const X_FEED_REFRESH_MS = 3 * 60 * 1000;
-/** Only keep posts from now back 48 hours. */
-export const X_FEED_WINDOW_MS = 48 * 60 * 60 * 1000;
+/** Auto-refresh while the desk is open. */
+export const X_FEED_REFRESH_MS = 15_000;
+/** Keep posts from now back 36 hours so the board stays current. */
+export const X_FEED_WINDOW_MS = 36 * 60 * 60 * 1000;
 
-/** Source trust for evidence leg of the credibility meter */
 const SOURCE_TRUST: Record<string, number> = {
   Truthpole: 80,
   RepLuna: 88,
@@ -79,6 +105,28 @@ const SOURCE_TRUST: Record<string, number> = {
   g_knapp: 80,
   JeremyCorbell: 70,
   UAPJames: 68,
+  tomdelonge: 74,
+  DrStevenGreer: 70,
+  SkywatcherHQ: 72,
+  TheUfoJoe: 76,
+  TelepathyTapes: 73,
+  UAPSAC: 82,
+  I_D_Official: 78,
+  chrisbledsoeufo: 66,
+  InterstellarUAP: 64,
+  UAPFilesPodcast: 67,
+  jaystratton: 84,
+  WeaponizedPod: 74,
+  TheSolFoundation: 80,
+  VinnieAdams87: 66,
+  ChrisLehtoF15: 68,
+  DeanRadin: 78,
+  ky_dickens: 72,
+  TheWhyFiles: 62,
+  UAPWatchers: 64,
+  JohnRamirezCIA: 70,
+  GoodTroubleShow: 68,
+  dpasulka: 80,
 };
 
 function clamp(n: number, lo = 0, hi = 100) {
@@ -92,10 +140,6 @@ function logScale(n: number, mid: number, high: number) {
   return (55 * Math.log10(1 + n)) / Math.log10(1 + mid);
 }
 
-/**
- * Credibility from virality, comment volume, and evidence signals.
- * Comment *text* analysis requires X API; reply count is the public proxy.
- */
 export function credibilityOf(post: XFeedPost): CredibilityBreakdown {
   const likes = post.likes ?? 0;
   const reposts = post.reposts ?? 0;
@@ -115,7 +159,7 @@ export function credibilityOf(post: XFeedPost): CredibilityBreakdown {
   if (post.hasMedia) evidence += 12;
   if (/https?:\/\//i.test(post.text) || /https?:\/\/x\.com\//i.test(post.url)) evidence += 6;
   const primary =
-    /\b(AARO|PURSUE|Pentagon|Congress|FOIA|hearing|whistleblower|crash|biologic|NHI|Navy|radar)\b/i.test(
+    /\b(AARO|PURSUE|Pentagon|Congress|FOIA|hearing|whistleblower|crash|biologic|NHI|Navy|radar|psionic|CE-?5|Skywatcher)\b/i.test(
       post.text,
     );
   if (primary) evidence += 10;
@@ -133,226 +177,123 @@ export function credibilityOf(post: XFeedPost): CredibilityBreakdown {
   return { overall, virality, comments, evidence, label };
 }
 
-/** Seed snapshot — live posts as of 2026-08-25. */
+/** Seed snapshot used if live gather is thin. Snowflake ids keep times honest. */
 export const X_FEED_SEED: XFeedPost[] = [
   {
-    id: "2091853781235384643",
-    handle: "Truthpole",
-    name: "T R U T H P O L E",
-    text: "BREAKING — Jack Osbourne claims a close friend who speaks with President Trump weekly relayed that Trump told his inner circle extraterrestrials are living in Earth’s oceans. According to Osbourne, Trump said: “We have no idea what they are, but they’re in the ocean.” Not confirmed by the White House. Surfaces amid Pentagon UAP file releases.",
-    when: "24 Aug 2026",
-    url: "https://x.com/Truthpole/status/2091853781235384643",
-    likes: 1745,
-    reposts: 176,
-    replies: 124,
-    views: 163512,
+    id: "2095599851023298704",
+    handle: "TheUfoJoe",
+    name: "Joe Murgia",
+    text: "“There is no doubt at all that the Americans have been in possession of crashed craft since the 1940s.” “In Washington, it’s an open secret that [the UFO phenomenon is real].” Sky News interview with Jonathan Caplan KC on crash retrievals, reverse engineering, and disclosure.",
+    when: "3 Sep 2026",
+    url: "https://x.com/TheUfoJoe/status/2095599851023298704",
+    likes: 139,
+    reposts: 24,
+    replies: 8,
+    views: 6546,
     hasMedia: true,
+    at: Date.parse("Thu, 03 Sep 2026 19:48:33 GMT"),
   },
   {
-    id: "2091851852560154625",
-    handle: "Truthpole",
-    name: "T R U T H P O L E",
-    text: "So they — people in government — are telling you there are alien and human hybridization programs on Earth, so nonchalantly, and all you’ve got is a poker face?",
-    when: "24 Aug 2026",
-    url: "https://x.com/Truthpole/status/2091851852560154625",
-    likes: 49,
-    reposts: 4,
-    replies: 10,
-    views: 5002,
+    id: "2095592481974882610",
+    handle: "jaystratton",
+    name: "Jay Stratton",
+    text: "New video from the former AAWSAP / UAPTF lead.",
+    when: "3 Sep 2026",
+    url: "https://x.com/jaystratton/status/2095592481974882610",
+    likes: 292,
+    reposts: 64,
+    replies: 13,
+    views: 13973,
     hasMedia: true,
+    at: Date.parse("Thu, 03 Sep 2026 19:19:16 GMT"),
   },
   {
-    id: "2091756450817155082",
-    handle: "Truthpole",
-    name: "T R U T H P O L E",
-    text: "It’s 2026 and there are no Aliens?",
-    when: "24 Aug 2026",
-    url: "https://x.com/Truthpole/status/2091756450817155082",
-    likes: 112,
-    reposts: 10,
-    replies: 9,
-    views: 5221,
-    hasMedia: true,
-  },
-  {
-    id: "2091913422288060615",
+    id: "2095583308767752413",
     handle: "ProfAviLoeb",
     name: "Professor Avi Loeb",
-    text: "Some reported UAP Orbs could be slow warp bubbles. The anomalous orbs reported by the Pentagon indeed move at slow speeds and could be explained by tiny spacetime bubbles on the scale of several micrometers. Puzzling orbs were mentioned in a June 5, 2026 AARO report (Dr. John Kozlowski): orange mother orb launching smaller red orbs; ~40% of that event remains unresolved.",
-    when: "24 Aug 2026",
-    url: "https://x.com/ProfAviLoeb/status/2091913422288060615",
-    likes: 541,
-    reposts: 85,
-    replies: 97,
-    views: 45084,
-    hasMedia: true,
+    text: "I am delighted to partner with @AdamWeitsman on a new Galileo Observatory at Carl Sagan’s former residence in Ithaca. The observatory will search the entire sky for UAP using infrared, visible, radio and audio sensors, while making its data available to the public.",
+    when: "3 Sep 2026",
+    url: "https://x.com/ProfAviLoeb/status/2095583308767752413",
+    likes: 79,
+    reposts: 15,
+    replies: 8,
+    views: 2388,
+    hasMedia: false,
+    at: Date.parse("Thu, 03 Sep 2026 18:42:49 GMT"),
   },
   {
-    id: "2091517030104957356",
-    handle: "UAPJames",
-    name: "UAP James",
-    text: "White Sands UAP luring and shoot-down operation has recovered multiple craft, people involved have ethical concerns — Coulthart. Citing Rep. Burlison: agencies recreated conditions that drew these objects; ODNI, CIA, FBI and military intelligence were on site. Something showed up.",
-    when: "23 Aug 2026",
-    url: "https://x.com/UAPJames/status/2091517030104957356",
-    likes: 523,
-    reposts: 107,
-    replies: 39,
-    views: 73172,
-    hasMedia: true,
+    id: "2095366286138286142",
+    handle: "g_knapp",
+    name: "George Knapp",
+    text: "Ross and I have been chatting this week about the current flood of UFO stories and claims, a wave that almost feels like a psychological op to “flood the zone” to the point where the public gets burned out on saucers and aliens and moves on to something else. I look forward to hearing more about this from Ross — whether the WH order applies to the full US military, whether there are protocols attached, and whether it has already succeeded in bringing one down.",
+    when: "3 Sep 2026",
+    url: "https://x.com/g_knapp/status/2095366286138286142",
+    likes: 280,
+    reposts: 36,
+    replies: 25,
+    views: 15961,
+    hasMedia: false,
+    at: Date.parse("Thu, 03 Sep 2026 04:20:27 GMT"),
   },
   {
-    id: "2091494410789740887",
-    handle: "NewsNation",
-    name: "NewsNation",
-    text: "This week's Q&A with @rosscoulthart: alleged decades-long U.S. Air Force disinformation campaign, White Sands operation, and China's UFO crash-retrieval program.",
-    when: "23 Aug 2026",
-    url: "https://x.com/NewsNation/status/2091494410789740887",
-    likes: 60,
-    reposts: 20,
+    id: "2095355704676868334",
+    handle: "g_knapp",
+    name: "George Knapp",
+    text: "An order to shoot down orbs or unknowns is a very serious step. Our military has strict protocols for such actions. No one shot down the UAP that overflew Langley 17 nights in a row, or the hundred or so objects that buzzed 10 Navy warships back in 2019, or the craft that slowly floated thru Pantex.",
+    when: "3 Sep 2026",
+    url: "https://x.com/g_knapp/status/2095355704676868334",
+    likes: 106,
+    reposts: 16,
     replies: 6,
-    views: 15248,
+    views: 4566,
+    hasMedia: false,
+    at: Date.parse("Thu, 03 Sep 2026 03:38:24 GMT"),
   },
   {
-    id: "2091107842161823828",
-    handle: "Truthpole",
-    name: "T R U T H P O L E",
-    text: "On 28 December 1988, witnesses near Sierra Bermeja, Puerto Rico, reported a massive triangular craft. Multiple accounts describe military jets approaching; two of the aircraft were allegedly never seen again. The large craft later reportedly split and departed at high speed. No independent confirmation of missing U.S. aircraft has been released.",
-    when: "22 Aug 2026",
-    url: "https://x.com/Truthpole/status/2091107842161823828",
-    likes: 51,
-    reposts: 7,
-    replies: 1,
-    views: 5924,
-    hasMedia: true,
-  },
-  {
-    id: "2091020123805037003",
-    handle: "NewsNation",
-    name: "NewsNation",
-    text: "The Trump administration is developing a waiver program for UFO whistleblowers. Ross Coulthart tells Katie Pavlich Tonight that the President should grant broad immunity so insiders can disclose what they know to the public.",
-    when: "22 Aug 2026",
-    url: "https://x.com/NewsNation/status/2091020123805037003",
-    likes: 414,
-    reposts: 94,
-    replies: 16,
-    views: 17567,
-    hasMedia: true,
-  },
-  {
-    id: "2090968471370637580",
-    handle: "UAPJames",
-    name: "UAP James",
-    text: "Avi Loeb says UAP whistleblowers should be granted full immunity; UFO material should be tested by the UAP Science Advisory Council. “Hopefully they’ll have the legal assurances they need to perhaps give us a guided tour to places where materials or even spacecraft are being housed.”",
-    when: "22 Aug 2026",
-    url: "https://x.com/UAPJames/status/2090968471370637580",
-    likes: 556,
-    reposts: 100,
-    replies: 16,
-    views: 14383,
-    hasMedia: true,
-  },
-  {
-    id: "2090960096603853066",
-    handle: "GarryPNolan",
-    name: "Garry P. Nolan",
-    text: "No one is ignoring UAP material requests — the hard part is finding it. If someone is determined to keep secrets after a public release order, the goods will be moved or reframed as prosaic advanced tech.",
-    when: "22 Aug 2026",
-    url: "https://x.com/GarryPNolan/status/2090960096603853066",
-    likes: 4,
-    reposts: 0,
-    replies: 0,
-    views: 139,
-  },
-  {
-    id: "2090886180208279904",
-    handle: "UAPJames",
-    name: "UAP James",
-    text: "Tom DeLonge says he’s currently consulting with the U.S. Govt on the UFO files releases. “There’s a lot more coming. This is just the beginning.”",
-    when: "21 Aug 2026",
-    url: "https://x.com/UAPJames/status/2090886180208279904",
-    likes: 987,
-    reposts: 167,
-    replies: 66,
-    views: 73306,
-    hasMedia: true,
-  },
-  {
-    id: "2090512492891869319",
-    handle: "ProfAviLoeb",
-    name: "Professor Avi Loeb",
-    text: "Joined UAP Science Advisory Council members Garry Nolan, Peter Skafish, and Anita Goel to discuss the Council’s work and the scientific path forward on UAP.",
-    when: "20 Aug 2026",
-    url: "https://x.com/ProfAviLoeb/status/2090512492891869319",
-    likes: 329,
-    reposts: 54,
-    replies: 21,
-    views: 42305,
-  },
-  {
-    id: "2090079467222008030",
+    id: "2095353670611468760",
     handle: "theblackvault",
     name: "John Greenewald, Jr.",
-    text: "Hearing what you want to hear does not automatically make something true. Those pushing hardest for UFO “transparency” offer some of the very least of it themselves. Be careful who you trust. This story is far from fully revealed.",
-    when: "19 Aug 2026",
-    url: "https://x.com/theblackvault/status/2090079467222008030",
-    likes: 122,
-    reposts: 9,
-    replies: 24,
-    views: 7061,
+    text: "Then it’s only fair to ask them for access to their UFO archive, as well. You know, tradesies. Pentagon seeks access to a vast private UFO records collection.",
+    when: "3 Sep 2026",
+    url: "https://x.com/theblackvault/status/2095353670611468760",
+    likes: 127,
+    reposts: 15,
+    replies: 3,
+    views: 9069,
+    hasMedia: false,
+    at: Date.parse("Thu, 03 Sep 2026 03:30:19 GMT"),
   },
   {
-    id: "2089882664409104685",
-    handle: "rosscoulthart",
-    name: "Ross Coulthart",
-    text: "Full investigative cover story into the OBJECT M mystery in Merivalja, Tallinn, Estonia: secret Soviet UFOs — KGB swarms a suburban house in a UFO hunt (Reality Check).",
-    when: "19 Aug 2026",
-    url: "https://x.com/rosscoulthart/status/2089882664409104685",
-    likes: 248,
-    reposts: 47,
-    replies: 30,
-    views: 26148,
-  },
-  {
-    id: "2087662275587133639",
+    id: "2095223395290055048",
     handle: "JeremyCorbell",
     name: "Jeremy Corbell",
-    text: "Excellent move to make this direct appeal. There is an army of whistleblowers (some first-hand) waiting to have a direct dialogue with the American public about the UAP reality, to include NHI biologics.",
-    when: "12 Aug 2026",
-    url: "https://x.com/JeremyCorbell/status/2087662275587133639",
-    likes: 1008,
-    reposts: 155,
-    replies: 76,
-    views: 56769,
+    text: "A New Wave of UFO News 🛸 Join me in the LIVE chat NOW for this launch at HIGH-NOON PT. GO GO UFO!!!",
+    when: "2 Sep 2026",
+    url: "https://x.com/JeremyCorbell/status/2095223395290055048",
+    likes: 215,
+    reposts: 35,
+    replies: 15,
+    views: 16956,
+    hasMedia: true,
+    at: Date.parse("Wed, 02 Sep 2026 18:52:39 GMT"),
   },
   {
-    id: "2089551721722757250",
-    handle: "NewsNation",
-    name: "NewsNation",
-    text: "Dr. Eric Davis says he has “seen the records” of recovered non-human bodies. He joins Katie Pavlich to discuss the four alleged alien species and the claims surrounding them.",
-    when: "18 Aug 2026",
-    url: "https://x.com/NewsNation/status/2089551721722757250",
-    likes: 477,
-    reposts: 131,
-    replies: 22,
-    views: 25367,
+    id: "2095210589853274152",
+    handle: "TelepathyTapes",
+    name: "The Telepathy Tapes",
+    text: "On this week’s Talk Tracks episode we explore shared death experiences, profound moments in which a loved one or even a stranger may suddenly perceive what the dying person is seeing, feeling, or experiencing in their transition beyond death.",
+    when: "2 Sep 2026",
+    url: "https://x.com/TelepathyTapes/status/2095210589853274152",
+    likes: 25,
+    reposts: 1,
+    replies: 2,
+    views: 961,
     hasMedia: true,
-  },
-  {
-    id: "2088846958672630047",
-    handle: "Truthpole",
-    name: "T R U T H P O L E",
-    text: "Matthew Brown, author of the original Immaculate Constellation report, is asking President Trump for formal immunity so he can reveal more. The program is described as an unacknowledged special access effort that uses AI to extract UAP imagery from classified systems. Fox is now amplifying the request for a presidential waiver.",
-    when: "16 Aug 2026",
-    url: "https://x.com/Truthpole/status/2088846958672630047",
-    likes: 211,
-    reposts: 33,
-    replies: 5,
-    views: 8837,
-    hasMedia: true,
+    at: Date.parse("Wed, 02 Sep 2026 18:01:46 GMT"),
   },
 ];
 
-const CACHE_KEY = "truthpole-x-feed-v6";
+const CACHE_KEY = "truthpole-x-feed-v8";
 const TWITTER_EPOCH = 1288834974657n;
 
 function snowflakeTime(id: string): number | null {
@@ -393,7 +334,6 @@ export function formatWhen(at: number, now = Date.now()): string {
   return `${days}d`;
 }
 
-/** Last 48 hours, newest → oldest. */
 export function recentXPosts(posts: XFeedPost[], now = Date.now()): XFeedPost[] {
   const cut = now - X_FEED_WINDOW_MS;
   return posts
@@ -427,7 +367,7 @@ export function loadCachedFeed(): XFeedPost[] {
 export function saveCachedFeed(posts: XFeedPost[]) {
   if (typeof window === "undefined") return;
   try {
-    sessionStorage.setItem(CACHE_KEY, JSON.stringify(posts.slice(0, 40)));
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify(posts.slice(0, 60)));
   } catch {
     /* quota */
   }
@@ -465,8 +405,6 @@ export function formatCount(n?: number): string {
   return String(n);
 }
 
-/* ── Live gather (Google News site:x.com) ───────────────────────────── */
-
 const DISPLAY_NAMES: Record<string, string> = {
   Truthpole: "T R U T H P O L E",
   rosscoulthart: "Ross Coulthart",
@@ -483,21 +421,48 @@ const DISPLAY_NAMES: Record<string, string> = {
   theblackvault: "John Greenewald, Jr.",
   UAPJames: "UAP James",
   NewsNation: "NewsNation",
+  tomdelonge: "Tom DeLonge",
+  DrStevenGreer: "Dr. Steven Greer",
+  SkywatcherHQ: "Skywatcher",
+  TheUfoJoe: "Joe Murgia",
+  TelepathyTapes: "The Telepathy Tapes",
+  UAPSAC: "UAP Science Advisory Council",
+  I_D_Official: "Richard Dolan",
+  chrisbledsoeufo: "Chris Bledsoe",
+  InterstellarUAP: "Interstellar",
+  UAPFilesPodcast: "UAP Files",
+  jaystratton: "Jay Stratton",
+  WeaponizedPod: "WEAPONIZED",
+  TheSolFoundation: "The Sol Foundation",
+  VinnieAdams87: "Vinnie Adams",
+  ChrisLehtoF15: "Chris Lehto",
+  DeanRadin: "Dean Radin",
+  ky_dickens: "Ky Dickens",
+  TheWhyFiles: "The Why Files",
+  UAPWatchers: "UAP Watchers",
+  JohnRamirezCIA: "John Ramirez",
+  GoodTroubleShow: "Good Trouble Show",
+  dpasulka: "Diana Walsh Pasulka",
 };
 
-const ACCOUNT_LOOKUP = new Map<string, string>(
-  X_FEED_ACCOUNTS.map((h) => [h.toLowerCase(), h]),
+const ACCOUNT_LOOKUP = new Map<string, string>(X_FEED_ACCOUNTS.map((h) => [h.toLowerCase(), h]));
+
+const PSIONIC_ACCOUNTS = new Set(
+  ["DrStevenGreer", "SkywatcherHQ", "TelepathyTapes", "ky_dickens", "DeanRadin", "chrisbledsoeufo"].map((h) =>
+    h.toLowerCase(),
+  ),
 );
 
 function stripXml(s: string) {
   return s
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/gi, "$1")
     .replace(/<[^>]+>/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
+    .replace(/&/g, "&")
+    .replace(/</g, "<")
+    .replace(/>/g, ">")
+    .replace(/"/g, '"')
     .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -521,7 +486,15 @@ function slugId(url: string, title: string) {
   return `x-${Math.abs(h).toString(36)}`;
 }
 
-/** Resolve X handle from title/body/url — never returns "desk". Prefer the x.com path. */
+function aboutPerson(text: string, name: string) {
+  if (!name || name.length < 4) return false;
+  const esc = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(
+    `\\b${esc}\\b\\s+(brags?|claims?|says|said|told|announces?|wants|admits|insists|alleges|denies|reveals|knows)\\b`,
+    "i",
+  ).test(text);
+}
+
 export function resolveXHandle(text: string, url: string, source = "", fallback?: string): string | null {
   const path = url.match(/(?:x\.com|twitter\.com)\/([A-Za-z0-9_]{2,30})(?:\/status|\/|$)/i);
   if (path) {
@@ -532,6 +505,9 @@ export function resolveXHandle(text: string, url: string, source = "", fallback?
   }
 
   const stripped = text.replace(/\s*[-–—]\s*x\.com\s*$/i, "").trim();
+  if (/\(@[A-Za-z0-9_]+\) on X$/i.test(stripped)) return null;
+  if (/^RSS reader not yet/i.test(stripped)) return null;
+
   if (stripped.length > 0 && stripped.length <= 48) {
     const exact = ACCOUNT_LOOKUP.get(stripped.replace(/^@/, "").toLowerCase());
     if (exact) return exact;
@@ -558,8 +534,10 @@ export function resolveXHandle(text: string, url: string, source = "", fallback?
   }
 
   if (fallback) {
-    const mentioned = new RegExp(`@${fallback}\\b`, "i").test(text);
-    if (!mentioned) return ACCOUNT_LOOKUP.get(fallback.toLowerCase()) ?? fallback;
+    const canon = ACCOUNT_LOOKUP.get(fallback.toLowerCase()) ?? fallback;
+    const name = DISPLAY_NAMES[canon] ?? DISPLAY_NAMES[fallback] ?? "";
+    if (name && aboutPerson(stripped, name)) return null;
+    return canon;
   }
 
   return null;
@@ -568,23 +546,45 @@ export function resolveXHandle(text: string, url: string, source = "", fallback?
 function displayNameFor(handle: string) {
   return (
     DISPLAY_NAMES[handle] ??
-    DISPLAY_NAMES[
-      (ACCOUNT_LOOKUP.get(handle.toLowerCase()) ?? handle) as string
-    ] ??
+    DISPLAY_NAMES[(ACCOUNT_LOOKUP.get(handle.toLowerCase()) ?? handle) as string] ??
     handle.replace(/_/g, " ")
   );
 }
 
 const KEEP_X =
-  /\b(uaps?\b|ufology|extraterrestrial|non-human|\bnhi\b|whistleblower|aaro|pursue|immaculate constellation|crash retriev|tic[- ]?tac|gimbal|gofast|biologics?|unidentified (aerial|anomalous)|flying saucer|disclosure|nuclear (?:power|plant|site)s?.{0,40}(uap|drone)|uap.{0,50}(orb|drone|hearing|file|report))\b/i;
+  /\b(uaps?\b|ufos?\b|ufology|extraterrestrial|non-human|\bnhi\b|whistleblower|aaro|pursue|immaculate constellation|crash retriev|tic[- ]?tac|gimbal|gofast|biologics?|unidentified (aerial|anomalous)|flying saucer|psionic|ce-?5|telepathy tapes?|remote viewing|skywatcher|galileo project|uap sac|consciousness|orbs?|disclosure)\b/i;
 
 const SKIP_X =
-  /\b(slot|casino|free spins|nasdaq|etf|ufo plast|ufo_rockband|ufo rockband|miffest|hard charger|captcha|hyundai|ioniq|ice cream|burger|backpack|greyhound)\b/i;
+  /\b(slot|casino|free spins|nasdaq|etf|ufo plast|ufo_rockband|ufo rockband|miffest|hard charger|captcha|hyundai|ioniq|ice cream|burger|backpack|greyhound|sattebaazon|sebi|cw dfb|derivatives settlement|wolverine|psylocke|league of legends|dead at \d+|emotional tributes|gloria steinem)\b/i;
+
+const NEWS_ORGS = new Set(["newsnation"]);
+
+function isWatchedHandle(handle: string) {
+  return ACCOUNT_LOOKUP.has(handle.replace(/^@/, "").toLowerCase());
+}
 
 function isUfologyText(text: string) {
   if (SKIP_X.test(text)) return false;
   if (KEEP_X.test(text)) return true;
-  return /\bufo\b/i.test(text) && /\b(sighting|craft|pentagon|congress|pilot|radar|navy|hearing|whistle)\b/i.test(text);
+  return (
+    /\bufo\b/i.test(text) &&
+    /\b(sighting|craft|pentagon|congress|pilot|radar|navy|hearing|whistle|contact)\b/i.test(text)
+  );
+}
+
+function isPsionicText(text: string) {
+  return /\b(psionic|ce-?5|telepathy|remote viewing|skywatcher|consciousness|noetic|psi\b|nde\b|shared death|contact protocol|meditation)\b/i.test(
+    text,
+  );
+}
+
+function keepPost(handle: string, text: string) {
+  if (SKIP_X.test(text)) return false;
+  const key = handle.replace(/^@/, "").toLowerCase();
+  if (NEWS_ORGS.has(key)) return isUfologyText(text);
+  if (!isWatchedHandle(handle)) return isUfologyText(text) || isPsionicText(text);
+  if (PSIONIC_ACCOUNTS.has(key)) return isUfologyText(text) || isPsionicText(text);
+  return true;
 }
 
 function parseGoogleXItems(xml: string, fallbackHandle?: string): XFeedPost[] {
@@ -597,43 +597,40 @@ function parseGoogleXItems(xml: string, fallbackHandle?: string): XFeedPost[] {
     const source = xmlTag(block, "source");
     if (!title || !link) continue;
 
-    let text = title.replace(/\s*[-–—]\s*x\.com\s*$/i, "").trim();
-    const ufology =
-      isUfologyText(text) ||
-      Boolean(fallbackHandle && /\b(uap|ufo|aaro|nhi|whistle|orb|drone|nuclear|disclos)\b/i.test(text));
-    if (!ufology) continue;
+    const text = title.replace(/\s*[-–—]\s*x\.com\s*$/i, "").trim();
+    if (!text || /\(@[A-Za-z0-9_]+\) on X$/i.test(text)) continue;
+    if (/^RSS reader not yet/i.test(text)) continue;
 
     const handle =
       resolveXHandle(text, link, source, fallbackHandle) ??
       (/\b(this week(?:'s)? q&a|this week on ["“]?reality check|premiering now)\b/i.test(text)
         ? "NewsNation"
         : null);
-    if (!handle) continue;
-    if (handle.toLowerCase() === "desk") continue;
+    if (!handle || handle.toLowerCase() === "desk") continue;
+    if (!keepPost(handle, text)) continue;
 
     const snow = snowflakeTime(link) ?? snowflakeTime(title);
     const dated = relativeWhen(pub);
     const at = dated?.at ?? snow ?? 0;
     if (!at || at < Date.now() - X_FEED_WINDOW_MS) continue;
 
-    const post: XFeedPost = {
-      id: slugId(link, text),
+    rows.push({
+      id: snowflakeTime(link) ? (link.match(/(\d{15,20})/)?.[1] ?? slugId(link, text)) : slugId(link, text),
       handle,
       name: displayNameFor(handle),
       text,
       when: formatWhen(at),
-      url: link,
-      hasMedia: false,
+      url: /(?:x\.com|twitter\.com)\//i.test(link) ? link : `https://x.com/${handle}`,
+      hasMedia: /\b(video|photo|image|watch|footage)\b/i.test(text),
       at,
-    };
-    rows.push(post);
+    });
   }
   return rows;
 }
 
 async function pullXml(url: string) {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 9000);
+  const timer = setTimeout(() => ctrl.abort(), 7000);
   try {
     const res = await fetch(url, {
       signal: ctrl.signal,
@@ -651,58 +648,98 @@ async function pullXml(url: string) {
   }
 }
 
-function googleXQuery(extra: string) {
-  const q = encodeURIComponent(`site:x.com (${extra}) when:2d`);
-  return `https://news.google.com/rss/search?q=${q}&hl=en-US&gl=US&ceid=US:en`;
+function googleRss(query: string) {
+  return `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
 }
 
-/**
- * Live pull of X posts from the last 48 hours (newest first).
- * Watched handles + ufology keywords. Drops anything older than 48h.
- */
-export async function gatherXFeed(): Promise<XFeedPost[]> {
-  const mains = [
-    "rosscoulthart",
-    "NewsNation",
-    "ProfAviLoeb",
-    "theblackvault",
-    "UAPJames",
-    "Truthpole",
-    "LueElizondo",
-    "JeremyCorbell",
-  ] as const;
-  const feeds: Promise<XFeedPost[]>[] = [
-    pullXml(googleXQuery("UAP OR ufology OR AARO OR NHI OR whistleblower OR \"crash retrieval\" OR PURSUE")).then(
-      (xml) => parseGoogleXItems(xml),
-    ),
-    pullXml(googleXQuery("UFO (sighting OR pentagon OR congress OR hearing OR craft OR disclosure)")).then((xml) =>
-      parseGoogleXItems(xml),
-    ),
-    ...mains.map((handle) =>
-      pullXml(googleXQuery(`@${handle}`)).then((xml) => parseGoogleXItems(xml, handle)),
-    ),
-  ];
+function chunkHandles(list: readonly string[], size: number) {
+  const out: string[][] = [];
+  for (let i = 0; i < list.length; i += size) out.push([...list.slice(i, i + size)]);
+  return out;
+}
 
-  const batches = await Promise.all(feeds);
+let feedCache: { at: number; posts: XFeedPost[] } | null = null;
+const FEED_CACHE_MS = 8_000;
+
+function collapseNearDupes(rows: XFeedPost[]) {
+  const sorted = [...rows].sort((a, b) => (b.at ?? 0) - (a.at ?? 0));
+  const out: XFeedPost[] = [];
+  for (const row of sorted) {
+    const idx = out.findIndex(
+      (p) =>
+        p.handle.toLowerCase() === row.handle.toLowerCase() &&
+        Math.abs((p.at ?? 0) - (row.at ?? 0)) < 10 * 60_000,
+    );
+    if (idx >= 0) {
+      if (row.text.length > out[idx].text.length) out[idx] = row;
+      continue;
+    }
+    out.push(row);
+  }
+  return out;
+}
+
+function dedupePosts(rows: XFeedPost[]) {
   const seen = new Set<string>();
   const merged: XFeedPost[] = [];
-  for (const row of batches.flat()) {
+  for (const row of rows) {
     const key = row.text
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, " ")
       .trim()
       .slice(0, 120);
-    if (!key || seen.has(key)) continue;
+    const idKey = row.id;
+    if (!key || seen.has(key) || seen.has(idKey)) continue;
     if (row.handle.toLowerCase() === "desk") continue;
     seen.add(key);
+    seen.add(idKey);
     merged.push(row);
   }
-  const live = recentXPosts(merged);
+  return merged;
+}
+
+const HOT_HANDLES = [
+  "rosscoulthart",
+  "JeremyCorbell",
+  "g_knapp",
+  "ProfAviLoeb",
+  "theblackvault",
+  "TheUfoJoe",
+  "SkywatcherHQ",
+  "DrStevenGreer",
+  "TelepathyTapes",
+  "jaystratton",
+  "LueElizondo",
+  "UAPSAC",
+  "NewsNation",
+  "WeaponizedPod",
+] as const;
+
+export async function gatherXFeed(): Promise<XFeedPost[]> {
+  if (feedCache && Date.now() - feedCache.at < FEED_CACHE_MS && feedCache.posts.length > 0) {
+    return feedCache.posts;
+  }
+
+  const hotSet = new Set(HOT_HANDLES.map((h) => h.toLowerCase()));
+  const rest = X_FEED_ACCOUNTS.filter((h) => !hotSet.has(h.toLowerCase()) && h.toLowerCase() !== "newsnation");
+
+  const queries: { q: string; fallback?: string }[] = [
+    { q: 'site:x.com (UAP OR ufology OR NHI OR AARO OR Skywatcher OR "crash retrieval") when:1h' },
+    { q: 'site:x.com (UAP OR ufology OR NHI OR whistleblower OR PURSUE OR "Galileo") when:12h' },
+    { q: 'site:x.com (psionic OR "CE-5" OR CE5 OR "remote viewing" OR telepathy OR "telepathy tapes") when:1d' },
+    ...HOT_HANDLES.map((h) => ({ q: `site:x.com/${h} when:2d`, fallback: h })),
+    ...chunkHandles(rest, 4).map((batch) => ({
+      q: `site:x.com (${batch.map((h) => `@${h}`).join(" OR ")}) when:2d`,
+    })),
+  ];
+
+  const batches = await Promise.all(
+    queries.map(({ q, fallback }) => pullXml(googleRss(q)).then((xml) => parseGoogleXItems(xml, fallback))),
+  );
+  const live = recentXPosts(collapseNearDupes(dedupePosts(batches.flat())));
   const seed = recentXPosts(X_FEED_SEED);
-  const seenLive = new Set(live.map((p) => p.text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().slice(0, 80)));
-  const extra = seed.filter((p) => {
-    const key = p.text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().slice(0, 80);
-    return key && !seenLive.has(key);
-  });
-  return recentXPosts([...live, ...extra]).slice(0, 40);
+  const out = recentXPosts(collapseNearDupes(dedupePosts([...live, ...seed]))).slice(0, 60);
+
+  if (out.length) feedCache = { at: Date.now(), posts: out };
+  return out;
 }

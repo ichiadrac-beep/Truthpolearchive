@@ -1,8 +1,8 @@
 :root {
-  --font-sans: "IBM Plex Mono", "Share Tech Mono", "Courier New", ui-monospace, monospace;
-  --font-display: "Share Tech Mono", "IBM Plex Mono", "Courier New", ui-monospace, monospace;
-  --font-serif: "IBM Plex Mono", "Courier New", ui-monospace, monospace;
-  --font-mono: "Share Tech Mono", "IBM Plex Mono", "Courier New", ui-monospace, monospace;
+  --font-sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Rajdhani", "Segoe UI", system-ui, sans-serif;
+  --font-serif: "Playfair Display", "Times New Roman", Georgia, serif;
+  --font-mono: "IBM Plex Sans", ui-monospace, monospace;
 }
 
 html,

@@ -69,6 +69,12 @@ const CONFIRMED = new Set<string>([
   "ftd",
   "de-brouwer",
   "garry-nolan",
+  "silver-bridge",
+  "patterson-gimlin",
+  "beast-gevaudan",
+  "storsjo",
+  "piasa",
+  "onza",
   // Archive — officially logged sensor / military incidents
   "nimitz",
   "gimbal",
@@ -354,6 +360,13 @@ const UNRESOLVED = new Set<string>([
   "oannes-berossus",
   "adapa",
   "utnapishtim",
+  "orang-pendek",
+  "champ",
+  "cadborosaurus",
+  "thunderbird",
+  "yeren",
+  "thylacine",
+  "chessie",
 ]);
 
 export function deskFromPath(path: string): DeskKey {
